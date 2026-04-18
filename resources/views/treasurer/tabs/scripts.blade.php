@@ -1555,8 +1555,14 @@
     // 🌟 HERE IS THE MEMBER FETCH YOU ASKED FOR
     async function fetchMembers() {
         try {
-            const response = await fetch('https://pcci-laravel-api.onrender.com/api/v1/members', { headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await fetch(`${window.API_BASE_URL}/v1/members`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
             if (!checkAuth(response)) return;
+            const contentType = response.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                const html = await response.text();
+                throw new Error(`Expected JSON from /v1/members but received HTML: ${html.slice(0, 120)}`);
+            }
+
             const data = await response.json();
             if (response.ok && data.data) {
                 allMembersData = data.data; 
@@ -1644,8 +1650,19 @@
 
     async function fetchRecentPayments() {
         try {
-            const response = await fetch('https://pcci-laravel-api.onrender.com/api/v1/applicants?status=approved', { headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            });
             if (!checkAuth(response)) return;
+            const contentType = response.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                const html = await response.text();
+                throw new Error(`Expected JSON from /v1/applicants?status=approved but received HTML: ${html.slice(0, 120)}`);
+            }
+
             const data = await response.json();
             if (response.ok && data.data) {
                 const tbody = document.getElementById('recent-payments-table-body');
