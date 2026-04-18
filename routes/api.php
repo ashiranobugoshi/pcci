@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\Api\LocalAuthController;
 use App\Http\Controllers\Api\LeadershipController;
 use App\Http\Controllers\Api\MemberController;
 use App\Http\Controllers\Api\TreasurerProxyController;
@@ -36,6 +37,14 @@ Route::get('/v1/membership-types', function () {
         ]
     ]);
 });
+
+Route::get('/login', function () {
+    return response()->json([
+        'message' => 'Use POST /api/login with email and password.',
+    ]);
+});
+
+Route::post('/login', [LocalAuthController::class, 'login']);
 
 // Password OTP request proxy for Treasurer Security > Update Password
 Route::post('/user/confirm-password-change', [TreasurerProxyController::class, 'confirmPasswordChange']);

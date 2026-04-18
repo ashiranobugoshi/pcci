@@ -17,10 +17,13 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs
 
 # Install PHP extensions required by Laravel
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+RUN docker-php-ext-install pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd
 
 # Enable Apache mod_rewrite (required for Laravel routing)
 RUN a2enmod rewrite
+
+# Allow Laravel .htaccess rewrite rules inside /public
+RUN sed -ri 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
 
 # Update Apache Document Root to Laravel's /public folder
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public

@@ -286,7 +286,7 @@
             // RETRY LOGIC LOOP
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
-                    response = await fetch(`${window.API_BASE_URL}/login`, {
+                    response = await fetch(`/api/login`, {
                         method: 'POST',
                         headers: { 
                             'Content-Type': 'application/json',
