@@ -64,11 +64,11 @@ class LocalAuthController extends Controller
         }
 
         if (str_contains($normalized, 'superadmin') || str_contains($normalized, 'super_admin')) {
-            return ['superadmin'];
+            return ['superadmin', 'admin', 'treasurer'];
         }
 
         if (str_contains($normalized, 'admin')) {
-            return ['admin'];
+            return ['admin', 'treasurer'];
         }
 
         return ['member'];
