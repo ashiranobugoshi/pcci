@@ -51,7 +51,7 @@ Route::post('/user/confirm-password-change', [TreasurerProxyController::class, '
 Route::post('/user/verify-password-otp', [TreasurerProxyController::class, 'verifyPasswordOtp']);
 Route::post('/user/request-password-change', [TreasurerProxyController::class, 'requestPasswordChange']);
 
-Route::prefix('v1')->group(function () {
+Route::prefix('v1')->middleware([])->group(function () {
 
     // Leadership Route
     Route::get('/leadership', [LeadershipController::class, 'index']);
@@ -59,7 +59,6 @@ Route::prefix('v1')->group(function () {
     // --> NEW MEMBERS ROUTE <--
     Route::get('/members', [MemberController::class, 'index']);
 
-    // Route::get('/v1/business/{id}', [BusinessController::class, 'show']); // BusinessController not yet created
     // Your existing Event routes
     Route::get('/events', [EventController::class, 'index']);
     Route::post('/events', [EventController::class, 'store']);
@@ -67,3 +66,4 @@ Route::prefix('v1')->group(function () {
 
     // Treasurer proxy route is in web.php
 });
+

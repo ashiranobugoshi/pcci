@@ -1476,9 +1476,13 @@
     // API Fetches
     async function fetchApplicants() {
         try {
+            const headers = { 
+                'Accept': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            };
             const [res1, res2] = await Promise.all([
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, { headers: { 'Authorization': `Bearer ${token}` } })
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, { headers }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, { headers })
             ]);
 
             let combinedData = [];
@@ -1555,7 +1559,12 @@
     // 🌟 HERE IS THE MEMBER FETCH YOU ASKED FOR
     async function fetchMembers() {
         try {
-            const response = await fetch(`${window.API_BASE_URL}/v1/members`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await fetch(`${window.API_BASE_URL}/v1/members`, { 
+                headers: { 
+                    'Accept': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                } 
+            });
             if (!checkAuth(response)) return;
             const contentType = response.headers.get('content-type') || '';
             if (!contentType.includes('application/json')) {
@@ -1652,8 +1661,8 @@
         try {
             const response = await fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
                 }
             });
             if (!checkAuth(response)) return;
@@ -1696,19 +1705,15 @@
 
     async function fetchTransactions() {
         try {
+            const headers = { 
+                'Accept': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            };
             const [paidRes, approvedRes, failedRes, cancelledRes] = await Promise.all([
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, {
-                    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-                }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, {
-                    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-                }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=failed`, {
-                    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-                }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=cancelled`, {
-                    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-                })
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, { headers }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, { headers }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=failed`, { headers }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=cancelled`, { headers })
             ]);
 
             if (!checkAuth(paidRes) || !checkAuth(approvedRes) || !checkAuth(failedRes) || !checkAuth(cancelledRes)) return;
