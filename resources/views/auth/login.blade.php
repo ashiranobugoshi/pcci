@@ -107,6 +107,22 @@
         transition: border 0.3s;
     }
 
+    .input-wrapper.password-wrapper input {
+        padding-right: 55px !important;
+    }
+
+    .input-wrapper.password-wrapper .password-toggle {
+        position: absolute;
+        right: 18px !important;
+        left: auto !important;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-grey);
+        font-size: 1.1rem;
+        cursor: pointer;
+        z-index: 6;
+    }
+
     .input-wrapper input:focus { 
         border-color: var(--primary-red) !important; 
     }
@@ -224,9 +240,10 @@
 
                 <div class="custom-form-group">
                     <label for="password">Password</label>
-                    <div class="input-wrapper">
+                    <div class="input-wrapper password-wrapper">
                         <i class="bi bi-lock"></i>
                         <input type="password" id="password" name="password" required placeholder="Enter your password">
+                        <i class="bi bi-eye password-toggle" id="passwordToggle" onclick="toggleLoginPassword()" aria-label="Show password" role="button" tabindex="0"></i>
                     </div>
                 </div>
 
@@ -264,6 +281,19 @@
 </div>
 
 <script>
+    function toggleLoginPassword() {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.getElementById('passwordToggle');
+
+        if (!passwordInput || !toggleIcon) return;
+
+        const isHidden = passwordInput.type === 'password';
+        passwordInput.type = isHidden ? 'text' : 'password';
+        toggleIcon.classList.toggle('bi-eye', !isHidden);
+        toggleIcon.classList.toggle('bi-eye-slash', isHidden);
+        toggleIcon.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+    }
+
     async function handleLogin(event) {
         event.preventDefault(); 
 

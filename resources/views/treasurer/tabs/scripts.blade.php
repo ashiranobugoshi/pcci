@@ -36,6 +36,7 @@
     let currentSelectedType = 1;
     let currentPasswordOtpCode = '';
     let currentPasswordOtpEmail = '';
+    let accountImageFile = null;
 
     let membershipTypes = [
         { "id": 1, "name": "Micro", "price": "500.00", "duration_in_months": 12 },
@@ -670,8 +671,14 @@
 
     async function requestPasswordChangeOtp() {
         const btn = document.getElementById('requestOtpBtn');
-        const endpoint = '/api/user/confirm-password-change';
+        const otpApiBase = (window.PCCI_API_BASE_URL || window.API_BASE_URL || '').replace(/\/$/, '');
+        const endpoint = `${otpApiBase}/user/confirm-password-change`;
         currentPasswordOtpCode = '';
+        const candidateEmail = (
+            document.getElementById('settingsEmailInput')?.value
+            || localStorage.getItem('userEmail')
+            || ''
+        ).trim();
 
         if (btn) {
             btn.disabled = true;
@@ -687,19 +694,24 @@
                     'Content-Type': 'application/json',
                     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
                 },
-                body: JSON.stringify({})
+                body: JSON.stringify({
+                    email: candidateEmail || null,
+                })
             });
 
-            const result = await response.json().catch(() => ({}));
+            const { data: result, raw } = await readApiResponse(response);
             if (!response.ok) {
-                if (result.tried_endpoints && Array.isArray(result.tried_endpoints)) {
-                    console.warn('OTP request tried endpoints:', result.tried_endpoints);
-                }
-                throw new Error(result.message || 'Failed to request OTP. Please try again.');
+                throw new Error(result.message || raw || 'Failed to request OTP. Please try again.');
             }
 
+            const otpPayload = result?.data || {};
             const otpEmailEl = document.getElementById('otpTargetEmail');
-            const emailFromApi = result.email || result.user?.email || result.data?.email || 'your email';
+            const emailFromApi = (otpPayload.email || candidateEmail || '').trim();
+            if (!emailFromApi) {
+                throw new Error('OTP response missing email.');
+            }
+
+            currentPasswordOtpCode = otpPayload.otp ? String(otpPayload.otp) : '';
             if (otpEmailEl) otpEmailEl.innerText = emailFromApi;
             currentPasswordOtpEmail = emailFromApi;
 
@@ -730,6 +742,7 @@
     }
     
     function moveToNext(input, event) {
+        input.value = String(input.value || '').replace(/\D/g, '').slice(-1);
         if (input.value.length === 1) {
             let next = input.nextElementSibling;
             if (next && next.tagName.toLowerCase() === 'input') {
@@ -742,44 +755,36 @@
         }
     }
 
+    function pasteOtpIntoTreasurerBoxes(event) {
+        event.preventDefault();
+
+        const pasted = (event.clipboardData?.getData('text') || '').replace(/\D/g, '');
+        if (!pasted) return;
+
+        const boxes = Array.from(document.querySelectorAll('.otp-box'));
+        const digits = pasted.slice(0, boxes.length).split('');
+
+        boxes.forEach((box, index) => {
+            box.value = digits[index] || '';
+        });
+
+        currentPasswordOtpCode = boxes.map(box => box.value).join('');
+        const firstEmpty = boxes.find(box => !box.value);
+        if (firstEmpty) {
+            firstEmpty.focus();
+        } else {
+            verifyEnteredOtpAndProceed();
+        }
+    }
+
     async function verifyEnteredOtpAndProceed() {
         if (!currentPasswordOtpCode || currentPasswordOtpCode.length !== 6) {
             openOtpFeedbackModal('Invalid OTP', 'Please enter a valid 6-digit OTP.');
             return;
         }
 
-        try {
-            const response = await fetch('/api/user/verify-password-otp', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-                },
-                body: JSON.stringify({
-                    otp: currentPasswordOtpCode,
-                    email: currentPasswordOtpEmail || null,
-                })
-            });
-
-            const result = await response.json().catch(() => ({}));
-            if (!response.ok) {
-                if (response.status === 422) {
-                    throw new Error('Wrong OTP. Please try again.');
-                }
-                throw new Error(result.message || 'Invalid OTP.');
-            }
-
-            hideOtpModal();
-            openResetPasswordModal();
-        } catch (error) {
-            console.error('Error verifying OTP:', error);
-            openOtpFeedbackModal('Wrong OTP', error.message || 'Wrong OTP. Please try again.');
-            currentPasswordOtpCode = '';
-            document.querySelectorAll('.otp-box').forEach(box => box.value = '');
-            const firstOtpBox = document.querySelector('.otp-box');
-            if (firstOtpBox) firstOtpBox.focus();
-        }
+        hideOtpModal();
+        openResetPasswordModal();
     }
     
     document.querySelectorAll('.otp-box').forEach(box => {
@@ -791,6 +796,8 @@
                 }
             }
         });
+
+        box.addEventListener('paste', pasteOtpIntoTreasurerBoxes);
     });
 
     // --- RESET PASSWORD MODAL FUNCTIONS ---
@@ -836,6 +843,7 @@
         const pw1 = document.getElementById('newPasswordInput').value;
         const pw2 = document.getElementById('rePasswordInput').value;
         const btn = document.getElementById('resetPwSubmitBtn');
+        const otpApiBase = (window.PCCI_API_BASE_URL || window.API_BASE_URL || '').replace(/\/$/, '');
 
         if(!btn.classList.contains('active')) {
             alert("Please ensure your password meets all security requirements.");
@@ -855,7 +863,7 @@
             btn.disabled = true;
             btn.innerText = 'Resetting...';
 
-            const response = await fetch('/api/user/request-password-change', {
+            const response = await fetch(`${otpApiBase}/user/request-password-change`, {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -865,14 +873,16 @@
                 body: JSON.stringify({
                     otp: currentPasswordOtpCode,
                     email: currentPasswordOtpEmail || null,
+                    new_password: pw1,
+                    new_password_confirmation: pw2,
                     password: pw1,
                     password_confirmation: pw2
                 })
             });
 
-            const result = await response.json().catch(() => ({}));
+            const { data: result, raw } = await readApiResponse(response);
             if (!response.ok) {
-                throw new Error(result.message || 'Failed to reset password.');
+                throw new Error(result.message || raw || 'Failed to reset password.');
             }
 
             alert(result.message || 'Password updated successfully.');
@@ -1045,6 +1055,270 @@
         document.getElementById('settings-main').style.display = 'block';
     }
 
+    function triggerAccountImagePicker() {
+        const imageInput = document.getElementById('settingsImageInput');
+        if (imageInput) imageInput.click();
+    }
+
+    function resolveUserFromResponse(payload) {
+        return payload?.data?.user || payload?.data || payload?.user || payload || {};
+    }
+
+    function normalizeImageUrl(value) {
+        const raw = String(value || '').trim();
+        if (!raw) return '';
+        if (/^https?:\/\//i.test(raw)) return raw;
+        return `${apiOrigin}/${raw.replace(/^\/+/, '')}`;
+    }
+
+    function applyAccountAvatar(imageValue) {
+        const imageUrl = normalizeImageUrl(imageValue);
+        if (!imageUrl) return;
+
+        ['topbarAvatar', 'sidebarAvatar', 'settingsAccountAvatar'].forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.src = imageUrl;
+        });
+
+        localStorage.setItem('userImage', imageUrl);
+    }
+
+    function extractUserImage(user) {
+        return user?.image_url
+            || user?.image
+            || user?.avatar
+            || user?.profile_image
+            || user?.profile_photo
+            || user?.photo
+            || '';
+    }
+
+    function handleAccountImageChange(event) {
+        const file = event?.target?.files?.[0] || null;
+        accountImageFile = file;
+        if (file) {
+            const previewUrl = URL.createObjectURL(file);
+            ['topbarAvatar', 'sidebarAvatar', 'settingsAccountAvatar'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.src = previewUrl;
+            });
+        }
+    }
+
+    function toggleAccountField(fieldId) {
+        const input = document.getElementById(fieldId);
+        if (!input) return;
+
+        const editButton = input.parentElement ? input.parentElement.querySelector('.new-acc-edit') : null;
+        const isReadOnly = input.hasAttribute('readonly');
+
+        if (isReadOnly) {
+            input.removeAttribute('readonly');
+            input.focus();
+            input.select();
+            if (editButton) editButton.innerHTML = '<i class="fa fa-check"></i> Done';
+        } else {
+            input.setAttribute('readonly', 'readonly');
+            if (editButton) editButton.innerHTML = '<i class="fa fa-edit"></i> Edit';
+        }
+    }
+
+    async function saveAccountSettings() {
+        const firstNameInput = document.getElementById('settingsFirstName');
+        const lastNameInput = document.getElementById('settingsLastName');
+        const emailInput = document.getElementById('settingsEmailInput');
+        const contactInput = document.getElementById('settingsContactInput');
+
+        const firstName = (firstNameInput?.value || '').trim();
+        const lastName = (lastNameInput?.value || '').trim();
+        const email = (emailInput?.value || '').trim();
+        const contact = (contactInput?.value || '').trim();
+
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            alert('Please enter a valid email address.');
+            return;
+        }
+
+        if (!email) {
+            alert('Email is required.');
+            return;
+        }
+
+        const endpointBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
+        const endpoint = `${endpointBase}/v1/user/change-info`;
+        const payload = new FormData();
+        if (accountImageFile) payload.append('image', accountImageFile);
+        payload.append('email', email);
+        payload.append('_method', 'PUT');
+        payload.append('contact', contact);
+        payload.append('first_name', firstName);
+        payload.append('last_name', lastName);
+
+        const saveButton = document.querySelector('#settings-account .new-acc-action-dark');
+        if (saveButton) {
+            saveButton.disabled = true;
+            saveButton.dataset.originalText = saveButton.innerText;
+            saveButton.innerText = 'Saving...';
+        }
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
+                body: payload
+            });
+
+            const { data: result, raw } = await readApiResponse(response);
+            if (!response.ok) {
+                throw new Error(result.message || raw || 'Failed to save account settings.');
+            }
+
+            const userPayload = resolveUserFromResponse(result);
+            const responseImage = extractUserImage(userPayload);
+            if (responseImage) {
+                applyAccountAvatar(responseImage);
+            }
+
+            const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
+            if (fullName) {
+                localStorage.setItem('userName', fullName);
+                const sidebarName = document.getElementById('sidebarName');
+                if (sidebarName) sidebarName.innerText = fullName;
+            }
+
+            localStorage.setItem('userEmail', email);
+            const sidebarEmail = document.getElementById('sidebarEmail');
+            if (sidebarEmail) sidebarEmail.innerText = email;
+
+            localStorage.setItem('userContact', contact);
+
+            ['settingsFirstName', 'settingsLastName', 'settingsEmailInput', 'settingsContactInput'].forEach((id) => {
+                const input = document.getElementById(id);
+                if (!input) return;
+                input.setAttribute('readonly', 'readonly');
+                const editButton = input.parentElement ? input.parentElement.querySelector('.new-acc-edit') : null;
+                if (editButton) editButton.innerHTML = '<i class="fa fa-edit"></i> Edit';
+            });
+
+            accountImageFile = null;
+            const imageInput = document.getElementById('settingsImageInput');
+            if (imageInput) imageInput.value = '';
+
+            alert(result.message || 'Account settings saved.');
+        } catch (error) {
+            console.error('Error updating account settings:', error);
+            alert(error.message || 'Failed to save account settings.');
+        } finally {
+            if (saveButton) {
+                saveButton.disabled = false;
+                saveButton.innerText = saveButton.dataset.originalText || 'Save Changes';
+            }
+        }
+    }
+
+    function applyStoredAccountSettings() {
+        const storedName = localStorage.getItem('userName') || 'Treasurer';
+        const sidebarName = document.getElementById('sidebarName');
+        if (sidebarName) sidebarName.innerText = storedName;
+
+        const nameParts = storedName.split(' ');
+        const firstNameInput = document.getElementById('settingsFirstName');
+        const lastNameInput = document.getElementById('settingsLastName');
+        if (firstNameInput) firstNameInput.value = nameParts[0] || storedName;
+        if (lastNameInput) lastNameInput.value = nameParts.slice(1).join(' ');
+
+        const storedEmail = localStorage.getItem('userEmail') || '';
+        const sidebarEmail = document.getElementById('sidebarEmail');
+        if (sidebarEmail) sidebarEmail.innerText = storedEmail || 'No email';
+        const settingsEmailInput = document.getElementById('settingsEmailInput');
+        if (settingsEmailInput) settingsEmailInput.value = storedEmail;
+
+        const storedContact = localStorage.getItem('userContact') || '';
+        const settingsContactInput = document.getElementById('settingsContactInput');
+        if (settingsContactInput) settingsContactInput.value = storedContact;
+
+        const storedImage = localStorage.getItem('userImage') || '';
+        if (storedImage) {
+            applyAccountAvatar(storedImage);
+        }
+    }
+
+    async function loadAccountSettingsFromApi() {
+        if (!token) return false;
+
+        try {
+            const endpointBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
+            const response = await fetch(`${endpointBase}/v1/user`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) return false;
+
+            const { data: result } = await readApiResponse(response);
+            const user = result?.data || result?.user || result || {};
+
+            const localName = (localStorage.getItem('userName') || '').trim();
+            const localEmail = (localStorage.getItem('userEmail') || '').trim();
+            const localContact = (localStorage.getItem('userContact') || '').trim();
+
+            const firstName = (user.first_name || '').trim();
+            const lastName = (user.last_name || '').trim();
+            const fallbackName = (user.name || '').trim();
+            const apiFullName = [firstName, lastName].filter(Boolean).join(' ').trim() || fallbackName;
+            const fullName = localName || apiFullName;
+            const email = localEmail || String(user.email || '').trim();
+            const contact = localContact || String(user.contact || user.contact_no || user.phone || '').trim();
+            const imageValue = extractUserImage(user) || localStorage.getItem('userImage') || '';
+
+            if (fullName) {
+                if (!localName && apiFullName) {
+                    localStorage.setItem('userName', fullName);
+                }
+                const sidebarName = document.getElementById('sidebarName');
+                if (sidebarName) sidebarName.innerText = fullName;
+
+                const nameParts = fullName.split(' ');
+                const firstNameInput = document.getElementById('settingsFirstName');
+                const lastNameInput = document.getElementById('settingsLastName');
+                if (firstNameInput) firstNameInput.value = nameParts[0] || '';
+                if (lastNameInput) lastNameInput.value = nameParts.slice(1).join(' ');
+            }
+
+            if (email) {
+                if (!localEmail && String(user.email || '').trim()) {
+                    localStorage.setItem('userEmail', email);
+                }
+                const sidebarEmail = document.getElementById('sidebarEmail');
+                if (sidebarEmail) sidebarEmail.innerText = email;
+                const settingsEmailInput = document.getElementById('settingsEmailInput');
+                if (settingsEmailInput) settingsEmailInput.value = email;
+            }
+
+            if (contact) {
+                if (!localContact && String(user.contact || user.contact_no || user.phone || '').trim()) {
+                    localStorage.setItem('userContact', contact);
+                }
+                const settingsContactInput = document.getElementById('settingsContactInput');
+                if (settingsContactInput) settingsContactInput.value = contact;
+            }
+
+            if (imageValue) {
+                applyAccountAvatar(imageValue);
+            }
+
+            return Boolean(fullName || email || contact);
+        } catch (_) {
+            // Keep UI usable with localStorage fallback if profile endpoint is unavailable.
+            return false;
+        }
+    }
+
     // --- NOTIFICATION SYSTEM ---
     function updateNotificationsPanel() {
         const today = new Date();
@@ -1162,6 +1436,38 @@
             return false;
         }
         return true;
+    }
+
+    async function readApiResponse(response) {
+        const contentType = (response.headers.get('content-type') || '').toLowerCase();
+        if (contentType.includes('application/json')) {
+            return { data: await response.json().catch(() => ({})), raw: '' };
+        }
+
+        return { data: {}, raw: await response.text().catch(() => '') };
+    }
+
+    function sanitizeSearchAutofill() {
+        const isEmailLike = (value) => /\S+@\S+\.\S+/.test(String(value || '').trim());
+
+        const searchInputs = [
+            document.getElementById('memberSearch'),
+            document.getElementById('applicantSearch'),
+            document.getElementById('transactionSearch'),
+            document.querySelector('.topbar-search')
+        ].filter(Boolean);
+
+        searchInputs.forEach((input, index) => {
+            input.setAttribute('autocomplete', 'off');
+            input.setAttribute('autocapitalize', 'off');
+            input.setAttribute('autocorrect', 'off');
+            input.setAttribute('spellcheck', 'false');
+            input.setAttribute('name', `search_query_${index + 1}`);
+
+            if (isEmailLike(input.value)) {
+                input.value = '';
+            }
+        });
     }
 
     // Modals
@@ -1378,19 +1684,15 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
         if (!token) { window.location.href = '/login'; return; }
-        
-        // Settings Name population
-        const storedName = localStorage.getItem('userName') || 'Jesus Versula';
-        document.getElementById('sidebarName').innerText = storedName;
-        const nameInput = document.getElementById('settingsLastName');
-        if (nameInput) {
-             const parts = storedName.split(' ');
-             if(parts.length > 1) {
-                 document.getElementById('settingsFirstName').value = parts[0];
-                 document.getElementById('settingsLastName').value = parts.slice(1).join(' ');
-             }
+
+        sanitizeSearchAutofill();
+        setTimeout(sanitizeSearchAutofill, 120);
+
+        const loadedFromApi = await loadAccountSettingsFromApi();
+        if (!loadedFromApi) {
+            applyStoredAccountSettings();
         }
         
         fetchApplicants();
@@ -1563,22 +1865,64 @@
     // 🌟 HERE IS THE MEMBER FETCH YOU ASKED FOR
     async function fetchMembers() {
         try {
-            const response = await fetch(`${window.API_BASE_URL}/v1/members`, { headers: { 'Authorization': `Bearer ${token}` } });
-            if (!checkAuth(response)) return;
-            const data = await response.json();
-            if (response.ok && data.data) {
-                allMembersData = data.data; 
-                
-                const totalMembersBadge = document.getElementById('total-members-badge');
-                if (totalMembersBadge) totalMembersBadge.innerText = `${allMembersData.length} Active`;
-                
-                const reportActive = document.getElementById('report-active-members');
-                if (reportActive) reportActive.innerText = allMembersData.length;
-                
-                applyMemberFilters(); 
-                updateNotificationsPanel();
-                updateReportsDashboard();
+            const memberEndpoints = [];
+            if (apiBaseUrl) {
+                memberEndpoints.push(`${apiBaseUrl}/v1/members`);
             }
+            memberEndpoints.push('/api/v1/members');
+
+            let membersData = null;
+            let lastError = null;
+
+            for (const endpoint of memberEndpoints) {
+                try {
+                    const response = await fetch(endpoint, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (!checkAuth(response)) return;
+                    if (!response.ok) {
+                        lastError = new Error(`HTTP ${response.status} from ${endpoint}`);
+                        continue;
+                    }
+
+                    const contentType = (response.headers.get('content-type') || '').toLowerCase();
+                    if (!contentType.includes('application/json')) {
+                        const bodyPreview = (await response.text()).slice(0, 120);
+                        lastError = new Error(`Non-JSON response from ${endpoint}: ${bodyPreview}`);
+                        continue;
+                    }
+
+                    const data = await response.json();
+                    if (data && Array.isArray(data.data)) {
+                        membersData = data.data;
+                        break;
+                    }
+
+                    lastError = new Error(`Invalid members payload from ${endpoint}`);
+                } catch (endpointError) {
+                    lastError = endpointError;
+                }
+            }
+
+            if (!membersData) {
+                throw lastError || new Error('Failed to load members from available endpoints.');
+            }
+
+            allMembersData = membersData;
+
+            const totalMembersBadge = document.getElementById('total-members-badge');
+            if (totalMembersBadge) totalMembersBadge.innerText = `${allMembersData.length} Active`;
+
+            const reportActive = document.getElementById('report-active-members');
+            if (reportActive) reportActive.innerText = allMembersData.length;
+
+            applyMemberFilters();
+            updateNotificationsPanel();
+            updateReportsDashboard();
         } catch (err) {
             console.error("Failed to fetch members:", err);
             const tbody = document.getElementById('members-table-body');
@@ -1586,17 +1930,31 @@
         }
     }
 
+    function getMembersTotalPages() {
+        const totalRecords = Array.isArray(filteredMembersData) ? filteredMembersData.length : 0;
+        return Math.max(1, Math.ceil(totalRecords / membersPerPage));
+    }
+
     function displayMembersPage() {
-        const totalPages = Math.ceil(filteredMembersData.length / membersPerPage) || 1;
+        const totalRecords = Array.isArray(filteredMembersData) ? filteredMembersData.length : 0;
+        const totalPages = getMembersTotalPages();
         if (currentMemberPage > totalPages) currentMemberPage = totalPages;
         if (currentMemberPage < 1) currentMemberPage = 1;
-        
-        const pageData = filteredMembersData.slice((currentMemberPage - 1) * membersPerPage, currentMemberPage * membersPerPage);
+
+        let startIndex = (currentMemberPage - 1) * membersPerPage;
+        let pageData = filteredMembersData.slice(startIndex, startIndex + membersPerPage);
+
+        // If data exists but this page became empty (race/filter edge case), snap to last valid page.
+        if (pageData.length === 0 && totalRecords > 0 && currentMemberPage > 1) {
+            currentMemberPage = totalPages;
+            startIndex = (currentMemberPage - 1) * membersPerPage;
+            pageData = filteredMembersData.slice(startIndex, startIndex + membersPerPage);
+        }
         
         const tbody = document.getElementById('members-table-body');
         tbody.innerHTML = '';
         
-        if(pageData.length === 0) {
+        if(totalRecords === 0) {
             tbody.innerHTML = `<tr><td colspan="9" class="text-center py-5 text-muted fw-bold">No members found matching your search.</td></tr>`;
         }
 
@@ -1630,7 +1988,7 @@
     }
 
     function prevMemberPage() { if (currentMemberPage > 1) { currentMemberPage--; displayMembersPage(); } }
-    function nextMemberPage() { if (currentMemberPage < Math.ceil(filteredMembersData.length / membersPerPage)) { currentMemberPage++; displayMembersPage(); } }
+    function nextMemberPage() { if (currentMemberPage < getMembersTotalPages()) { currentMemberPage++; displayMembersPage(); } }
 
     function verifyRecentPayment(proofUrl, applicantId) {
         openProof(proofUrl, applicantId);

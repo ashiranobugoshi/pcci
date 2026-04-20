@@ -1,5 +1,11 @@
 <script>
     window.API_BASE_URL = @json(rtrim(config('services.pcci_api.base_url', 'https://pcciv-api.onrender.com/api'), '/'));
+    window.PCCI_API_BASE_URL = window.API_BASE_URL;
+
+    // Backward-compatible global for scripts using `${PCCI_API_BASE_URL}` directly.
+    if (typeof PCCI_API_BASE_URL === 'undefined') {
+        var PCCI_API_BASE_URL = window.API_BASE_URL;
+    }
 
     window.PCCI_ENV_DEBUG = {
         app_name: @json(config('app.name')),

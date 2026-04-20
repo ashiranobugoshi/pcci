@@ -1463,7 +1463,8 @@ function switchTab(tabName, shouldReload = true) {
 }
 
 // Notification Logic
-const MEMBER_NOTIFICATIONS_URL = 'http://127.0.0.1:8000/api/v1/notifications';
+const MEMBER_API_BASE = (window.PCCI_API_BASE_URL || window.API_BASE_URL || '/api').replace(/\/$/, '');
+const MEMBER_NOTIFICATIONS_URL = `${MEMBER_API_BASE}/v1/notifications`;
 const MEMBER_NOTIF_CACHE_KEY = 'member_notifications_cache_v1';
 const MEMBER_NOTIF_LAST_CHECK_KEY = 'member_notifications_last_check_date_v1';
 const MEMBER_NOTIF_READ_DATE_KEY = 'member_notifications_read_date_v1';

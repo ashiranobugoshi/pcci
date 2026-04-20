@@ -1,56 +1,63 @@
-{{-- SETTINGS TAB --}}
+{{-- ========================================== --}}
+{{-- SETTINGS TAB                               --}}
+{{-- ========================================== --}}
 <div id="section-settings" class="content-section" style="display: none;">
-    <div id="settings-main" class="fade-in">
-        <div class="titleBox"><i class="fa fa-gear"></i> Settings</div>
+    <div class="titleBox"><i class="fa fa-gear"></i> Settings</div>
 
-        <div class="custom-card" style="gap: 14px;">
-            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
-                <div>
-                    <h5 class="fw-bold mb-1">Account Options</h5>
-                    <p class="text-muted mb-0" style="font-size: 14px;">Manage your account information, security, billing, and preferences.</p>
-                </div>
-                <button class="logout-btn mt-0" onclick="logout()"><i class="fa fa-sign-out-alt me-2"></i> Log Out</button>
+    <div class="custom-card" style="gap: 14px;">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+            <div>
+                <h5 class="fw-bold mb-1">Account Options</h5>
+                <p class="text-muted mb-0" style="font-size: 14px;">Open a sector modal to update each part of your account.</p>
             </div>
+            <button class="logout-btn mt-0" onclick="logout()"><i class="fa fa-sign-out-alt me-2"></i> Log Out</button>
+        </div>
 
-            <div class="setting-box" onclick="openSetting('settings-account')">
-                <div class="setting-left"><i class="fa fa-user text-secondary"></i><span>Account</span></div>
-                <i class="fa fa-chevron-right text-muted"></i>
-            </div>
-            <div class="setting-box" onclick="openSetting('settings-security')">
-                <div class="setting-left"><i class="fa fa-lock text-secondary"></i><span>Security</span></div>
-                <i class="fa fa-chevron-right text-muted"></i>
-            </div>
-            <div class="setting-box" onclick="openSetting('settings-billing')">
-                <div class="setting-left"><i class="fa fa-credit-card text-secondary"></i><span>Membership and Billing</span></div>
-                <i class="fa fa-chevron-right text-muted"></i>
-            </div>
-            <div class="setting-box" onclick="openSetting('settings-preferences')">
-                <div class="setting-left"><i class="fa fa-sliders-h text-secondary"></i><span>Preferences</span></div>
-                <i class="fa fa-chevron-right text-muted"></i>
-            </div>
+        <div class="setting-box" onclick="openSettingsModal('account')">
+            <div class="setting-left"><i class="fa fa-user text-secondary"></i><span>Account</span></div>
+            <i class="fa fa-chevron-right text-muted"></i>
+        </div>
+        <div class="setting-box" onclick="openSettingsModal('security')">
+            <div class="setting-left"><i class="fa fa-lock text-secondary"></i><span>Security</span></div>
+            <i class="fa fa-chevron-right text-muted"></i>
+        </div>
+        <div class="setting-box" onclick="openSettingsModal('billing')">
+            <div class="setting-left"><i class="fa fa-credit-card text-secondary"></i><span>Membership and Billing</span></div>
+            <i class="fa fa-chevron-right text-muted"></i>
+        </div>
+        <div class="setting-box" onclick="openSettingsModal('preferences')">
+            <div class="setting-left"><i class="fa fa-sliders-h text-secondary"></i><span>Preferences</span></div>
+            <i class="fa fa-chevron-right text-muted"></i>
         </div>
     </div>
+</div>
 
-    <div id="settings-account" class="fade-in" style="display: none;">
-        <div class="custom-card">
-            <div class="d-flex align-items-center justify-content-between mb-3">
-                <div class="d-flex align-items-center gap-2">
-                    <button class="btn btn-link p-0 text-dark" style="text-decoration:none;" onclick="closeSetting('settings-account')"><i class="fa fa-chevron-left"></i></button>
+<div class="modal-overlay" id="settingsModalAccount" onclick="handleSettingsModalOverlay(event, 'account')">
+    <div class="modal-content-box" style="max-width: 840px; padding: 0; border-radius: 18px;">
+        <div style="padding: 18px 24px 10px; display: flex; align-items: center; gap: 14px;">
+            <button class="btn btn-link p-0 text-dark" style="font-size: 22px; text-decoration: none;" onclick="closeSettingsModal('account')"><i class="fa fa-chevron-left"></i></button>
+            <div class="d-flex align-items-center gap-3">
+                <i class="fa fa-user-gear" style="font-size: 32px; color: #111827;"></i>
+                <div>
                     <h5 class="fw-bold mb-0 text-dark">Account</h5>
+                    <p class="text-muted mb-0" style="font-size: 12px;">Manage your company profile and personal account information.</p>
                 </div>
             </div>
-
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="{{ asset('images/PCCI-Logo.svg') }}" alt="Profile" style="width: 66px; height: 66px; border-radius: 50%; object-fit: cover; border: 1px solid #e5e7eb; padding: 4px; background: #fff;">
-                    <div>
-                        <h6 class="fw-bold mb-1 text-dark">Profile Picture</h6>
-                        <small class="text-muted">PNG, JPG under 5MB</small>
+        </div>
+        <div style="padding: 18px 24px 24px;">
+            <div class="custom-card mb-4" style="border-radius: 14px; padding: 18px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="{{ asset('images/PCCI-Logo.svg') }}" alt="Profile" style="width: 66px; height: 66px; border-radius: 50%; object-fit: cover; border: 1px solid #e5e7eb; padding: 4px; background: #fff;">
+                        <div>
+                            <h6 class="fw-bold mb-1 text-dark">Profile Picture</h6>
+                            <small class="text-muted">PNG, JPG under 5MB</small>
+                        </div>
                     </div>
-                </div>
-                <div class="d-flex gap-2 flex-wrap">
-                    <button class="btn btn-light btn-sm fw-bold" style="border: 1px solid #d1d5db;" onclick="openCropModal()">Upload new photo</button>
-                    <button class="btn btn-light btn-sm fw-bold" style="border: 1px solid #d1d5db; color: #a3a3a3;">Delete</button>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-light btn-sm fw-bold" style="border: 1px solid #d1d5db;" onclick="openCropModal()">Upload new photo</button>
+                        <button class="btn btn-light btn-sm fw-bold" style="border: 1px solid #d1d5db; color: #a3a3a3;">Delete</button>
+                    </div>
                 </div>
             </div>
 
@@ -61,50 +68,57 @@
                 <div class="col-md-6">
                     <label class="text-muted fw-bold mb-1" style="font-size: 12px;">Last Name</label>
                     <div class="position-relative">
-                        <input id="settingsLastName" class="form-control" type="text" placeholder="Last name" readonly>
-                        <button type="button" class="btn btn-sm btn-outline-secondary position-absolute" onclick="toggleAccountField('settingsLastName')" style="top: 50%; right: 8px; transform: translateY(-50%); font-size: 11px; padding: 2px 8px;">Edit</button>
+                        <input id="settingsLastName" class="form-control" type="text" placeholder="Last name">
+                        <button class="btn btn-sm btn-outline-secondary position-absolute" style="top: 50%; right: 8px; transform: translateY(-50%); font-size: 11px; padding: 2px 8px;">Edit</button>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <label class="text-muted fw-bold mb-1" style="font-size: 12px;">First Name</label>
                     <div class="position-relative">
-                        <input id="settingsFirstName" class="form-control" type="text" placeholder="First name" readonly>
-                        <button type="button" class="btn btn-sm btn-outline-secondary position-absolute" onclick="toggleAccountField('settingsFirstName')" style="top: 50%; right: 8px; transform: translateY(-50%); font-size: 11px; padding: 2px 8px;">Edit</button>
+                        <input id="settingsFirstName" class="form-control" type="text" placeholder="First name">
+                        <button class="btn btn-sm btn-outline-secondary position-absolute" style="top: 50%; right: 8px; transform: translateY(-50%); font-size: 11px; padding: 2px 8px;">Edit</button>
                     </div>
                 </div>
                 <div class="col-12 mt-2">
-                    <h6 class="fw-bold mb-2 text-dark" style="font-size: 14px;">Contact</h6>
+                    <h6 class="fw-bold mb-2 text-dark" style="font-size: 14px;">Contact Email</h6>
                 </div>
                 <div class="col-md-6">
                     <label class="text-muted fw-bold mb-1" style="font-size: 12px;">Email</label>
                     <div class="position-relative">
-                        <input id="settingsEmailInput" class="form-control" type="email" placeholder="Email address" readonly>
-                        <button type="button" class="btn btn-sm btn-outline-secondary position-absolute" onclick="toggleAccountField('settingsEmailInput')" style="top: 50%; right: 8px; transform: translateY(-50%); font-size: 11px; padding: 2px 8px;">Edit</button>
+                        <input id="settingsEmailInput" class="form-control" type="email" placeholder="Email address">
+                        <button class="btn btn-sm btn-outline-secondary position-absolute" style="top: 50%; right: 8px; transform: translateY(-50%); font-size: 11px; padding: 2px 8px;">Edit</button>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <label class="text-muted fw-bold mb-1" style="font-size: 12px;">Contact Number</label>
                     <div class="position-relative">
-                        <input id="settingsPhoneInput" class="form-control" type="text" placeholder="Contact number" readonly>
-                        <button type="button" class="btn btn-sm btn-outline-secondary position-absolute" onclick="toggleAccountField('settingsPhoneInput')" style="top: 50%; right: 8px; transform: translateY(-50%); font-size: 11px; padding: 2px 8px;">Edit</button>
+                        <input id="settingsPhoneInput" class="form-control" type="text" placeholder="Contact number">
+                        <button class="btn btn-sm btn-outline-secondary position-absolute" style="top: 50%; right: 8px; transform: translateY(-50%); font-size: 11px; padding: 2px 8px;">Edit</button>
                     </div>
                 </div>
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                <button class="btn btn-light fw-bold" onclick="closeSetting('settings-account')">Cancel</button>
+                <button class="btn btn-light fw-bold" onclick="closeSettingsModal('account')">Cancel</button>
                 <button class="btn btn-danger fw-bold" onclick="saveSettingsAccount()">Save Changes</button>
             </div>
         </div>
     </div>
+</div>
 
-    <div id="settings-security" class="fade-in" style="display: none;">
-        <div class="custom-card">
-            <div class="d-flex align-items-center gap-2 mb-3">
-                <button class="btn btn-link p-0 text-dark" style="text-decoration:none;" onclick="closeSetting('settings-security')"><i class="fa fa-chevron-left"></i></button>
-                <h5 class="fw-bold mb-0 text-dark">Security</h5>
+<div class="modal-overlay" id="settingsModalSecurity" onclick="handleSettingsModalOverlay(event, 'security')">
+    <div class="modal-content-box" style="max-width: 840px; padding: 0; border-radius: 18px;">
+        <div style="padding: 18px 24px 10px; display: flex; align-items: center; gap: 14px;">
+            <button class="btn btn-link p-0 text-dark" style="font-size: 22px; text-decoration: none;" onclick="closeSettingsModal('security')"><i class="fa fa-chevron-left"></i></button>
+            <div class="d-flex align-items-center gap-3">
+                <i class="fa fa-lock" style="font-size: 32px; color: #111827;"></i>
+                <div>
+                    <h5 class="fw-bold mb-0 text-dark">Security</h5>
+                    <p class="text-muted mb-0" style="font-size: 12px;">Protect your account by managing passwords and security settings.</p>
+                </div>
             </div>
-
+        </div>
+        <div style="padding: 18px 24px 24px;">
             <div class="custom-card mb-4" style="border-radius: 14px; padding: 16px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
                 <div class="d-flex align-items-center justify-content-between gap-3">
                     <div class="d-flex align-items-center gap-3">
@@ -114,7 +128,7 @@
                             <small class="text-muted">Use a strong password for better account safety.</small>
                         </div>
                     </div>
-                    <button class="btn btn-light btn-sm fw-bold" style="border: 1px solid #d1d5db;" onclick="requestPasswordChangeOtp()">Update Password</button>
+                    <button class="btn btn-light btn-sm fw-bold" style="border: 1px solid #d1d5db;" onclick="saveSettingsSecurity()">Update Password</button>
                 </div>
             </div>
 
@@ -138,16 +152,28 @@
                     </table>
                 </div>
             </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                <button class="btn btn-light fw-bold" onclick="closeSettingsModal('security')">Cancel</button>
+                <button class="btn btn-danger fw-bold" onclick="saveSettingsSecurity()">Update Password</button>
+            </div>
         </div>
     </div>
+</div>
 
-    <div id="settings-billing" class="fade-in" style="display: none;">
-        <div class="custom-card">
-            <div class="d-flex align-items-center gap-2 mb-3">
-                <button class="btn btn-link p-0 text-dark" style="text-decoration:none;" onclick="closeSetting('settings-billing')"><i class="fa fa-chevron-left"></i></button>
-                <h5 class="fw-bold mb-0 text-dark">Membership and Billing</h5>
+<div class="modal-overlay" id="settingsModalBilling" onclick="handleSettingsModalOverlay(event, 'billing')">
+    <div class="modal-content-box" style="max-width: 900px; padding: 0; border-radius: 18px;">
+        <div style="padding: 18px 24px 10px; display: flex; align-items: center; gap: 14px;">
+            <button class="btn btn-link p-0 text-dark" style="font-size: 22px; text-decoration: none;" onclick="closeSettingsModal('billing')"><i class="fa fa-chevron-left"></i></button>
+            <div class="d-flex align-items-center gap-3">
+                <i class="fa fa-credit-card" style="font-size: 30px; color: #111827;"></i>
+                <div>
+                    <h5 class="fw-bold mb-0 text-dark">Membership and Billing</h5>
+                    <p class="text-muted mb-0" style="font-size: 12px;">Manage your Membership and Billing</p>
+                </div>
             </div>
-
+        </div>
+        <div style="padding: 18px 24px 24px;">
             <div class="custom-card mb-4" style="border-radius: 14px; padding: 18px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
                 <h6 class="fw-bold mb-3 text-dark">Membership Details</h6>
                 <div class="row g-3 align-items-center">
@@ -164,8 +190,14 @@
                         </div>
                     </div>
                     <div class="col-md-5">
-                        <div class="d-flex justify-content-between mb-2"><span class="text-muted">Expires Date</span><span class="text-dark" id="billingExpiryDate">Loading...</span></div>
-                        <div class="d-flex justify-content-between"><span class="text-muted">Membership Type</span><span class="text-dark" id="billingPlanLabel">Loading...</span></div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Expires Date</span>
+                            <span class="text-dark" id="billingExpiryDate">Loading...</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Membership Type</span>
+                            <span class="text-dark" id="billingPlanLabel">Loading...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -184,32 +216,41 @@
                             </tr>
                         </thead>
                         <tbody id="billingSessionsTable">
-                            <tr><td colspan="5" class="text-center text-muted">No billing sessions available yet.</td></tr>
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No billing sessions available yet.</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                <button class="btn btn-light fw-bold" onclick="closeSetting('settings-billing')">Close</button>
-                <button class="btn btn-danger fw-bold" onclick="switchTab('membership'); closeSetting('settings-billing');">Open Membership Plans</button>
+                <button class="btn btn-light fw-bold" onclick="closeSettingsModal('billing')">Close</button>
+                <button class="btn btn-danger fw-bold" onclick="switchTab('membership'); closeSettingsModal('billing');">Open Membership Plans</button>
             </div>
         </div>
     </div>
+</div>
 
-    <div id="settings-preferences" class="fade-in" style="display: none;">
-        <div class="custom-card">
-            <div class="d-flex align-items-center gap-2 mb-3">
-                <button class="btn btn-link p-0 text-dark" style="text-decoration:none;" onclick="closeSetting('settings-preferences')"><i class="fa fa-chevron-left"></i></button>
-                <h5 class="fw-bold mb-0 text-dark">Preferences</h5>
+<div class="modal-overlay" id="settingsModalPreferences" onclick="handleSettingsModalOverlay(event, 'preferences')">
+    <div class="modal-content-box" style="max-width: 840px; padding: 0; border-radius: 18px;">
+        <div style="padding: 18px 24px 10px; display: flex; align-items: center; gap: 14px;">
+            <button class="btn btn-link p-0 text-dark" style="font-size: 22px; text-decoration: none;" onclick="closeSettingsModal('preferences')"><i class="fa fa-chevron-left"></i></button>
+            <div class="d-flex align-items-center gap-3">
+                <i class="fa fa-gear" style="font-size: 30px; color: #111827;"></i>
+                <div>
+                    <h5 class="fw-bold mb-0 text-dark">Preferences</h5>
+                    <p class="text-muted mb-0" style="font-size: 12px;">Customize your notifications and communication preferences.</p>
+                </div>
             </div>
-
+        </div>
+        <div style="padding: 18px 24px 24px;">
             <div class="d-grid gap-4">
                 <div>
                     <div class="d-flex justify-content-between align-items-center gap-3">
                         <div>
                             <h6 class="fw-bold mb-1 text-dark">Email Notification</h6>
-                            <p class="text-muted mb-0" style="font-size: 13px;">Receive alerts about upcoming PCCI announcements</p>
+                            <p class="text-muted mb-0" style="font-size: 13px;">Receive alerts about upcoming PCCI</p>
                         </div>
                         <div class="form-check form-switch fs-4 m-0">
                             <input class="form-check-input" type="checkbox" id="emailNotificationsSwitch" checked style="cursor: pointer;">
@@ -220,7 +261,7 @@
                     <div class="d-flex justify-content-between align-items-center gap-3">
                         <div>
                             <h6 class="fw-bold mb-1 text-dark">Event Announcement</h6>
-                            <p class="text-muted mb-0" style="font-size: 13px;">Receive alerts about upcoming PCCI events</p>
+                            <p class="text-muted mb-0" style="font-size: 13px;">Receive alerts about upcoming PCCI Events</p>
                         </div>
                         <div class="form-check form-switch fs-4 m-0">
                             <input class="form-check-input" type="checkbox" id="eventAnnouncementSwitch" checked style="cursor: pointer;">
@@ -231,7 +272,7 @@
                     <div class="d-flex justify-content-between align-items-center gap-3">
                         <div>
                             <h6 class="fw-bold mb-1 text-dark">Membership Expiry Reminder</h6>
-                            <p class="text-muted mb-0" style="font-size: 13px;">Get reminders before membership expiration</p>
+                            <p class="text-muted mb-0" style="font-size: 13px;">Get reminders when your membership is about to Expire</p>
                         </div>
                         <div class="form-check form-switch fs-4 m-0">
                             <input class="form-check-input" type="checkbox" id="membershipReminderSwitch" checked style="cursor: pointer;">
@@ -242,7 +283,7 @@
                     <div class="d-flex justify-content-between align-items-center gap-3">
                         <div>
                             <h6 class="fw-bold mb-1 text-dark">Theme</h6>
-                            <p class="text-muted mb-0" style="font-size: 13px;">Customize the website appearance</p>
+                            <p class="text-muted mb-0" style="font-size: 13px;">Customize the theme of the website</p>
                         </div>
                         <div class="dropdown">
                             <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="min-width: 110px; border: 1px solid #d1d5db;">
@@ -258,7 +299,7 @@
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                <button class="btn btn-light fw-bold" onclick="closeSetting('settings-preferences')">Cancel</button>
+                <button class="btn btn-light fw-bold" onclick="closeSettingsModal('preferences')">Cancel</button>
                 <button class="btn btn-danger fw-bold" onclick="saveSettingsPreferences()">Save Preferences</button>
             </div>
         </div>
@@ -278,9 +319,18 @@
     margin: 0 !important;
 }
 
+/* Keep modal scrolling behavior but hide scrollbar UI for cleaner layout */
+#settingsModalAccount,
+#settingsModalSecurity,
+#settingsModalBilling,
+#settingsModalPreferences,
 #memberOtpModal,
 #memberResetPasswordModal,
 #cropPhotoModal,
+#settingsModalAccount .modal-content-box,
+#settingsModalSecurity .modal-content-box,
+#settingsModalBilling .modal-content-box,
+#settingsModalPreferences .modal-content-box,
 #memberOtpModal .modal-content-box,
 #memberResetPasswordModal .modal-content-box,
 #cropPhotoModal .modal-content-box {
@@ -288,9 +338,17 @@
     -ms-overflow-style: none;
 }
 
+#settingsModalAccount::-webkit-scrollbar,
+#settingsModalSecurity::-webkit-scrollbar,
+#settingsModalBilling::-webkit-scrollbar,
+#settingsModalPreferences::-webkit-scrollbar,
 #memberOtpModal::-webkit-scrollbar,
 #memberResetPasswordModal::-webkit-scrollbar,
 #cropPhotoModal::-webkit-scrollbar,
+#settingsModalAccount .modal-content-box::-webkit-scrollbar,
+#settingsModalSecurity .modal-content-box::-webkit-scrollbar,
+#settingsModalBilling .modal-content-box::-webkit-scrollbar,
+#settingsModalPreferences .modal-content-box::-webkit-scrollbar,
 #memberOtpModal .modal-content-box::-webkit-scrollbar,
 #memberResetPasswordModal .modal-content-box::-webkit-scrollbar,
 #cropPhotoModal .modal-content-box::-webkit-scrollbar {
@@ -316,6 +374,7 @@
                 <input type="text" maxlength="1" class="member-otp-box" oninput="moveMemberOtpNext(this, event)" style="width: 48px; height: 48px; font-size: 20px; font-weight: bold; text-align: center; border: 2px solid #d1d5db; border-radius: 8px; transition: all 0.2s;">
                 <input type="text" maxlength="1" class="member-otp-box" oninput="moveMemberOtpNext(this, event)" style="width: 48px; height: 48px; font-size: 20px; font-weight: bold; text-align: center; border: 2px solid #d1d5db; border-radius: 8px; transition: all 0.2s;">
             </div>
+            <small class="text-muted">Didn't receive? <button class="btn btn-link p-0 text-danger" style="text-decoration: none; font-size: 12px;">Resend code</button></small>
         </div>
     </div>
 </div>
@@ -383,56 +442,6 @@
 <input type="file" id="photoFileInput" accept="image/*" style="display: none;" onchange="handlePhotoSelect(event)">
 
 <script>
-function openSetting(sectionId) {
-    const main = document.getElementById('settings-main');
-    const section = document.getElementById(sectionId);
-    if (!main || !section) return;
-
-    main.style.display = 'none';
-    section.style.display = 'block';
-
-    const profile = window.currentProfileData || {};
-    if (sectionId === 'settings-account') populateSettingsAccountForm(profile);
-    if (sectionId === 'settings-security') renderSettingsLoginActivity(profile);
-    if (sectionId === 'settings-billing') {
-        renderBillingOverview(profile);
-        renderBillingSessions(profile);
-    }
-    if (sectionId === 'settings-preferences') {
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        const themeLabel = document.getElementById('themeLabel');
-        if (themeLabel) themeLabel.innerText = savedTheme === 'dark' ? 'Dark' : 'Light';
-    }
-}
-
-function closeSetting(sectionId) {
-    const main = document.getElementById('settings-main');
-    const section = document.getElementById(sectionId);
-    if (!main || !section) return;
-    section.style.display = 'none';
-    main.style.display = 'block';
-}
-
-function openSettingsModal(sector) {
-    const map = {
-        account: 'settings-account',
-        security: 'settings-security',
-        billing: 'settings-billing',
-        preferences: 'settings-preferences'
-    };
-    if (map[sector]) openSetting(map[sector]);
-}
-
-function closeSettingsModal(sector) {
-    const map = {
-        account: 'settings-account',
-        security: 'settings-security',
-        billing: 'settings-billing',
-        preferences: 'settings-preferences'
-    };
-    if (map[sector]) closeSetting(map[sector]);
-}
-
 function formatMemberDateTime(value) {
     if (!value) return 'N/A';
     const d = new Date(value);
@@ -539,132 +548,52 @@ function syncSettingsFromProfile(profile) {
     renderBillingSessions(profile);
 }
 
-function toggleAccountField(fieldId) {
-    const field = document.getElementById(fieldId);
-    if (!field) return;
-    field.readOnly = !field.readOnly;
-    if (!field.readOnly) {
-        field.focus();
-        field.select();
+function openSettingsModal(sector) {
+    const modal = document.getElementById(`settingsModal${sector.charAt(0).toUpperCase() + sector.slice(1)}`);
+    if (!modal) return;
+    modal.style.display = 'flex';
+
+    if (sector === 'account') {
+        populateSettingsAccountForm(window.currentProfileData || {});
+    }
+
+    if (sector === 'billing') {
+        const profile = window.currentProfileData || {};
+        renderBillingOverview(profile);
+        renderBillingSessions(profile);
+    }
+
+    if (sector === 'preferences') {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        const themeLabel = document.getElementById('themeLabel');
+        if (themeLabel) themeLabel.innerText = savedTheme === 'dark' ? 'Dark' : 'Light';
+    }
+
+    if (sector === 'security') {
+        renderSettingsLoginActivity(window.currentProfileData || {});
     }
 }
 
-async function saveSettingsAccount() {
+function closeSettingsModal(sector) {
+    const modal = document.getElementById(`settingsModal${sector.charAt(0).toUpperCase() + sector.slice(1)}`);
+    if (modal) modal.style.display = 'none';
+}
+
+function handleSettingsModalOverlay(event, sector) {
+    if (event.target.id === `settingsModal${sector.charAt(0).toUpperCase() + sector.slice(1)}`) {
+        closeSettingsModal(sector);
+    }
+}
+
+function saveSettingsAccount() {
     const firstName = document.getElementById('settingsFirstName')?.value?.trim() || '';
     const lastName = document.getElementById('settingsLastName')?.value?.trim() || '';
     const email = document.getElementById('settingsEmailInput')?.value?.trim() || '';
     const phone = document.getElementById('settingsPhoneInput')?.value?.trim() || '';
     const fullName = `${firstName} ${lastName}`.trim();
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-        alert('Session expired. Please login again.');
-        return;
-    }
-
-    const apiBase = (window.API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/$/, '');
-    const imageFile = document.getElementById('photoFileInput')?.files?.[0] || null;
-    const strictPayload = {
-        Name: fullName,
-        Email: email,
-        Image: imageFile ? imageFile.name : undefined,
-        _method: 'PUT',
-    };
-
-    const fallbackApplicationPayload = {
-        ...(window.currentProfileData || {}),
-        basic_profile: {
-            ...((window.currentProfileData || {}).basic_profile || {}),
-            email,
-            contact_number: phone,
-            telephone_no: phone,
-        },
-        official_representative: {
-            ...((window.currentProfileData || {}).official_representative || {}),
-            first_name: firstName,
-            surname: lastName,
-        }
-    };
-
-    let saved = false;
-    let lastMessage = 'Unable to update account details.';
-
-    try {
-        const putResponse = await fetch(`${apiBase}/v1/user`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(strictPayload),
-        });
-
-        if (putResponse.ok) {
-            saved = true;
-        } else {
-            const putType = putResponse.headers.get('content-type') || '';
-            const putData = putType.includes('application/json') ? await putResponse.json() : null;
-            lastMessage = putData?.message || lastMessage;
-
-            if ([404, 405].includes(putResponse.status)) {
-                const formData = new FormData();
-                formData.append('_method', 'PUT');
-                if (fullName) formData.append('Name', fullName);
-                if (email) formData.append('Email', email);
-                if (imageFile) formData.append('Image', imageFile.name);
-
-                const spoofResponse = await fetch(`${apiBase}/v1/user`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Accept': 'application/json',
-                    },
-                    body: formData,
-                });
-
-                if (spoofResponse.ok) {
-                    saved = true;
-                } else {
-                    const spoofType = spoofResponse.headers.get('content-type') || '';
-                    const spoofData = spoofType.includes('application/json') ? await spoofResponse.json() : null;
-                    lastMessage = spoofData?.message || lastMessage;
-
-                    if ([404, 405].includes(spoofResponse.status)) {
-                        const appResponse = await fetch(`${apiBase}/v1/application`, {
-                            method: 'PUT',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(fallbackApplicationPayload),
-                        });
-
-                        if (appResponse.ok) {
-                            saved = true;
-                        } else {
-                            const appType = appResponse.headers.get('content-type') || '';
-                            const appData = appType.includes('application/json') ? await appResponse.json() : null;
-                            lastMessage = appData?.message || lastMessage;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (!saved) {
-            throw new Error(lastMessage);
-        }
-    } catch (error) {
-        alert(error?.message || 'Failed to update account details. Please try again.');
-        return;
-    }
-
-    const sidebarName = document.getElementById('sidebarName');
-    const sidebarEmail = document.getElementById('sidebarEmail');
-    if (sidebarName) sidebarName.innerText = fullName || sidebarName.innerText;
-    if (sidebarEmail) sidebarEmail.innerText = email || sidebarEmail.innerText;
+    document.getElementById('sidebarName').innerText = fullName || document.getElementById('sidebarName').innerText;
+    document.getElementById('sidebarEmail').innerText = email || document.getElementById('sidebarEmail').innerText;
 
     if (window.currentProfileData) {
         window.currentProfileData = {
@@ -688,13 +617,7 @@ async function saveSettingsAccount() {
         applyProfileDataToUI(window.currentProfileData);
     }
 
-    alert('Account details updated successfully.');
-
-    closeSetting('settings-account');
-}
-
-function saveAccountSettings() {
-    saveSettingsAccount();
+    closeSettingsModal('account');
 }
 
 function saveSettingsSecurity() {
@@ -709,7 +632,7 @@ function saveSettingsPreferences() {
     localStorage.setItem('memberEventAnnouncements', eventAnnouncement ? '1' : '0');
     localStorage.setItem('memberMembershipReminder', membershipReminder ? '1' : '0');
     alert('Preferences saved locally.');
-    closeSetting('settings-preferences');
+    closeSettingsModal('preferences');
 }
 
 function setMemberTheme(theme) {
@@ -728,29 +651,75 @@ function toggleDarkMode() {
     setMemberTheme(currentTheme === 'dark' ? 'light' : 'dark');
 }
 
-function requestPasswordChangeOtp() {
-    openMemberOtpModal();
-}
+document.addEventListener('DOMContentLoaded', function () {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    const themeLabel = document.getElementById('themeLabel');
+    if (themeLabel) themeLabel.innerText = savedTheme === 'dark' ? 'Dark' : 'Light';
+    const profile = window.currentProfileData || null;
+    if (profile) syncSettingsFromProfile(profile);
+});
 
-function openMemberOtpModal() {
-    const userEmail = (window.currentProfileData?.basic_profile?.email || 'N/A');
-    const emailEl = document.getElementById('memberOtpEmail');
-    if (emailEl) emailEl.textContent = userEmail;
-    const otpModal = document.getElementById('memberOtpModal');
-    if (otpModal) {
-        otpModal.style.position = 'fixed';
-        otpModal.style.left = '0';
-        otpModal.style.top = '0';
-        otpModal.style.width = '100%';
-        otpModal.style.height = '100%';
-        otpModal.style.background = 'rgba(0,0,0,0.6)';
-        otpModal.style.display = 'flex';
+// ========================================
+// OTP & PASSWORD RESET MODAL FUNCTIONS
+// ========================================
+
+let currentMemberOtpCode = '';
+let currentMemberOtpEmail = '';
+
+async function requestPasswordChangeOtp() {
+    const token = localStorage.getItem('token');
+    const otpApiBase = (window.PCCI_API_BASE_URL || window.API_BASE_URL || '').replace(/\/$/, '');
+    if (!token) {
+        alert('Session expired. Please login again.');
+        return;
+    }
+
+    const candidateEmail = (
+        document.getElementById('settingsEmailInput')?.value
+        || window.currentProfileData?.basic_profile?.email
+        || localStorage.getItem('userEmail')
+        || ''
+    ).trim();
+
+    try {
+        const response = await fetch(`${otpApiBase}/user/confirm-password-change`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ email: candidateEmail || null })
+        });
+
+        const { data, raw } = await readMemberApiResponse(response);
+        if (!response.ok) {
+            throw new Error(data.message || raw || 'Failed to request OTP.');
+        }
+
+        const otpPayload = data?.data || {};
+        currentMemberOtpCode = otpPayload.otp ? String(otpPayload.otp) : '';
+        currentMemberOtpEmail = (otpPayload.email || candidateEmail || '').trim();
+        if (!currentMemberOtpEmail) {
+            throw new Error('OTP response missing email.');
+        }
+
+        openMemberOtpModal(currentMemberOtpEmail);
+        alert(data.message || 'OTP has been sent to your email.');
+    } catch (error) {
+        alert(error?.message || 'Failed to request OTP. Please try again.');
     }
 }
 
+function openMemberOtpModal(emailOverride = '') {
+    const userEmail = emailOverride || (window.currentProfileData?.basic_profile?.email || 'N/A');
+    document.getElementById('memberOtpEmail').textContent = userEmail;
+    positionMemberSecurityChildModal('memberOtpModal');
+    document.getElementById('memberOtpModal').style.display = 'flex';
+}
+
 function closeMemberOtpModal() {
-    const otpModal = document.getElementById('memberOtpModal');
-    if (otpModal) otpModal.style.display = 'none';
+    document.getElementById('memberOtpModal').style.display = 'none';
     document.querySelectorAll('.member-otp-box').forEach(box => box.value = '');
 }
 
@@ -759,31 +728,96 @@ function closeMemberOtpOverlay(event) {
 }
 
 function moveMemberOtpNext(input, event) {
+    input.value = String(input.value || '').replace(/\D/g, '').slice(-1);
     if (input.value.length === 1) {
         const next = input.nextElementSibling;
         if (next && next.classList.contains('member-otp-box')) {
             next.focus();
         } else {
-            setTimeout(() => {
-                closeMemberOtpModal();
-                openMemberResetPasswordModal();
-            }, 300);
+            currentMemberOtpCode = Array.from(document.querySelectorAll('.member-otp-box')).map(box => box.value).join('');
+            verifyMemberOtpAndProceed();
         }
     }
 }
 
+function pasteOtpIntoMemberBoxes(event) {
+    event.preventDefault();
+    const pasted = (event.clipboardData?.getData('text') || '').replace(/\D/g, '');
+    if (!pasted) return;
+
+    const boxes = Array.from(document.querySelectorAll('.member-otp-box'));
+    const digits = pasted.slice(0, boxes.length).split('');
+
+    boxes.forEach((box, index) => {
+        box.value = digits[index] || '';
+    });
+
+    currentMemberOtpCode = boxes.map(box => box.value).join('');
+    const firstEmpty = boxes.find(box => !box.value);
+    if (firstEmpty) {
+        firstEmpty.focus();
+    } else {
+        verifyMemberOtpAndProceed();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const otpBoxes = document.querySelectorAll('.member-otp-box');
+    otpBoxes.forEach(box => {
+        box.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && !this.value) {
+                const prev = this.previousElementSibling;
+                if (prev && prev.classList.contains('member-otp-box')) {
+                    prev.focus();
+                }
+            }
+        });
+        box.addEventListener('paste', pasteOtpIntoMemberBoxes);
+        box.addEventListener('focus', function() {
+            this.style.borderColor = '#3b82f6';
+            this.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+        });
+        box.addEventListener('blur', function() {
+            this.style.borderColor = '#d1d5db';
+            this.style.boxShadow = 'none';
+        });
+    });
+});
+
+async function verifyMemberOtpAndProceed() {
+    if (!currentMemberOtpCode || currentMemberOtpCode.length !== 6) {
+        alert('Please enter a valid 6-digit OTP.');
+        return;
+    }
+
+    closeMemberOtpModal();
+    openMemberResetPasswordModal();
+}
+
 function openMemberResetPasswordModal() {
-    const modal = document.getElementById('memberResetPasswordModal');
-    if (modal) modal.style.display = 'flex';
+    positionMemberSecurityChildModal('memberResetPasswordModal');
+    document.getElementById('memberResetPasswordModal').style.display = 'flex';
+}
+
+function positionMemberSecurityChildModal(modalId) {
+    const modal = document.getElementById(modalId);
+    const securityContainer = document.querySelector('#settingsModalSecurity .modal-content-box');
+    if (!modal || !securityContainer) return;
+
+    const rect = securityContainer.getBoundingClientRect();
+
+    modal.style.position = 'fixed';
+    modal.style.left = `${rect.left}px`;
+    modal.style.top = `${rect.top}px`;
+    modal.style.width = `${rect.width}px`;
+    modal.style.height = `${rect.height}px`;
+    modal.style.background = 'rgba(0, 0, 0, 0.45)';
 }
 
 function closeMemberResetPasswordModal() {
-    const modal = document.getElementById('memberResetPasswordModal');
-    if (modal) modal.style.display = 'none';
-    const newPw = document.getElementById('memberNewPasswordInput');
-    const rePw = document.getElementById('memberRePasswordInput');
-    if (newPw) newPw.value = '';
-    if (rePw) rePw.value = '';
+    document.getElementById('memberResetPasswordModal').style.display = 'none';
+    document.getElementById('memberNewPasswordInput').value = '';
+    document.getElementById('memberRePasswordInput').value = '';
     validateMemberPassword();
 }
 
@@ -793,27 +827,48 @@ function closeMemberResetPasswordOverlay(event) {
 
 function toggleMemberPasswordView(inputId) {
     const input = document.getElementById(inputId);
-    if (!input) return;
     input.type = input.type === 'password' ? 'text' : 'password';
 }
 
 function validateMemberPassword() {
-    const pw = document.getElementById('memberNewPasswordInput')?.value || '';
+    const pw = document.getElementById('memberNewPasswordInput').value;
     const reqLower = document.getElementById('memberReqLower');
     const reqLen = document.getElementById('memberReqLen');
     const reqUpper = document.getElementById('memberReqUpper');
     const reqNum = document.getElementById('memberReqNum');
     const submitBtn = document.getElementById('memberResetPwSubmitBtn');
-    if (!reqLower || !reqLen || !reqUpper || !reqNum || !submitBtn) return;
 
     let validCount = 0;
 
-    if (/[a-z]/.test(pw)) { reqLower.style.color = '#22c55e'; validCount++; } else { reqLower.style.color = '#9ca3af'; }
-    if (pw.length >= 8) { reqLen.style.color = '#22c55e'; validCount++; } else { reqLen.style.color = '#9ca3af'; }
-    if (/[A-Z]/.test(pw)) { reqUpper.style.color = '#22c55e'; validCount++; } else { reqUpper.style.color = '#9ca3af'; }
-    if (/[0-9]/.test(pw)) { reqNum.style.color = '#22c55e'; validCount++; } else { reqNum.style.color = '#9ca3af'; }
+    if(/[a-z]/.test(pw)) { 
+        reqLower.style.color = '#22c55e';
+        validCount++; 
+    } else { 
+        reqLower.style.color = '#9ca3af';
+    }
 
-    if (validCount === 4) {
+    if(pw.length >= 8) { 
+        reqLen.style.color = '#22c55e';
+        validCount++; 
+    } else { 
+        reqLen.style.color = '#9ca3af';
+    }
+
+    if(/[A-Z]/.test(pw)) { 
+        reqUpper.style.color = '#22c55e';
+        validCount++; 
+    } else { 
+        reqUpper.style.color = '#9ca3af';
+    }
+
+    if(/[0-9]/.test(pw)) { 
+        reqNum.style.color = '#22c55e';
+        validCount++; 
+    } else { 
+        reqNum.style.color = '#9ca3af';
+    }
+
+    if(validCount === 4) {
         submitBtn.style.opacity = '1';
         submitBtn.style.cursor = 'pointer';
     } else {
@@ -822,13 +877,20 @@ function validateMemberPassword() {
     }
 }
 
-function submitMemberNewPassword() {
+async function submitMemberNewPassword() {
     const pw1 = document.getElementById('memberNewPasswordInput')?.value || '';
     const pw2 = document.getElementById('memberRePasswordInput')?.value || '';
     const btn = document.getElementById('memberResetPwSubmitBtn');
+    const token = localStorage.getItem('token');
+    const otpApiBase = (window.PCCI_API_BASE_URL || window.API_BASE_URL || '').replace(/\/$/, '');
 
     if (btn && btn.style.opacity === '0.5') {
         alert('Please ensure your password meets all security requirements.');
+        return;
+    }
+
+    if (!token) {
+        alert('Session expired. Please login again.');
         return;
     }
 
@@ -837,33 +899,89 @@ function submitMemberNewPassword() {
         return;
     }
 
-    alert('Password successfully reset!');
-    closeMemberResetPasswordModal();
+    if (!currentMemberOtpCode || currentMemberOtpCode.length !== 6) {
+        alert('OTP is missing or invalid. Please request and verify OTP again.');
+        return;
+    }
+
+    try {
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Resetting...';
+        }
+
+        const response = await fetch(`${otpApiBase}/user/request-password-change`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                otp: currentMemberOtpCode,
+                email: currentMemberOtpEmail || null,
+                new_password: pw1,
+                new_password_confirmation: pw2,
+                password: pw1,
+                password_confirmation: pw2,
+            })
+        });
+
+        const { data, raw } = await readMemberApiResponse(response);
+        if (!response.ok) {
+            throw new Error(data.message || raw || 'Failed to reset password.');
+        }
+
+        alert(data.message || 'Password successfully reset!');
+        currentMemberOtpCode = '';
+        closeMemberResetPasswordModal();
+    } catch (error) {
+        alert(error?.message || 'Failed to reset password. Please try again.');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = 'Reset Password';
+        }
+    }
 }
+
+async function readMemberApiResponse(response) {
+    const contentType = (response.headers.get('content-type') || '').toLowerCase();
+    if (contentType.includes('application/json')) {
+        return { data: await response.json().catch(() => ({})), raw: '' };
+    }
+
+    return { data: {}, raw: await response.text().catch(() => '') };
+}
+
+// ========================================
+// CROP PHOTO MODAL FUNCTIONS
+// ========================================
 
 let cropImageData = null;
 let cropImageScale = 1;
 
 function openCropModal() {
-    const fileInput = document.getElementById('photoFileInput');
-    if (fileInput) fileInput.click();
+    document.getElementById('photoFileInput').click();
 }
 
 function closeCropModal() {
-    const cropModal = document.getElementById('cropPhotoModal');
-    if (cropModal) cropModal.style.display = 'none';
+    document.getElementById('cropPhotoModal').style.display = 'none';
     cropImageData = null;
     cropImageScale = 1;
 }
 
 function handleCropModalOverlay(event) {
-    if (event.target.id === 'cropPhotoModal') closeCropModal();
+    if (event.target.id === 'cropPhotoModal') {
+        closeCropModal();
+    }
 }
 
 function handlePhotoSelect(event) {
     const file = event.target.files[0];
     if (!file) return;
 
+    // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
         alert('File size exceeds 5MB. Please select a smaller image.');
         return;
@@ -878,24 +996,23 @@ function handlePhotoSelect(event) {
     reader.onload = function (e) {
         cropImageData = e.target.result;
         const cropImg = document.getElementById('cropImagePreview');
-        if (cropImg) cropImg.src = cropImageData;
-
-        const cropModal = document.getElementById('cropPhotoModal');
-        if (cropModal) cropModal.style.display = 'flex';
-
-        const zoom = document.getElementById('cropZoom');
-        if (zoom) {
-            zoom.oninput = function () { updateCropZoom(this.value); };
-        }
+        cropImg.src = cropImageData;
+        
+        // Show crop modal
+        document.getElementById('cropPhotoModal').style.display = 'flex';
+        
+        // Setup zoom
+        document.getElementById('cropZoom').addEventListener('input', function() {
+            updateCropZoom(this.value);
+        });
     };
     reader.readAsDataURL(file);
 }
 
 function updateCropZoom(value) {
     const cropImg = document.getElementById('cropImagePreview');
-    if (!cropImg) return;
     const zoomPercent = value / 100;
-    cropImageScale = 0.8 + (zoomPercent * 1.2);
+    cropImageScale = 0.8 + (zoomPercent * 1.2); // Range from 0.8x to 2x
     cropImg.style.transform = `scale(${cropImageScale})`;
     cropImg.style.transformOrigin = 'center';
 }
@@ -906,64 +1023,48 @@ function uploadCroppedPhoto() {
         return;
     }
 
+    // Get the crop image element
+    const cropImg = document.getElementById('cropImagePreview');
+    
+    // Create canvas for circular crop
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const size = 400;
+    
     canvas.width = size;
     canvas.height = size;
 
+    // Create image
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.src = cropImageData;
 
-    img.onload = function () {
+    img.onload = function() {
+        // Draw circular crop
         ctx.clearRect(0, 0, size, size);
+        
+        // Create circular clipping path
         ctx.beginPath();
         ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
         ctx.clip();
-
+        
+        // Draw image with scale
         const scaledWidth = img.width * cropImageScale;
         const scaledHeight = img.height * cropImageScale;
         const x = (size - scaledWidth) / 2;
         const y = (size - scaledHeight) / 2;
-
+        
         ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-
+        
+        // Update profile picture
         const profileImg = document.querySelector('img[alt="Profile"]');
-        if (profileImg) profileImg.src = canvas.toDataURL('image/jpeg', 0.9);
-
+        if (profileImg) {
+            profileImg.src = canvas.toDataURL('image/jpeg', 0.9);
+        }
+        
         alert('Profile photo updated successfully!');
         closeCropModal();
-
-        const fileInput = document.getElementById('photoFileInput');
-        if (fileInput) fileInput.value = '';
+        document.getElementById('photoFileInput').value = '';
     };
 }
-
-document.addEventListener('DOMContentLoaded', function () {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    const themeLabel = document.getElementById('themeLabel');
-    if (themeLabel) themeLabel.innerText = savedTheme === 'dark' ? 'Dark' : 'Light';
-
-    const profile = window.currentProfileData || null;
-    if (profile) syncSettingsFromProfile(profile);
-
-    const otpBoxes = document.querySelectorAll('.member-otp-box');
-    otpBoxes.forEach(box => {
-        box.addEventListener('keydown', function (e) {
-            if (e.key === 'Backspace' && !this.value) {
-                const prev = this.previousElementSibling;
-                if (prev && prev.classList.contains('member-otp-box')) prev.focus();
-            }
-        });
-        box.addEventListener('focus', function () {
-            this.style.borderColor = '#3b82f6';
-            this.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-        });
-        box.addEventListener('blur', function () {
-            this.style.borderColor = '#d1d5db';
-            this.style.boxShadow = 'none';
-        });
-    });
-});
 </script>

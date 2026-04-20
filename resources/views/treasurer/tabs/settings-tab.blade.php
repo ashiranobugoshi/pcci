@@ -63,15 +63,16 @@
         <div class="new-acc-card">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div class="d-flex align-items-center gap-3">
-                    <img src="{{ asset('images/PCCI-Logo.svg') }}" class="new-acc-avatar" alt="Profile">
+                    <img src="{{ asset('images/PCCI-Logo.svg') }}" id="settingsAccountAvatar" class="new-acc-avatar" alt="Profile">
                     <div>
                         <h6 class="fw-bold text-dark mb-0" style="font-size: 16px;">Profile Picture</h6>
                         <span class="text-muted" style="font-size: 12px; text-transform: uppercase;">PNG, JPEG under 15MB</span>
                     </div>
                 </div>
                 <div class="d-flex gap-2">
-                    <button class="new-acc-btn-upload shadow-sm" onclick="openCropModal()">Upload new photo</button>
+                    <button type="button" class="new-acc-btn-upload shadow-sm" onclick="triggerAccountImagePicker()">Upload new photo</button>
                     <button class="new-acc-btn-delete shadow-sm">Delete</button>
+                    <input type="file" id="settingsImageInput" accept="image/*" style="display:none;" onchange="handleAccountImageChange(event)">
                 </div>
             </div>
 

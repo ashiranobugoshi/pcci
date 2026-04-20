@@ -731,9 +731,9 @@ body.dark-mode .back-to-top-btn:hover {
 {{-- SIDEBAR --}}
 <div class="sidebar">
     <div class="sidebar-profile">
-        <img src="{{ asset('images/PCCI-Logo.svg') }}" alt="Profile">
-        <h5 id="sidebarName">Jesus Versula</h5>
-        <small id="sidebarEmail">jesus.versula@pcci.com</small>
+        <img src="{{ asset('images/PCCI-Logo.svg') }}" id="sidebarAvatar" alt="Profile">
+        <h5 id="sidebarName">Loading...</h5>
+        <small id="sidebarEmail">Loading...</small>
     </div>
 
     <ul class="sidebar-menu text-start">
