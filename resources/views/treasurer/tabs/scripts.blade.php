@@ -1476,13 +1476,9 @@
     // API Fetches
     async function fetchApplicants() {
         try {
-            const headers = { 
-                'Accept': 'application/json',
-                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-            };
             const [res1, res2] = await Promise.all([
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, { headers }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, { headers })
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, { headers: { 'Authorization': `Bearer ${token}` } })
             ]);
 
             let combinedData = [];
@@ -1559,19 +1555,8 @@
     // 🌟 HERE IS THE MEMBER FETCH YOU ASKED FOR
     async function fetchMembers() {
         try {
-            const response = await fetch(`${window.API_BASE_URL}/v1/members`, { 
-                headers: { 
-                    'Accept': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-                } 
-            });
+            const response = await fetch('https://pcci-laravel-api.onrender.com/api/v1/members', { headers: { 'Authorization': `Bearer ${token}` } });
             if (!checkAuth(response)) return;
-            const contentType = response.headers.get('content-type') || '';
-            if (!contentType.includes('application/json')) {
-                const html = await response.text();
-                throw new Error(`Expected JSON from /v1/members but received HTML: ${html.slice(0, 120)}`);
-            }
-
             const data = await response.json();
             if (response.ok && data.data) {
                 allMembersData = data.data; 
@@ -1659,19 +1644,8 @@
 
     async function fetchRecentPayments() {
         try {
-            const response = await fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, {
-                headers: {
-                    'Accept': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-                }
-            });
+            const response = await fetch('https://pcci-laravel-api.onrender.com/api/v1/applicants?status=approved', { headers: { 'Authorization': `Bearer ${token}` } });
             if (!checkAuth(response)) return;
-            const contentType = response.headers.get('content-type') || '';
-            if (!contentType.includes('application/json')) {
-                const html = await response.text();
-                throw new Error(`Expected JSON from /v1/applicants?status=approved but received HTML: ${html.slice(0, 120)}`);
-            }
-
             const data = await response.json();
             if (response.ok && data.data) {
                 const tbody = document.getElementById('recent-payments-table-body');
@@ -1705,15 +1679,19 @@
 
     async function fetchTransactions() {
         try {
-            const headers = { 
-                'Accept': 'application/json',
-                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-            };
             const [paidRes, approvedRes, failedRes, cancelledRes] = await Promise.all([
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, { headers }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, { headers }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=failed`, { headers }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=cancelled`, { headers })
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+                }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+                }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=failed`, {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+                }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=cancelled`, {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+                })
             ]);
 
             if (!checkAuth(paidRes) || !checkAuth(approvedRes) || !checkAuth(failedRes) || !checkAuth(cancelledRes)) return;
