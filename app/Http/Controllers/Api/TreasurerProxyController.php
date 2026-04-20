@@ -12,6 +12,11 @@ use Illuminate\Support\Facades\Mail;
 
 class TreasurerProxyController extends Controller
 {
+    private function getApiBaseUrl(): string
+    {
+        return rtrim(config('services.pcci_api.base_url', 'https://pcciv-api.onrender.com/api'), '/');
+    }
+
     public function confirmPasswordChange(Request $request)
     {
         $adminToken = config('services.pcci_api.admin_token');
@@ -24,7 +29,7 @@ class TreasurerProxyController extends Controller
             ], 401);
         }
 
-        $apiBase = rtrim(config('services.pcci_api.base_url', 'https://pcci-laravel-api.onrender.com/api'), '/');
+        $apiBase = $this->getApiBaseUrl();
         $email = $request->input('email');
 
         if (!$email && $authToken) {
@@ -177,7 +182,7 @@ class TreasurerProxyController extends Controller
             ], 500);
         }
 
-        $apiBase = config('services.pcci_api.base_url', 'https://pcci-laravel-api.onrender.com/api');
+        $apiBase = $this->getApiBaseUrl();
 
         $membershipTypeId = $request->input('membership_type_id');
         $membershipType = $request->input('membership_type');
@@ -211,7 +216,7 @@ class TreasurerProxyController extends Controller
             ], 500);
         }
 
-        $apiBase = config('services.pcci_api.base_url', 'https://pcci-laravel-api.onrender.com/api');
+        $apiBase = $this->getApiBaseUrl();
 
         $payload = array_filter([
             'status' => $request->input('status'),
@@ -244,7 +249,7 @@ class TreasurerProxyController extends Controller
             ], 500);
         }
 
-        $apiBase = config('services.pcci_api.base_url', 'https://pcci-laravel-api.onrender.com/api');
+        $apiBase = $this->getApiBaseUrl();
 
         $response = Http::withHeaders([
             'Accept' => 'application/json',

@@ -1,5 +1,13 @@
 <script>
     const token = localStorage.getItem('token');
+    const apiBaseUrl = (window.API_BASE_URL || '').replace(/\/$/, '');
+    const apiOrigin = (() => {
+        try {
+            return apiBaseUrl ? new URL(apiBaseUrl).origin : window.location.origin;
+        } catch (_) {
+            return window.location.origin;
+        }
+    })();
     
     // Global data
     let allMembersData = []; 
@@ -1162,7 +1170,7 @@
         const img = document.getElementById('simpleModalImage');
         document.getElementById('simpleModalSpinner').style.display = 'flex';
         img.style.display = 'none';
-        img.src = url.startsWith('http') ? url : `https://pcci-laravel-api.onrender.com/${url.replace(/^\/+/, '')}`;
+        img.src = url.startsWith('http') ? url : `${apiOrigin}/${url.replace(/^\/+/, '')}`;
         document.getElementById('simpleProofModal').style.display = 'flex';
     }
     function onSimpleImageLoad() { document.getElementById('simpleModalImage').style.display = 'block'; document.getElementById('simpleModalSpinner').style.display = 'none'; }
@@ -1175,7 +1183,7 @@
         const img = document.getElementById('modalImage');
         document.getElementById('modalSpinner').style.display = 'flex';
         img.style.display = 'none';
-        img.src = url.startsWith('http') ? url : `https://pcci-laravel-api.onrender.com/${url.replace(/^\/+/, '')}`;
+        img.src = url.startsWith('http') ? url : `${apiOrigin}/${url.replace(/^\/+/, '')}`;
         selectType(1); 
         document.getElementById('proofModal').style.display = 'flex';
     }
@@ -1555,7 +1563,7 @@
     // 🌟 HERE IS THE MEMBER FETCH YOU ASKED FOR
     async function fetchMembers() {
         try {
-            const response = await fetch('https://pcci-laravel-api.onrender.com/api/v1/members', { headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await fetch(`${window.API_BASE_URL}/v1/members`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!checkAuth(response)) return;
             const data = await response.json();
             if (response.ok && data.data) {
@@ -1644,7 +1652,7 @@
 
     async function fetchRecentPayments() {
         try {
-            const response = await fetch('https://pcci-laravel-api.onrender.com/api/v1/applicants?status=approved', { headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await fetch(`${apiBaseUrl}/v1/applicants?status=approved`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!checkAuth(response)) return;
             const data = await response.json();
             if (response.ok && data.data) {
