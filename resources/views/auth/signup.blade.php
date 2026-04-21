@@ -225,6 +225,172 @@
             align-self: flex-end;
         }
     }
+
+    .signup-gate-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        background: rgba(17, 20, 30, 0.48);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .signup-gate-card {
+        width: 100%;
+        max-width: 430px;
+        background: #2a2e3e;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        box-shadow: 0 18px 55px rgba(0, 0, 0, 0.45);
+        padding: 28px 28px 24px;
+        text-align: center;
+        position: relative;
+    }
+
+    .signup-gate-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        background: transparent;
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+        transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .signup-gate-close:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .signup-gate-icon {
+        width: 70px;
+        height: 70px;
+        margin: 0 auto 16px;
+        border-radius: 999px;
+        border: 2px solid rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-size: 30px;
+    }
+
+    .signup-gate-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 2rem;
+        margin-bottom: 16px;
+        line-height: 1.2;
+    }
+
+    .signup-gate-input {
+        width: 100%;
+        background: #232737;
+        border: 1px solid #3a3f50;
+        color: #fff;
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 1rem;
+        margin-bottom: 14px;
+    }
+
+    .signup-gate-input:focus {
+        outline: none;
+        border-color: #4e598c;
+        box-shadow: 0 0 0 0.2rem rgba(78, 89, 140, 0.25);
+    }
+
+    .signup-gate-desc {
+        color: #d1d5db;
+        font-size: 0.95rem;
+        line-height: 1.45;
+        margin-bottom: 16px;
+    }
+
+    .signup-gate-error {
+        display: none;
+        background: rgba(227, 38, 54, 0.18);
+        border: 1px solid rgba(227, 38, 54, 0.75);
+        color: #ffc3c7;
+        border-radius: 8px;
+        padding: 8px 10px;
+        margin-bottom: 12px;
+        font-size: 0.84rem;
+    }
+
+    .signup-gate-line {
+        width: 80px;
+        height: 3px;
+        border-radius: 2px;
+        margin: 18px auto 0;
+        background: rgba(255, 255, 255, 0.22);
+    }
+
+    .signup-gate-confirm {
+        min-width: 160px;
+        margin: 10px auto 0;
+        display: block;
+    }
+
+    .signup-gate-otp-wrap {
+        display: none;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .signup-gate-otp-wrap.active {
+        display: flex;
+    }
+
+    .signup-gate-otp-input {
+        flex: 0 0 132px;
+        background: #232737;
+        border: 1px solid #3a3f50;
+        color: #fff;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 1.1rem;
+        letter-spacing: 2px;
+        text-align: center;
+    }
+
+    .signup-gate-otp-input:focus {
+        outline: none;
+        border-color: #4e598c;
+        box-shadow: 0 0 0 0.2rem rgba(78, 89, 140, 0.25);
+    }
+
+    .signup-gate-otp-help {
+        color: #9ca3af;
+        font-size: 0.74rem;
+        line-height: 1.35;
+        text-align: left;
+        margin: 0;
+    }
+
+    @media (max-width: 575.98px) {
+        .signup-gate-card {
+            padding: 24px 18px 20px;
+        }
+
+        .signup-gate-title {
+            font-size: 1.65rem;
+        }
+    }
 </style>
 
 <div class="registration-container">
@@ -523,7 +689,134 @@
     </div>
 </div>
 
+<div id="signupGateOverlay" class="signup-gate-overlay">
+    <div class="signup-gate-card">
+        <button type="button" class="signup-gate-close" aria-label="Close" onclick="goToLoginFromSignupGate()">&times;</button>
+        <div class="signup-gate-icon">
+            <i class="bi bi-envelope"></i>
+        </div>
+        <h2 class="signup-gate-title">Verify your email address</h2>
+        <input id="signupGateEmail" type="email" class="signup-gate-input" placeholder="Enter your email address">
+        <p class="signup-gate-desc mb-0">
+            Ready to begin your PCCI journey? Just enter your email, and we'll send a one-time code to verify it's you.
+        </p>
+        <div id="signupGateOtpWrap" class="signup-gate-otp-wrap">
+            <input id="signupGateOtp" type="text" class="signup-gate-otp-input" placeholder="------" maxlength="6" inputmode="numeric">
+            <p class="signup-gate-otp-help">Enter the one-time code sent to your email to verify your email.</p>
+        </div>
+        <div id="signupGateError" class="signup-gate-error">Please enter a valid email address.</div>
+        <button type="button" id="signupGateActionBtn" class="btn btn-next signup-gate-confirm" onclick="handleSignupGateAction()">Verify Email</button>
+    </div>
+</div>
+
 <script>
+    let signupGateStep = 'email';
+
+    function goToLoginFromSignupGate() {
+        window.location.href = "{{ route('login') }}";
+    }
+
+    function isValidGateEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
+    }
+
+    function openOtpStep(emailValue) {
+        const emailEl = document.getElementById('signupGateEmail');
+        const otpWrapEl = document.getElementById('signupGateOtpWrap');
+        const otpEl = document.getElementById('signupGateOtp');
+        const descEl = document.querySelector('.signup-gate-desc');
+        const actionBtn = document.getElementById('signupGateActionBtn');
+        const lineEl = document.getElementById('signupGateLine');
+
+        signupGateStep = 'otp';
+        if (emailEl) {
+            emailEl.readOnly = true;
+            emailEl.style.opacity = '0.75';
+        }
+        if (descEl) {
+            descEl.textContent = `OTP sent to ${emailValue}. Enter the code below to continue.`;
+        }
+        if (otpWrapEl) otpWrapEl.classList.add('active');
+        if (lineEl) lineEl.style.margin = '12px auto 14px';
+        if (actionBtn) actionBtn.textContent = 'Confirm';
+        otpEl?.focus();
+    }
+
+    function unlockSignupForm(emailValue) {
+        const signupEmailEl = document.querySelector('input[name="email"]');
+        if (signupEmailEl) signupEmailEl.value = emailValue;
+
+        const overlay = document.getElementById('signupGateOverlay');
+        if (overlay) overlay.style.display = 'none';
+    }
+
+    function handleSignupGateAction() {
+        const gateEmailEl = document.getElementById('signupGateEmail');
+        const gateOtpEl = document.getElementById('signupGateOtp');
+        const errorEl = document.getElementById('signupGateError');
+        const emailValue = (gateEmailEl?.value || '').trim();
+
+        if (!isValidGateEmail(emailValue)) {
+            if (errorEl) {
+                errorEl.textContent = 'Please enter a valid email address.';
+                errorEl.style.display = 'block';
+            }
+            gateEmailEl?.focus();
+            return;
+        }
+
+        if (signupGateStep === 'email') {
+            if (errorEl) errorEl.style.display = 'none';
+            openOtpStep(emailValue);
+            return;
+        }
+
+        const otpValue = (gateOtpEl?.value || '').replace(/\D/g, '');
+        if (!/^\d{6}$/.test(otpValue)) {
+            if (errorEl) {
+                errorEl.textContent = 'Please enter a valid 6-digit OTP code.';
+                errorEl.style.display = 'block';
+            }
+            gateOtpEl?.focus();
+            return;
+        }
+
+        if (errorEl) errorEl.style.display = 'none';
+        unlockSignupForm(emailValue);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const gateEmailEl = document.getElementById('signupGateEmail');
+        const gateOtpEl = document.getElementById('signupGateOtp');
+        const errorEl = document.getElementById('signupGateError');
+
+        if (gateEmailEl) {
+            gateEmailEl.focus();
+            gateEmailEl.addEventListener('input', function () {
+                if (errorEl) errorEl.style.display = 'none';
+            });
+            gateEmailEl.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    handleSignupGateAction();
+                }
+            });
+        }
+
+        if (gateOtpEl) {
+            gateOtpEl.addEventListener('input', function () {
+                this.value = this.value.replace(/\D/g, '').slice(0, 6);
+                if (errorEl) errorEl.style.display = 'none';
+            });
+            gateOtpEl.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    handleSignupGateAction();
+                }
+            });
+        }
+    });
+
     function validateAndNext(currentStepId, nextStepId) {
         const currentStepContainer = document.getElementById('step-' + currentStepId);
         const requiredFields = currentStepContainer.querySelectorAll('[required]');
