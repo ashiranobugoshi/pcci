@@ -477,8 +477,19 @@
                                 <label class="form-label-custom">DTI/SEC Business Registration Copy</label>
                                 <input type="file" name="dti_sec_registration" class="form-control form-control-dark" accept="image/*,.pdf">
                             </div>
-                            <div class="mb-5">
-                                <label class="form-label-custom">Proof of Payment <span class="text-danger">*</span></label>
+
+                            <div class="mb-5" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 10px; padding: 16px 18px;">
+                                <h6 class="mb-1" style="font-size: 1.1rem; font-weight: 700; color: #f8fafc;">Annual Membership Fee</h6>
+                                <p class="mb-1" style="font-size: 0.9rem; font-style: italic; font-weight: 600; color: #e5e7eb;">To be deposited to:</p>
+                                <p class="mb-0" style="font-size: 0.92rem; color: #e5e7eb; line-height: 1.5;">
+                                    ChinaBank<br>
+                                    Account Name: PCCI Valenzuela<br>
+                                    Account No.: 1054 0000 5989
+                                </p>
+                                <p class="mt-2 mb-3" style="font-size: 0.78rem; color: #cbd5e1;">
+                                    Upload 1 supported file: PDF, document or image. Max 100 MB.
+                                </p>
+                                <label class="form-label-custom mb-2">Proof of Payment <span class="text-danger">*</span></label>
                                 <input type="file" name="proof_of_payment" class="form-control form-control-dark" accept="image/*,.pdf" required>
                             </div>
 
