@@ -238,6 +238,54 @@ class TreasurerProxyController extends Controller
         ], 200);
     }
 
+    public function changeInfo(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+            'first_name' => ['nullable', 'string', 'max:255'],
+            'last_name' => ['nullable', 'string', 'max:255'],
+            'contact' => ['nullable', 'string', 'max:50'],
+            'image' => ['nullable', 'file', 'image', 'max:15360'],
+        ]);
+
+        $adminToken = config('services.pcci_api.admin_token');
+        $requestToken = $request->bearerToken();
+        $authToken = $requestToken ?: $adminToken;
+
+        if (!$authToken) {
+            return response()->json([
+                'message' => 'API token missing. Please login again or configure PCCI_API_ADMIN_TOKEN.'
+            ], 401);
+        }
+
+        $apiBase = $this->getApiBaseUrl();
+        $remoteUrl = "{$apiBase}/v1/user/change-info";
+
+        $http = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $authToken,
+        ]);
+
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $http = $http->attach(
+                'image',
+                file_get_contents($file->getRealPath()),
+                $file->getClientOriginalName()
+            );
+        }
+
+        $response = $http->post($remoteUrl, [
+            '_method' => 'PUT',
+            'email' => $request->input('email'),
+            'contact' => $request->input('contact'),
+            'first_name' => $request->input('first_name'),
+            'last_name' => $request->input('last_name'),
+        ]);
+
+        return response()->json($response->json(), $response->status());
+    }
+
     public function processPayment(Request $request, $id)
     {
         $adminToken = config('services.pcci_api.admin_token');

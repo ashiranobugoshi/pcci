@@ -53,6 +53,8 @@ Route::post('/user/request-password-change', [TreasurerProxyController::class, '
 
 Route::prefix('v1')->group(function () {
 
+    Route::match(['post', 'put'], '/user/change-info', [TreasurerProxyController::class, 'changeInfo']);
+
     // Leadership Route
     Route::get('/leadership', [LeadershipController::class, 'index']);
 
