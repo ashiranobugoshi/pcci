@@ -55,10 +55,6 @@ Route::get('/treasurer-dashboard', function () {
     return view('treasurer.dashboard');
 })->name('treasurer.dashboard');
 
-// Treasurer proxy — process payment using admin token server-side
-Route::post('/treasurer/process-payment/{id}', [\App\Http\Controllers\Api\TreasurerProxyController::class, 'processPayment'])
-    ->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
-
 Route::put('/treasurer/transactions/{id}', [\App\Http\Controllers\Api\TreasurerProxyController::class, 'updateTransaction'])
     ->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
 

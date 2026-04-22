@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class TreasurerProxyController extends Controller
 {
@@ -55,16 +56,6 @@ class TreasurerProxyController extends Controller
         }
 
         $normalizedEmail = strtolower($email);
-        $cooldownKey = 'treasurer_password_otp_cooldown_' . $normalizedEmail;
-        if (Cache::has($cooldownKey)) {
-            return response()->json([
-                'message' => 'Please wait 30 seconds before requesting another OTP.',
-                'data' => [
-                    'email' => $email,
-                    'expires_in_minutes' => 10,
-                ],
-            ], 429);
-        }
 
         $otp = (string) random_int(100000, 999999);
         Cache::put('treasurer_password_otp_' . $normalizedEmail, $otp, now()->addMinutes(10));
@@ -94,7 +85,6 @@ class TreasurerProxyController extends Controller
         if ($authToken) {
             Cache::put('treasurer_password_email_token_' . sha1($authToken), $normalizedEmail, now()->addMinutes(10));
         }
-        Cache::put($cooldownKey, true, now()->addSeconds(30));
 
         return response()->json([
             'message' => 'OTP has been sent to your email.',
@@ -286,7 +276,7 @@ class TreasurerProxyController extends Controller
         return response()->json($response->json(), $response->status());
     }
 
-    public function processPayment(Request $request, $id)
+    private function syncApplicantPayment(Request $request, $id)
     {
         $adminToken = config('services.pcci_api.admin_token');
         $requestToken = $request->bearerToken();
@@ -303,11 +293,7 @@ class TreasurerProxyController extends Controller
         $apiBase = $this->getApiBaseUrl();
 
         $membershipTypeId = $request->input('membership_type_id');
-        $membershipType = $request->input('membership_type');
-
-        if (!$membershipType) {
-            $membershipType = 'Regular';
-        }
+        $membershipType = $request->input('membership_type') ?: 'Regular';
 
         $response = Http::withHeaders([
             'Accept' => 'application/json',
@@ -320,6 +306,17 @@ class TreasurerProxyController extends Controller
         ]);
 
         return response()->json($response->json(), $response->status());
+    }
+
+    public function confirmApplicantPayment(Request $request)
+    {
+        $request->validate([
+            'applicant_id' => ['required', 'integer'],
+            'membership_type_id' => ['nullable', 'integer'],
+            'membership_type' => ['nullable', 'string'],
+        ]);
+
+        return $this->syncApplicantPayment($request, (int) $request->input('applicant_id'));
     }
 
     public function updateTransaction(Request $request, $id)

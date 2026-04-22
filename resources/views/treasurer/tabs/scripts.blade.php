@@ -1803,7 +1803,7 @@
             return dateB - dateA;
         });
 
-        const pendingCount = filteredApplicantsData.filter(a => String(a.status).toLowerCase() !== 'paid').length;
+        const pendingCount = filteredApplicantsData.filter(a => String(a.status).toLowerCase() !== 'approved').length;
         const pendingCountEl = document.getElementById('report-pending-count');
         const pendingBadgeEl = document.getElementById('report-pending-count-badge');
         if (pendingCountEl) pendingCountEl.innerText = pendingCount;
@@ -1817,19 +1817,19 @@
     // API Fetches
     async function fetchApplicants() {
         try {
-            const [res1, res2] = await Promise.all([
+            const [resApproved, resPending] = await Promise.all([
                 fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, { headers: { 'Authorization': `Bearer ${token}` } })
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } })
             ]);
 
             let combinedData = [];
 
-            if (res1.ok) {
-                const data1 = await res1.json();
+            if (resApproved.ok) {
+                const data1 = await resApproved.json();
                 if (data1.data) combinedData = combinedData.concat(data1.data);
             }
-            if (res2.ok) {
-                const data2 = await res2.json();
+            if (resPending.ok) {
+                const data2 = await resPending.json();
                 if (data2.data) combinedData = combinedData.concat(data2.data);
             }
 
@@ -2114,7 +2114,7 @@
             const cancelledData = cancelledRes.ok ? await cancelledRes.json() : { data: [] };
 
             const paidRows = (paidData.data || []).map(app => ({ ...app, status: 'paid' }));
-            const pendingRows = (approvedData.data || []).map(app => ({ ...app, status: 'pending' }));
+            const pendingRows = (approvedData.data || []).map(app => ({ ...app, status: 'approved' }));
             const failedRows = (failedData.data || []).map(app => ({ ...app, status: 'failed' }));
             const cancelledRows = (cancelledData.data || []).map(app => ({ ...app, status: 'cancelled' }));
             const rows = [...pendingRows, ...paidRows, ...failedRows, ...cancelledRows];

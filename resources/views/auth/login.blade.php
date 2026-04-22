@@ -960,6 +960,7 @@
             if (response.ok) {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('userName', data.user.name);
+                localStorage.setItem('userRoles', JSON.stringify(data.user.roles || []));
 
                 const roles = data.user.roles || [];
 
@@ -989,6 +990,20 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        const existingToken = localStorage.getItem('token');
+        const existingRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+
+        if (existingToken) {
+            const redirectUrl = existingRoles.includes('treasurer')
+                ? '/treasurer-dashboard'
+                : (existingRoles.includes('admin') || existingRoles.includes('superadmin') || existingRoles.includes('super_admin'))
+                    ? '/dashboard'
+                    : (existingRoles.includes('member') ? '/member-dashboard' : '/');
+
+            window.location.href = redirectUrl;
+            return;
+        }
+
         const err = document.getElementById('forgotModalError');
         const otpEl = document.getElementById('forgotOtp');
         const emailEl = document.getElementById('forgotEmail');

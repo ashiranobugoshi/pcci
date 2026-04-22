@@ -411,7 +411,6 @@
                     
                     <form id="registrationForm" onsubmit="return false;">
                         @csrf
-                        
                         <input type="hidden" name="membership_type" value="Regular">
                         <input type="hidden" name="form_of_organization" value="Corporation">
                         <input type="hidden" name="registration_type" value="SEC">
@@ -428,22 +427,45 @@
                         <div id="form-header">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <div class="d-flex align-items-center">
-                                    <i id="header-icon" class="bi bi-person fs-3 me-3"></i> 
-                                    <h3 id="header-title" class="mb-0 fw-bold step-title fs-4 fs-sm-3">Basic Profile</h3>
+                                    <i id="header-icon" class="bi bi-envelope fs-3 me-3"></i> 
+                                    <h3 id="header-title" class="mb-0 fw-bold step-title fs-4 fs-sm-3">Verify Account</h3>
                                 </div>
-                                <span id="step-counter" class="text-white small">Step 1 of 5</span>
+                                <span id="step-counter" class="text-white small">Step 1 of 6</span>
                             </div>
-                            
-                            <p id="header-desc" class="text-white mb-3" style="color: #d1d5db !important;">Tell us about yourself and your business.</p>
-
+                            <p id="header-desc" class="text-white mb-3" style="color: #d1d5db !important;">Verify your email address to begin registration.</p>
                             <div class="step-progress">
                                 <div class="step-progress-fill" id="progress-bar"></div>
                             </div>
-                            
                             <div id="global-error"></div>
                         </div>
 
                         <div id="step-1">
+                            <div class="mb-3">
+                                <label class="form-label-custom">Email Address <span class="text-danger">*</span></label>
+                                <input id="signupGateEmail" type="email" class="form-control form-control-dark" placeholder="Enter your email address" required>
+                            </div>
+                            <div class="mb-3 d-none" id="signupGateOtpWrap">
+                                <label class="form-label-custom">OTP Code <span class="text-danger">*</span></label>
+                                <input id="signupGateOtp" type="text" class="form-control form-control-dark" placeholder="Enter OTP" maxlength="6" inputmode="numeric">
+                                <div class="helper-text-small">Enter the one-time code sent to your email.</div>
+                            </div>
+                            <div id="signupGateError" class="signup-gate-error" style="display:none;">Please enter a valid email address.</div>
+                            <div class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 mt-4">
+                                <a href="{{ route('login') }}" class="btn btn-prev">Back to Login</a>
+                                <button type="button" class="btn btn-next" id="signupGateActionBtn" onclick="handleSignupGateAction()">Verify Email</button>
+                            </div>
+                        </div>
+
+                        <div id="step-2" class="d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-person fs-3 me-3"></i> 
+                                    <h3 class="mb-0 fw-bold step-title fs-4 fs-sm-3">Basic Profile</h3>
+                                </div>
+                                <span class="text-white small">Step 2 of 6</span>
+                            </div>
+                            <p class="text-white mb-3" style="color: #d1d5db !important;">Tell us about yourself and your business.</p>
+                            <!-- Business info fields moved here from old step 1 -->
                             <div class="mb-3">
                                 <div class="d-flex justify-content-between">
                                     <label class="form-label-custom">Business Name <span class="text-danger">*</span></label>
@@ -519,12 +541,12 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            {{-- RESPONSIVE BUTTON WRAPPER --}}
                             <div class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 mt-4">
-                                <a href="{{ route('login') }}" class="btn btn-prev">Back to Login</a>
-                                <button type="button" class="btn btn-next" onclick="validateAndNext(1, 2)">Next</button>
+                                <button type="button" class="btn btn-prev" onclick="goToStep(1)">Previous</button>
+                                <button type="button" class="btn btn-prev" onclick="goToStep(1)">Previous</button>
+                                <button type="button" class="btn btn-next" onclick="validateAndNext(2, 3)">Next</button>
                             </div>
+                        </div>
                         </div>
 
                         <div id="step-2" class="d-none">
@@ -652,6 +674,28 @@
                                     Account Name: PCCI Valenzuela<br>
                                     Account No.: 1054 0000 5989
                                 </p>
+
+                                <hr style="border-color: rgba(255, 255, 255, 0.18); margin: 16px 0 14px;">
+                                <h6 class="mb-2" style="font-size: 1rem; font-weight: 700; color: #f8fafc;">Your Bank Account Details</h6>
+                                <div class="row g-3 mb-2">
+                                    <div class="col-sm-6">
+                                        <label class="form-label-custom mb-1">Bank Name <span class="text-danger">*</span></label>
+                                        <input type="text" name="payer_bank_name" class="form-control form-control-dark" placeholder="Enter your bank name" required>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label-custom mb-1">Account Name <span class="text-danger">*</span></label>
+                                        <input type="text" name="payer_account_name" class="form-control form-control-dark" placeholder="Enter your account name" required>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label-custom mb-1">Account Number <span class="text-danger">*</span></label>
+                                        <input type="text" name="payer_account_number" class="form-control form-control-dark" placeholder="Enter your account number" required>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label-custom mb-1">Reference Number</label>
+                                        <input type="text" name="payment_reference_number" class="form-control form-control-dark" placeholder="Enter transfer reference no.">
+                                    </div>
+                                </div>
+
                                 <p class="mt-2 mb-3" style="font-size: 0.78rem; color: #cbd5e1;">
                                     Upload 1 supported file: PDF, document or image. Max 100 MB.
                                 </p>
@@ -689,25 +733,6 @@
     </div>
 </div>
 
-<div id="signupGateOverlay" class="signup-gate-overlay">
-    <div class="signup-gate-card">
-        <button type="button" class="signup-gate-close" aria-label="Close" onclick="goToLoginFromSignupGate()">&times;</button>
-        <div class="signup-gate-icon">
-            <i class="bi bi-envelope"></i>
-        </div>
-        <h2 class="signup-gate-title">Verify your email address</h2>
-        <input id="signupGateEmail" type="email" class="signup-gate-input" placeholder="Enter your email address">
-        <p class="signup-gate-desc mb-0">
-            Ready to begin your PCCI journey? Just enter your email, and we'll send a one-time code to verify it's you.
-        </p>
-        <div id="signupGateOtpWrap" class="signup-gate-otp-wrap">
-            <input id="signupGateOtp" type="text" class="signup-gate-otp-input" placeholder="------" maxlength="6" inputmode="numeric">
-            <p class="signup-gate-otp-help">Enter the one-time code sent to your email to verify your email.</p>
-        </div>
-        <div id="signupGateError" class="signup-gate-error">Please enter a valid email address.</div>
-        <button type="button" id="signupGateActionBtn" class="btn btn-next signup-gate-confirm" onclick="handleSignupGateAction()">Verify Email</button>
-    </div>
-</div>
 
 <script>
     let signupGateStep = 'email';
