@@ -236,23 +236,15 @@
                     Join PCCI
                 </a>
 
-                @if (Route::has('login'))
-                    <div class="d-flex flex-column flex-xl-row gap-2 ps-xl-3 border-start-xl border-white-50">
-                        @auth
-                            <a href="{{ url('/dashboard') }}" 
-                               class="btn btn-outline-danger btn-outline-light-xl rounded-pill px-4">
-                                Dashboard
-                            </a>
-                        @else
-                            @if (Route::has('register'))
-                                <a href="{{ route('register') }}" 
-                                   class="btn btn-outline-danger btn-outline-light-xl rounded-pill px-4 text-nowrap">
-                                    Register
-                                </a>
-                            @endif
-                        @endauth
-                    </div>
-                @endif
+                <div class="d-flex flex-column flex-xl-row gap-2 ps-xl-3 border-start-xl border-white-50" id="topbar-auth-actions">
+                    @if (Route::has('register'))
+                        <a href="{{ route('register') }}" 
+                           id="register-btn"
+                           class="btn btn-outline-danger btn-outline-light-xl rounded-pill px-4 text-nowrap">
+                            Register
+                        </a>
+                    @endif
+                </div>
             </div>
 
         </div>
@@ -261,10 +253,41 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        const authActions = document.getElementById('topbar-auth-actions');
+        const joinBtn = document.getElementById('join-pcci-btn');
+        const token = localStorage.getItem('token');
+        const storedRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+
+        if (token && authActions) {
+            const dashboardUrl = storedRoles.includes('treasurer')
+                ? '/treasurer-dashboard'
+                : (storedRoles.includes('admin') || storedRoles.includes('superadmin') || storedRoles.includes('super_admin'))
+                    ? '/dashboard'
+                    : (storedRoles.includes('member') ? '/member-dashboard' : '/dashboard');
+
+            authActions.innerHTML = `
+                <button type="button" class="btn btn-outline-light rounded-pill px-4 mb-2 mb-xl-0" id="topbarLogoutBtn">Logout</button>
+            `;
+
+            const logoutBtn = document.getElementById('topbarLogoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function () {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('userName');
+                    localStorage.removeItem('userRoles');
+                    window.location.href = '/login';
+                });
+            }
+
+            if (joinBtn) {
+                joinBtn.textContent = 'My Account';
+                joinBtn.href = dashboardUrl;
+            }
+        }
         
         // --- PART 1: OPTIMIZED SCROLL HANDLER (Prevents lag during scrolling) ---
         const topbar = document.getElementById("main-topbar");
-        const joinBtn = document.getElementById("join-pcci-btn");
+        // re-use joinBtn from above
         let ticking = false; // Flag to prevent function from running too often
 
         function updateNavbar() {
