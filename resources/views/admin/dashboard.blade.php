@@ -86,6 +86,12 @@
 {{-- ======== COMBINED JAVASCRIPT ======== --}}
 <script>
     const token = localStorage.getItem('token');
+    const ADMIN_DASHBOARD_AUTO_REFRESH_MS = 15000;
+
+    function refreshDashboardCounts() {
+        fetchCount('/api/v1/members', token, 'memberCount');
+        fetchCount(`${window.API_BASE_URL}/v1/applicants`, token, 'applicantCount');
+    }
 
     document.addEventListener('DOMContentLoaded', function() {
         if (!token) {
@@ -93,8 +99,12 @@
             return;
         }
 
-        fetchCount(`${window.API_BASE_URL}/v1/members`, token, 'memberCount');
-        fetchCount(`${window.API_BASE_URL}/v1/applicants`, token, 'applicantCount');
+        refreshDashboardCounts();
+
+        setInterval(() => {
+            if (document.visibilityState !== 'visible') return;
+            refreshDashboardCounts();
+        }, ADMIN_DASHBOARD_AUTO_REFRESH_MS);
     });
 
     async function fetchCount(url, token, elementId) {

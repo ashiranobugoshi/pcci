@@ -928,7 +928,26 @@ main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; 
 
     function applyApplicantFilters() {
         const term = document.getElementById('applicantSearch').value.toLowerCase();
-        filteredApplicantsData = allApplicantsData.filter(a => (a.basic_profile?.registered_business_name || '').toLowerCase().includes(term));
+
+        const memberEmails = new Set(
+            (Array.isArray(allMembersData) ? allMembersData : [])
+                .map(m => String(m?.applicant?.basic_profile?.email || '').trim().toLowerCase())
+                .filter(Boolean)
+        );
+        const memberCompanyNames = new Set(
+            (Array.isArray(allMembersData) ? allMembersData : [])
+                .map(m => String(m?.applicant?.basic_profile?.registered_business_name || '').trim().toLowerCase())
+                .filter(Boolean)
+        );
+
+        filteredApplicantsData = allApplicantsData.filter(a => {
+            const companyName = String(a.basic_profile?.registered_business_name || '').trim().toLowerCase();
+            const email = String(a.basic_profile?.email || '').trim().toLowerCase();
+            const isMember = (email && memberEmails.has(email)) || (companyName && memberCompanyNames.has(companyName));
+            if (isMember) return false;
+            return companyName.includes(term);
+        });
+
         currentApplicantPage = 1; displayApplicantsPage();
     }
 
@@ -942,6 +961,17 @@ main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; 
             if (res1.ok) { const data1 = await res1.json(); if (data1.data) combinedData = combinedData.concat(data1.data); }
             if (res2.ok) { const data2 = await res2.json(); if (data2.data) combinedData = combinedData.concat(data2.data); }
             allApplicantsData = combinedData;
+
+            try {
+                const membersRes = await fetch('/api/v1/members', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (membersRes.ok) {
+                    const membersData = await membersRes.json();
+                    if (Array.isArray(membersData?.data)) {
+                        allMembersData = membersData.data;
+                    }
+                }
+            } catch (_) {}
+
             applyApplicantFilters();
         } catch (err) {}
     }
@@ -979,12 +1009,13 @@ main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; 
 
     async function fetchMembers() {
         try {
-            const response = await fetch('https://pcci-laravel-api.onrender.com/api/v1/members', { headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await fetch('/api/v1/members', { headers: { 'Authorization': `Bearer ${token}` } });
             if (!checkAuth(response)) return;
             const data = await response.json();
             if (response.ok && data.data) {
                 allMembersData = data.data; 
-                applyMemberFilters(); 
+                applyMemberFilters();
+                applyApplicantFilters();
             }
         } catch (err) {}
     }

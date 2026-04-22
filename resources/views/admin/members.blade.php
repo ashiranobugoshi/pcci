@@ -744,31 +744,30 @@
             {{-- Company Name --}}
             <div class="modal-field">
                 <label>Company Name <span class="required">*</span></label>
-                <div class="modal-input-icon-wrap">
-                    <input type="text" placeholder="Enter company name . . .">
-                    <i class="bi bi-building input-icon"></i>
+                <div class="modal-select-wrap">
+                    <select id="addMemberCompanySelect">
+                        <option value="">Select treasurer-approved company . . .</option>
+                    </select>
                 </div>
+            </div>
+
+            {{-- Section: Membership Details --}}
+            <div class="modal-section-label">Membership Details</div>
+
+            <div class="modal-field">
+                <label>Membership Type (Selected by Treasurer) <span class="required">*</span></label>
+                <input type="text" id="addMembershipType" value="Select a company first" readonly>
             </div>
 
             {{-- Member Type & Status --}}
             <div class="modal-row">
                 <div class="modal-field">
                     <label>Member Type <span class="required">*</span></label>
-                    <div class="modal-select-wrap">
-                        <select>
-                            <option>Directory Member</option>
-                            <option>Member</option>
-                        </select>
-                    </div>
+                    <input type="text" id="addMemberType" value="Member" readonly>
                 </div>
                 <div class="modal-field">
                     <label>Status <span class="required">*</span></label>
-                    <div class="modal-select-wrap">
-                        <select>
-                            <option>Active</option>
-                            <option>Disabled</option>
-                        </select>
-                    </div>
+                    <input type="text" id="addMemberStatus" value="Active" readonly>
                 </div>
             </div>
 
@@ -776,7 +775,7 @@
             <div class="modal-field">
                 <label>Business Address <span class="required">*</span></label>
                 <div class="modal-input-icon-wrap">
-                    <input type="text" placeholder="Enter business address . . .">
+                    <input type="text" id="addMemberBusinessAddress" placeholder="Business address will auto-fill" readonly>
                     <i class="bi bi-geo-alt input-icon"></i>
                 </div>
             </div>
@@ -789,14 +788,14 @@
                 <div class="modal-field">
                     <label>Email <span class="required">*</span></label>
                     <div class="modal-input-icon-wrap">
-                        <input type="email" placeholder="Enter email address . . .">
+                        <input type="email" id="addMemberEmail" placeholder="Email will auto-fill" readonly>
                         <i class="bi bi-envelope input-icon"></i>
                     </div>
                 </div>
                 <div class="modal-field">
                     <label>Contact Number</label>
                     <div class="modal-input-icon-wrap">
-                        <input type="text" placeholder="Enter contact number . . .">
+                        <input type="text" id="addMemberContact" placeholder="Contact number will auto-fill" readonly>
                         <i class="bi bi-phone input-icon"></i>
                     </div>
                 </div>
@@ -804,8 +803,8 @@
 
             {{-- Registration Date --}}
             <div class="modal-field">
-                <label>Registration Date <span class="required">*</span></label>
-                <input type="date">
+                <label>Induction Date <span class="required">*</span></label>
+                <input type="date" id="addMemberInductionDate">
             </div>
 
         </div>
@@ -813,7 +812,7 @@
         {{-- Footer --}}
         <div class="modal-footer">
             <button class="btn-modal-cancel" id="cancelModal" type="button">Cancel</button>
-            <button class="btn-modal-save" type="button">
+            <button class="btn-modal-save" id="saveMemberBtn" type="button" onclick="saveMemberFromModal()">
                 <i class="bi bi-check-lg"></i> Save Member
             </button>
         </div>
@@ -847,12 +846,20 @@
     // REAL API FETCH LOGIC
     // ==============================================
     let allMembersData = [];
+    let approvedApplicantsForModal = [];
+    const ADMIN_MEMBERS_API_BASE = '/api';
+    const ADMIN_MEMBERS_AUTO_REFRESH_MS = 15000;
     let currentPage = 1;
     let rowsPerPage = 10;
     let currentSearchTerm = '';
 
     document.addEventListener('DOMContentLoaded', function() {
         fetchMembers();
+
+        setInterval(() => {
+            if (document.visibilityState !== 'visible') return;
+            fetchMembers();
+        }, ADMIN_MEMBERS_AUTO_REFRESH_MS);
 
         document.getElementById('rowsPerPageSelect').addEventListener('change', function() {
             rowsPerPage = Number(this.value) || 10;
@@ -890,14 +897,220 @@
             currentPage = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
             renderMembers(currentSearchTerm);
         });
+
+        const companySelect = document.getElementById('addMemberCompanySelect');
+        if (companySelect) {
+            companySelect.addEventListener('change', function () {
+                const selectedApplicant = approvedApplicantsForModal.find((item) => String(item.id) === String(this.value));
+                populateAddMemberReadOnlyFields(selectedApplicant || null);
+            });
+        }
     });
+
+    function getApplicantBusinessAddress(profile) {
+        const loc = profile?.business_location || {};
+        const parts = [
+            loc.business_address,
+            loc.city_municipality,
+            loc.province,
+            loc.region,
+            loc.zip_code,
+        ].filter(Boolean);
+        return parts.join(', ');
+    }
+
+    function populateAddMemberReadOnlyFields(applicant) {
+        const profile = applicant?.basic_profile || {};
+        const representative = applicant?.official_representative || {};
+
+        const businessAddressInput = document.getElementById('addMemberBusinessAddress');
+        const emailInput = document.getElementById('addMemberEmail');
+        const contactInput = document.getElementById('addMemberContact');
+        const membershipTypeInput = document.getElementById('addMembershipType');
+        const memberTypeInput = document.getElementById('addMemberType');
+        const statusSelect = document.getElementById('addMemberStatus');
+
+        if (businessAddressInput) {
+            businessAddressInput.value = applicant ? (getApplicantBusinessAddress(profile) || 'N/A') : '';
+        }
+        if (emailInput) {
+            emailInput.value = applicant ? (profile.email || 'N/A') : '';
+        }
+        if (contactInput) {
+            contactInput.value = applicant ? (profile.telephone_no || representative.contact_no || 'N/A') : '';
+        }
+        if (membershipTypeInput) {
+            const treasurerPickedMembershipType = String(applicant?.membership_type || '').trim().toLowerCase();
+            let normalizedMembershipType = '';
+
+            if (Number(applicant?.membership_type_id) === 1) {
+                normalizedMembershipType = 'Micro';
+            } else if (Number(applicant?.membership_type_id) === 2) {
+                normalizedMembershipType = 'Small Enterprises';
+            } else if (treasurerPickedMembershipType.includes('small')) {
+                normalizedMembershipType = 'Small Enterprises';
+            } else if (treasurerPickedMembershipType.includes('micro')) {
+                normalizedMembershipType = 'Micro';
+            } else if (treasurerPickedMembershipType === 'regular') {
+                // Legacy value from old flow; treat as Micro in the current 2-option setup.
+                normalizedMembershipType = 'Micro';
+            }
+
+            membershipTypeInput.value = applicant
+                ? (normalizedMembershipType || 'Micro')
+                : 'Select a company first';
+        }
+        if (memberTypeInput) {
+            memberTypeInput.value = applicant ? 'Member' : 'Member';
+        }
+        if (statusSelect) {
+            statusSelect.value = 'Active';
+        }
+    }
+
+    async function fetchTreasurerApprovedApplicantsForModal() {
+        const companySelect = document.getElementById('addMemberCompanySelect');
+        const token = localStorage.getItem('token');
+        if (!companySelect) return;
+
+        companySelect.innerHTML = '<option value="">Loading treasurer-approved companies . . .</option>';
+
+        try {
+            const response = await fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to load paid applicants');
+
+            const data = await response.json();
+            const paidApplicants = Array.isArray(data.data) ? data.data : [];
+
+            const existingMemberEmails = new Set(
+                (Array.isArray(allMembersData) ? allMembersData : [])
+                    .map((member) => String(member?.applicant?.basic_profile?.email || '').trim().toLowerCase())
+                    .filter(Boolean)
+            );
+
+            const existingMemberCompanyNames = new Set(
+                (Array.isArray(allMembersData) ? allMembersData : [])
+                    .map((member) => String(member?.applicant?.basic_profile?.registered_business_name || '').trim().toLowerCase())
+                    .filter(Boolean)
+            );
+
+            approvedApplicantsForModal = paidApplicants.filter((applicant) => {
+                const email = String(applicant?.basic_profile?.email || '').trim().toLowerCase();
+                const companyName = String(applicant?.basic_profile?.registered_business_name || '').trim().toLowerCase();
+
+                if (email && existingMemberEmails.has(email)) return false;
+                if (companyName && existingMemberCompanyNames.has(companyName)) return false;
+                return true;
+            });
+
+            companySelect.innerHTML = '<option value="">Select treasurer-approved company . . .</option>';
+
+            approvedApplicantsForModal.forEach((applicant) => {
+                const companyName = applicant?.basic_profile?.registered_business_name || `Applicant #${applicant.id}`;
+                companySelect.insertAdjacentHTML(
+                    'beforeend',
+                    `<option value="${applicant.id}">${companyName}</option>`
+                );
+            });
+
+            if (approvedApplicantsForModal.length === 0) {
+                companySelect.innerHTML = '<option value="">No treasurer-approved companies available</option>';
+            }
+        } catch (error) {
+            console.error('Error loading treasurer-approved applicants for modal:', error);
+            approvedApplicantsForModal = [];
+            companySelect.innerHTML = '<option value="">No treasurer-approved companies available</option>';
+        }
+
+        populateAddMemberReadOnlyFields(null);
+    }
+
+    async function saveMemberFromModal() {
+        const companySelect = document.getElementById('addMemberCompanySelect');
+        const inductionDateInput = document.getElementById('addMemberInductionDate');
+        const saveBtn = document.getElementById('saveMemberBtn');
+        const token = localStorage.getItem('token');
+
+        const selectedApplicant = approvedApplicantsForModal.find(
+            (item) => String(item.id) === String(companySelect?.value || '')
+        );
+        const inductionDate = (inductionDateInput?.value || '').trim();
+
+        if (!selectedApplicant) {
+            alert('Please select a treasurer-approved company first.');
+            return;
+        }
+
+        if (!inductionDate) {
+            alert('Please select an induction date.');
+            inductionDateInput?.focus();
+            return;
+        }
+
+        const companyName = selectedApplicant?.basic_profile?.registered_business_name || '';
+        const email = selectedApplicant?.basic_profile?.email || '';
+
+        if (!companyName || !email) {
+            alert('Selected applicant is missing required company details.');
+            return;
+        }
+
+        try {
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
+            }
+
+            const response = await fetch(`${ADMIN_MEMBERS_API_BASE}/v1/members`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    company_name: companyName,
+                    email,
+                    induction_date: inductionDate,
+                }),
+            });
+
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(payload.message || 'Failed to create member.');
+            }
+
+            alert(payload.message || 'Member created successfully.');
+            document.getElementById('addMemberModal').classList.remove('active');
+            if (inductionDateInput) inductionDateInput.value = '';
+            if (companySelect) companySelect.value = '';
+            populateAddMemberReadOnlyFields(null);
+
+            await fetchMembers();
+        } catch (error) {
+            console.error('Error creating member from modal:', error);
+            alert(error.message || 'Failed to create member.');
+        } finally {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="bi bi-check-lg"></i> Save Member';
+            }
+        }
+    }
 
     async function fetchMembers() {
         const tbody = document.getElementById('membersTableBody');
         const token = localStorage.getItem('token');
 
         try {
-            const response = await fetch(`${window.API_BASE_URL}/v1/members`, {
+            const response = await fetch(`${ADMIN_MEMBERS_API_BASE}/v1/members`, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
@@ -913,6 +1126,7 @@
             currentPage = 1;
             currentSearchTerm = '';
             document.getElementById('memberSearchInput').value = '';
+            fetchTreasurerApprovedApplicantsForModal();
             renderMembers('');
 
         } catch (error) {

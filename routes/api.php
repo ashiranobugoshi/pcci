@@ -54,12 +54,14 @@ Route::post('/user/request-password-change', [TreasurerProxyController::class, '
 Route::prefix('v1')->group(function () {
 
     Route::match(['post', 'put'], '/user/change-info', [TreasurerProxyController::class, 'changeInfo']);
+    Route::post('/payments', [TreasurerProxyController::class, 'confirmApplicantPayment']);
 
     // Leadership Route
     Route::get('/leadership', [LeadershipController::class, 'index']);
 
     // --> NEW MEMBERS ROUTE <--
     Route::get('/members', [MemberController::class, 'index']);
+    Route::post('/members', [MemberController::class, 'store']);
 
     // Route::get('/v1/business/{id}', [BusinessController::class, 'show']); // BusinessController not yet created
     // Your existing Event routes

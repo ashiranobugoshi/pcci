@@ -8,6 +8,7 @@
             return window.location.origin;
         }
     })();
+    const TREASURER_MEMBERS_AUTO_REFRESH_MS = 15000;
     
     // Global data
     let allMembersData = []; 
@@ -1508,8 +1509,7 @@
         if (!data || !currentApplicantId) return;
 
         try {
-            // Use local proxy route which forwards to remote API with admin token
-            const response = await fetch(`/treasurer/process-payment/${currentApplicantId}`, {
+            const response = await fetch('/api/v1/payments', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1517,8 +1517,9 @@
                     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
                 },
                 body: JSON.stringify({
+                    applicant_id: currentApplicantId,
                     membership_type_id: currentSelectedType,
-                    membership_type: 'Regular'
+                    membership_type: data.name
                 })
             });
 
@@ -1728,6 +1729,12 @@
         // 🌟 THIS IS WHERE IT BELONGS: Check memory and switch tab immediately on load
         const savedTab = localStorage.getItem('activeTab') || 'dashboard';
         switchTab(savedTab, false);
+
+        setInterval(() => {
+            if (document.visibilityState !== 'visible') return;
+            if (!['members', 'dashboard', 'reports'].includes(currentActiveTab)) return;
+            fetchMembers();
+        }, TREASURER_MEMBERS_AUTO_REFRESH_MS);
     });
 
     // --- MEMBER FILTER/SORT ---
@@ -1761,8 +1768,26 @@
         const term = document.getElementById('applicantSearch').value.toLowerCase();
         const sortVal = document.getElementById('applicantSort').value;
 
+        const memberEmails = new Set(
+            (Array.isArray(allMembersData) ? allMembersData : [])
+                .map(m => String(m?.applicant?.basic_profile?.email || '').trim().toLowerCase())
+                .filter(Boolean)
+        );
+
+        const memberCompanyNames = new Set(
+            (Array.isArray(allMembersData) ? allMembersData : [])
+                .map(m => String(m?.applicant?.basic_profile?.registered_business_name || '').trim().toLowerCase())
+                .filter(Boolean)
+        );
+
         filteredApplicantsData = allApplicantsData.filter(a => {
             const name = (a.basic_profile?.registered_business_name || '').toLowerCase();
+            const email = String(a.basic_profile?.email || '').trim().toLowerCase();
+            const companyName = String(a.basic_profile?.registered_business_name || '').trim().toLowerCase();
+
+            const isExistingMember = (email && memberEmails.has(email)) || (companyName && memberCompanyNames.has(companyName));
+            if (isExistingMember) return false;
+
             return name.includes(term);
         });
 
@@ -1778,7 +1803,13 @@
             return dateB - dateA;
         });
 
-        currentApplicantPage = 1; 
+        const pendingCount = filteredApplicantsData.filter(a => String(a.status).toLowerCase() !== 'paid').length;
+        const pendingCountEl = document.getElementById('report-pending-count');
+        const pendingBadgeEl = document.getElementById('report-pending-count-badge');
+        if (pendingCountEl) pendingCountEl.innerText = pendingCount;
+        if (pendingBadgeEl) pendingBadgeEl.innerText = `${pendingCount} Pending`;
+
+        currentApplicantPage = 1;
         displayApplicantsPage();
     }
 
@@ -1804,9 +1835,23 @@
 
             allApplicantsData = combinedData;
 
-            const pendingCount = allApplicantsData.filter(a => String(a.status).toLowerCase() !== 'paid').length;
-            document.getElementById('report-pending-count').innerText = pendingCount;
-            document.getElementById('report-pending-count-badge').innerText = `${pendingCount} Pending`;
+            // Keep applicant filtering accurate even when applicants load before members.
+            try {
+                const membersRes = await fetch('/api/v1/members', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (membersRes.ok) {
+                    const membersJson = await membersRes.json();
+                    if (Array.isArray(membersJson?.data)) {
+                        allMembersData = membersJson.data;
+                    }
+                }
+            } catch (_) {
+                // Fall back to existing allMembersData when member refresh fails.
+            }
 
             applyApplicantFilters();
             updateNotificationsPanel();
@@ -1866,10 +1911,10 @@
     async function fetchMembers() {
         try {
             const memberEndpoints = [];
+            memberEndpoints.push('/api/v1/members');
             if (apiBaseUrl) {
                 memberEndpoints.push(`${apiBaseUrl}/v1/members`);
             }
-            memberEndpoints.push('/api/v1/members');
 
             let membersData = null;
             let lastError = null;
@@ -1921,6 +1966,7 @@
             if (reportActive) reportActive.innerText = allMembersData.length;
 
             applyMemberFilters();
+            applyApplicantFilters();
             updateNotificationsPanel();
             updateReportsDashboard();
         } catch (err) {
