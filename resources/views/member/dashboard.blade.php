@@ -830,6 +830,10 @@ body.dark-mode #settings-preferences .dropdown-item:focus {
         align-self: flex-start;
     }
 }
+
+/* Spinner Animation for Modals */
+.spin { display: inline-block; animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
 </style>
 
 <div class="topbar">
@@ -1102,22 +1106,17 @@ body.dark-mode #settings-preferences .dropdown-item:focus {
 
 <div class="modal-overlay" id="editProfileModal" onclick="handleEditProfileOverlay(event)">
     <div class="modal-content-box" style="max-width: 900px; max-height: 90vh; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; padding: 0;">
-        <!-- Modal Header -->
         <div style="padding: 20px 25px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; background: #f9fafb;">
             <h5 class="fw-bold mb-0 text-dark">Edit Business Profile</h5>
             <button class="btn-close" onclick="closeEditProfileModal()"></button>
         </div>
 
-        <!-- Modal Body -->
         <div style="padding: 25px;">
             <div id="profileAlert" class="alert alert-danger" style="display: none; font-size: 13px;"></div>
             
-            <!-- Company Header Section -->
             <div style="display: flex; gap: 20px; margin-bottom: 30px; padding-bottom: 25px; border-bottom: 1px solid #e5e7eb; align-items: flex-start;">
-                <!-- Logo -->
                 <img id="ep_companyImage" src="{{ asset('images/PCCI-Logo.svg') }}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #e5e7eb; flex-shrink: 0;">
                 
-                <!-- Company Info -->
                 <div style="flex-grow: 1;">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                         <h4 class="fw-bold mb-0 text-dark" id="ep_companyNameDisplay">Loading...</h4>
@@ -1127,9 +1126,7 @@ body.dark-mode #settings-preferences .dropdown-item:focus {
                 </div>
             </div>
 
-            <!-- Two Column Layout -->
             <div class="row g-4">
-                <!-- Left Column: Business Information -->
                 <div class="col-md-6">
                     <h6 class="fw-bold mb-3 text-dark" style="font-size: 14px;">Business information</h6>
                     
@@ -1185,7 +1182,6 @@ body.dark-mode #settings-preferences .dropdown-item:focus {
                     </div>
                 </div>
 
-                <!-- Right Column: Address & Documentation -->
                 <div class="col-md-6">
                     <h6 class="fw-bold mb-3 text-dark" style="font-size: 14px;">Address</h6>
                     
@@ -1224,7 +1220,6 @@ body.dark-mode #settings-preferences .dropdown-item:focus {
                 </div>
             </div>
 
-            <!-- Modal Footer -->
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
                 <button class="btn btn-light fw-bold px-4" style="border: 1px solid #e5e7eb;" onclick="closeEditProfileModal()">Cancel</button>
                 <button class="btn btn-danger fw-bold px-4" id="btnSaveProfile" onclick="saveProfile()">Save Changes</button>
@@ -1232,6 +1227,45 @@ body.dark-mode #settings-preferences .dropdown-item:focus {
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="firstTimePasswordModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background-color: #1a1c23; color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" style="color: #4ade80;">
+                    <i class="bi bi-shield-lock-fill me-2"></i> Action Required: Change Password
+                </h5>
+            </div>
+            
+            <form id="firstTimePasswordForm" onsubmit="submitFirstTimePassword(event)">
+                <div class="modal-body border-0 pt-3">
+                    <p style="color: #d1d5db; font-size: 0.9rem; margin-bottom: 20px;">
+                        Welcome to your PCCI Member Account! Since this is your newly made account, you must set your own secure password before you can continue.
+                    </p>
+
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size: 0.85rem; color: #a0aec0; font-weight: 600;">New Password <span class="text-danger">*</span></label>
+                        <input type="password" id="new_password" class="form-control" style="background: #252836; color: white; border: 1px solid #3a3f50;" placeholder="Enter new password" required minlength="8">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size: 0.85rem; color: #a0aec0; font-weight: 600;">Confirm New Password <span class="text-danger">*</span></label>
+                        <input type="password" id="new_password_confirmation" class="form-control" style="background: #252836; color: white; border: 1px solid #3a3f50;" placeholder="Re-type new password" required minlength="8">
+                    </div>
+
+                    <div id="passwordChangeError" class="alert alert-danger mt-3 d-none" style="padding: 10px; font-size: 0.85rem; background-color: rgba(220, 53, 69, 0.2); color: #ff6b6b; border: 1px solid #dc3545;"></div>
+                </div>
+                
+                <div class="modal-footer border-0 pt-0">
+                    <button type="submit" id="btnSaveNewPassword" class="btn btn-success w-100 fw-bold" style="background: #22c55e; border: none; padding: 10px;">
+                        Update Password & Continue
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 function handleEditProfileOverlay(event) {
@@ -1382,6 +1416,9 @@ document.addEventListener('DOMContentLoaded', function(){
         return; 
     }
 
+    // --- NEW: Check if it is the user's first time logging in! ---
+    checkFirstTimeMemberLogin(token);
+
     initMemberNotifications();
 
     if (localStorage.getItem('theme') === 'dark') {
@@ -1402,6 +1439,91 @@ document.addEventListener('DOMContentLoaded', function(){
     const savedTab = hashTab || localStorage.getItem('activeTab') || 'dashboard';
     switchTab(savedTab, false);
 });
+
+// --- NEW FIRST-TIME LOGIN API CALL ---
+async function checkFirstTimeMemberLogin(token) {
+    try {
+        const response = await fetch(`${window.API_BASE_URL || 'https://pcciv-api.onrender.com/api'}/v1/user`, {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const userData = await response.json();
+            if (userData.is_first_login === true || userData.data?.is_first_login === true || userData.data?.must_change_password === true) {
+                const modal = new bootstrap.Modal(document.getElementById('firstTimePasswordModal'));
+                modal.show();
+            }
+        }
+    } catch (error) {
+        console.error("Failed to check first-time login status:", error);
+    }
+}
+
+async function submitFirstTimePassword(event) {
+    event.preventDefault();
+    
+    const pass = document.getElementById('new_password').value;
+    const passConfirm = document.getElementById('new_password_confirmation').value;
+    const errorBox = document.getElementById('passwordChangeError');
+    const saveBtn = document.getElementById('btnSaveNewPassword');
+
+    if (pass !== passConfirm) {
+        errorBox.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> Passwords do not match.';
+        errorBox.classList.remove('d-none');
+        return;
+    }
+
+    errorBox.classList.add('d-none');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Updating...';
+
+    try {
+        const apiUrl = `${window.API_BASE_URL || 'https://pcciv-api.onrender.com/api'}/v1/user/first-time-password-change`;
+        
+        const response = await fetch(apiUrl, {
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                new_password: pass,
+                new_password_confirmation: passConfirm
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            const modalEl = document.getElementById('firstTimePasswordModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            modalInstance.hide();
+            alert("Password successfully updated! You can now use your member dashboard.");
+        } else {
+            let errorHtml = `<b>Update Failed:</b> ${data.message || 'Invalid data.'}`;
+            if (data.errors) {
+                errorHtml += '<ul style="margin-bottom:0; padding-left:20px; margin-top:5px;">';
+                for (const [field, messages] of Object.entries(data.errors)) {
+                    errorHtml += `<li>${messages.join(', ')}</li>`;
+                }
+                errorHtml += '</ul>';
+            }
+            errorBox.innerHTML = errorHtml;
+            errorBox.classList.remove('d-none');
+        }
+    } catch (error) {
+        console.error("Error changing password:", error);
+        errorBox.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> Network error. Please try again.';
+        errorBox.classList.remove('d-none');
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = 'Update Password & Continue';
+    }
+}
 
 function seedUserFallbackUI() {
     const storedName = (localStorage.getItem('userName') || '').trim();

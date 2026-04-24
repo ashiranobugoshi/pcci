@@ -7,16 +7,50 @@
     @include('partials.api-config')
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     
+    <script>
+        const savedTheme = localStorage.getItem('admin-theme') || 'light';
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
+
     <style>
+        /* === GLOBAL THEME VARIABLES === */
         :root {
             --pcci-red: #be1e38;
             --pcci-light-red: #e35d5d;
             --sidebar-width: 280px;
+
+            /* Light Theme Colors */
+            --bg-main: #f4f6f9;
+            --bg-sidebar: #ffffff;
+            --bg-card: #ffffff;
+            --text-main: #333333;
+            --text-muted: #888888;
+            --border-color: #e0e0e0;
+            --hover-bg: #fff1f3;
+            --input-bg: #ffffff;
+            --input-border: #ddd;
+            --table-header: #f8f8f8;
+            --table-hover: #fdf2f4;
+        }
+
+        /* Dark Theme Colors */
+        [data-theme="dark"] {
+            --bg-main: #1a1c23;
+            --bg-sidebar: #252836;
+            --bg-card: #2b2d3c;
+            --text-main: #e2e8f0;
+            --text-muted: #a0aec0;
+            --border-color: #3f4252;
+            --hover-bg: #323545;
+            --input-bg: #1f222e;
+            --input-border: #4a4d61;
+            --table-header: #323545;
+            --table-hover: #3a3f50;
         }
 
         body {
@@ -24,18 +58,17 @@
             font-family: 'Inter', sans-serif;
             display: flex;
             height: 100vh;
-            background-color: #f4f6f9; /* Soft background for the whole admin area */
+            background-color: var(--bg-main);
+            color: var(--text-main);
             overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* ============================================== */
-        /* SIDEBAR                                        */
-        /* ============================================== */
-
+        /* SIDEBAR */
         .sidebar {
             width: var(--sidebar-width);
-            background-color: #ffffff;
-            border-right: 1px solid #e0e0e0;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             padding: 20px 0;
@@ -43,25 +76,25 @@
             height: 100vh;
             overflow-y: auto;
             z-index: 1050;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
-        /* Custom Scrollbar for Sidebar */
         .sidebar::-webkit-scrollbar { width: 5px; }
         .sidebar::-webkit-scrollbar-track { background: transparent; }
-        .sidebar::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 
         .admin-profile {
             padding: 0 25px 20px;
             display: flex;
             align-items: center;
             gap: 15px;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid var(--border-color);
             text-decoration: none; 
             cursor: pointer; 
             transition: background 0.2s;
         }
         
-        .admin-profile:hover { background-color: #fff1f3; }
+        .admin-profile:hover { background-color: var(--hover-bg); }
 
         .avatar {
             width: 55px;
@@ -72,24 +105,24 @@
         }
 
         .admin-info span { display: block; }
-        .role { font-size: 11px; color: #888; text-transform: uppercase; font-weight: 600; }
+        .role { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
         .name { font-size: 1.1rem; font-weight: 700; color: var(--pcci-red); }
 
         .menu-label {
             padding: 25px 25px 10px;
             font-size: 11px;
             font-weight: 700;
-            color: #999;
+            color: var(--text-muted);
             text-transform: uppercase;
         }
 
-        /* --- Nav Links --- */
+        /* Nav Links */
         .nav-link {
             display: flex;
             align-items: center;
             padding: 12px 25px;
             text-decoration: none;
-            color: #333;
+            color: var(--text-main);
             font-weight: 600;
             font-size: 0.95rem;
             gap: 12px;
@@ -104,11 +137,11 @@
         }
 
         .nav-link:hover:not(.active) {
-            background-color: #fff1f3;
+            background-color: var(--hover-bg);
             color: var(--pcci-red);
         }
 
-        /* --- Content Dropdown --- */
+        /* Content Dropdown */
         .nav-dropdown { position: relative; }
 
         .nav-dropdown-toggle {
@@ -116,7 +149,7 @@
             align-items: center;
             padding: 12px 25px;
             text-decoration: none;
-            color: #333;
+            color: var(--text-main);
             font-weight: 600;
             font-size: 0.95rem;
             gap: 12px;
@@ -135,7 +168,7 @@
         }
 
         .nav-dropdown-toggle:hover:not(.active) {
-            background-color: #fff1f3;
+            background-color: var(--hover-bg);
             color: var(--pcci-red);
         }
 
@@ -147,12 +180,11 @@
 
         .nav-dropdown-toggle.open .chevron { transform: rotate(180deg); }
 
-        /* Sub-menu */
         .nav-dropdown-menu {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.35s ease;
-            background: #fafafa;
+            background: var(--bg-sidebar);
         }
 
         .nav-dropdown-menu.open { max-height: 300px; }
@@ -162,7 +194,7 @@
             align-items: center;
             padding: 10px 25px 10px 62px;
             text-decoration: none;
-            color: #555;
+            color: var(--text-main);
             font-weight: 500;
             font-size: 0.88rem;
             gap: 10px;
@@ -172,15 +204,15 @@
 
         .nav-dropdown-menu a::before {
             content: ''; width: 6px; height: 6px; border-radius: 50%;
-            background: #ccc; position: absolute; left: 42px; transition: background 0.2s;
+            background: var(--border-color); position: absolute; left: 42px; transition: background 0.2s;
         }
 
-        .nav-dropdown-menu a:hover { background-color: #fff1f3; color: var(--pcci-red); }
+        .nav-dropdown-menu a:hover { background-color: var(--hover-bg); color: var(--pcci-red); }
         .nav-dropdown-menu a:hover::before { background: var(--pcci-red); }
-        .nav-dropdown-menu a.active { color: var(--pcci-red); font-weight: 700; background: #fff1f3; }
+        .nav-dropdown-menu a.active { color: var(--pcci-red); font-weight: 700; background: var(--hover-bg); }
         .nav-dropdown-menu a.active::before { background: var(--pcci-red); }
 
-        /* --- Logout --- */
+        /* Logout */
         .logout-box { padding: 20px; margin-top: auto; }
         .btn-logout {
             width: 100%;
@@ -197,16 +229,14 @@
 
         .btn-logout:hover { background-color: var(--pcci-red); }
 
-        /* ============================================== */
-        /* MAIN CONTENT                                   */
-        /* ============================================== */
-
+        /* MAIN CONTENT */
         .main { 
             flex: 1; 
             overflow-y: auto; 
             overflow-x: hidden;
-            background-color: #f4f6f9; 
+            background-color: var(--bg-main); 
             position: relative;
+            transition: background-color 0.3s ease;
         }
 
         .admin-content-shell {
@@ -217,10 +247,107 @@
             box-sizing: border-box;
         }
 
-        /* ============================================== */
-        /* MOBILE HAMBURGER BUTTON & OVERLAY              */
-        /* ============================================== */
+        /* =========================================================
+           AGGRESSIVE GLOBAL DARK MODE OVERRIDES FOR ALL CHILD PAGES 
+           ========================================================= */
+        [data-theme="dark"] body, 
+        [data-theme="dark"] .main, 
+        [data-theme="dark"] .admin-content-shell { 
+            background-color: var(--bg-main) !important; 
+            color: var(--text-main) !important; 
+        }
 
+        [data-theme="dark"] .card, 
+        [data-theme="dark"] .modal-box, 
+        [data-theme="dark"] .modal-content, 
+        [data-theme="dark"] .settings-card,
+        [data-theme="dark"] .toolbar,
+        [data-theme="dark"] .users-table-wrapper,
+        [data-theme="dark"] .box,
+        [data-theme="dark"] .panel { 
+            background-color: var(--bg-card) !important; 
+            border-color: var(--border-color) !important; 
+            color: var(--text-main) !important; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
+        }
+
+        /* Force inputs to turn dark */
+        [data-theme="dark"] input, 
+        [data-theme="dark"] select, 
+        [data-theme="dark"] textarea,
+        [data-theme="dark"] .form-control, 
+        [data-theme="dark"] .form-select, 
+        [data-theme="dark"] .search-box input { 
+            background-color: var(--input-bg) !important; 
+            color: var(--text-main) !important; 
+            border-color: var(--input-border) !important; 
+        }
+
+        /* === TABLE OVERRIDES (FIXED FOR READABILITY) === */
+        [data-theme="dark"] table, 
+        [data-theme="dark"] .users-table, 
+        [data-theme="dark"] .table { 
+            color: var(--text-main) !important; 
+            border-color: var(--border-color) !important;
+            --bs-table-bg: transparent; 
+            --bs-table-color: var(--text-main);
+            --bs-table-striped-color: var(--text-main);
+            --bs-table-hover-color: var(--text-main);
+        }
+        
+        [data-theme="dark"] th, 
+        [data-theme="dark"] thead,
+        [data-theme="dark"] .table th { 
+            background-color: var(--table-header) !important; 
+            color: var(--text-main) !important; 
+            border-bottom: 2px solid var(--border-color) !important;
+        }
+        
+        /* Forces text inside table cells to be white/light grey */
+        [data-theme="dark"] td,
+        [data-theme="dark"] .table td,
+        [data-theme="dark"] table tbody tr td { 
+            border-bottom: 1px solid var(--border-color) !important; 
+            background-color: transparent !important;
+            color: var(--text-main) !important; 
+        }
+        
+        [data-theme="dark"] tr:hover td,
+        [data-theme="dark"] .table-hover tbody tr:hover td { 
+            background-color: var(--table-hover) !important; 
+            color: var(--text-main) !important;
+        }
+
+        /* Force Pagination links to turn dark */
+        [data-theme="dark"] .pagination .page-link {
+            background-color: var(--bg-card) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+        [data-theme="dark"] .pagination .page-item.active .page-link {
+            background-color: var(--pcci-red) !important;
+            border-color: var(--pcci-red) !important;
+            color: #fff !important;
+        }
+        [data-theme="dark"] .pagination .page-item.disabled .page-link {
+            background-color: var(--table-header) !important;
+            color: var(--text-muted) !important;
+        }
+
+        /* Force text to stay readable */
+        [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, 
+        [data-theme="dark"] h4, [data-theme="dark"] h5, [data-theme="dark"] h6 {
+            color: var(--text-main) !important;
+        }
+        [data-theme="dark"] .text-muted, [data-theme="dark"] p { 
+            color: var(--text-muted) !important; 
+        }
+        [data-theme="dark"] .page-header { 
+            color: #fff !important; /* Keep the red header text white */
+        }
+
+
+        /* MOBILE HAMBURGER BUTTON & OVERLAY */
         .hamburger-btn {
             display: none;
             position: fixed;
@@ -278,19 +405,8 @@
             z-index: 1200;
         }
 
-        .back-to-top-btn.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .back-to-top-btn:hover {
-            background: #9a182d;
-        }
-
-        /* ============================================== */
-        /* RESPONSIVE BREAKPOINTS                         */
-        /* ============================================== */
+        .back-to-top-btn.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .back-to-top-btn:hover { background: #9a182d; }
 
         @media (max-width: 991.98px) {
             .hamburger-btn { display: flex; }
@@ -307,12 +423,10 @@
 
             .sidebar.open {
                 transform: translateX(0);
-                box-shadow: 5px 0 25px rgba(0, 0, 0, 0.15);
+                box-shadow: 5px 0 25px rgba(0, 0, 0, 0.5);
             }
 
             .main { width: 100%; }
-            
-            /* Add top padding to body content so it isn't hidden under hamburger */
             .admin-content-shell > :first-child { padding-top: 75px !important; }
         }
 
@@ -327,12 +441,10 @@
 </head>
 <body>
 
-    {{-- Mobile hamburger button --}}
     <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle sidebar">
         <i class="bi bi-list" id="hamburgerIcon"></i>
     </button>
 
-    {{-- Overlay for mobile sidebar --}}
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <aside class="sidebar" id="adminSidebar">
@@ -376,7 +488,6 @@
                 <i class="bi bi-person-gear"></i> ADMIN USERS
             </a>
 
-            {{-- CONTENT DROPDOWN --}}
             <div class="nav-dropdown">
                 <button class="nav-dropdown-toggle {{ request()->routeIs('content.*') ? 'active open' : '' }}" id="contentDropdownToggle">
                     <i class="bi bi-collection-play"></i> CONTENT
@@ -388,6 +499,10 @@
                     <a href="{{ route('content.event-admin') }}" class="{{ request()->routeIs('content.event-admin') ? 'active' : '' }}">Event</a>
                 </div>
             </div>
+
+            <a href="{{ route('admin.settings') }}" class="nav-link {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
+                <i class="bi bi-gear-fill"></i> SETTINGS
+            </a>
         </nav>
 
         <div class="logout-box mt-auto">
@@ -432,36 +547,30 @@
             sidebar.classList.add('open');
             overlay.classList.add('active');
             hamburgerIcon.classList.replace('bi-list', 'bi-x-lg');
-            document.body.style.overflow = 'hidden'; // Prevent scrolling bg
+            document.body.style.overflow = 'hidden';
         }
 
         function closeSidebar() {
             sidebar.classList.remove('open');
             overlay.classList.remove('active');
             hamburgerIcon.classList.replace('bi-x-lg', 'bi-list');
-            document.body.style.overflow = ''; // Restore scrolling
+            document.body.style.overflow = '';
         }
 
         hamburgerBtn.addEventListener('click', function() {
-            if (sidebar.classList.contains('open')) {
-                closeSidebar();
-            } else {
-                openSidebar();
-            }
+            if (sidebar.classList.contains('open')) closeSidebar();
+            else openSidebar();
         });
 
         overlay.addEventListener('click', closeSidebar);
 
-        // Close sidebar when a nav link is clicked (mobile)
         sidebar.querySelectorAll('.nav-link, .nav-dropdown-menu a, .btn-logout').forEach(function(link) {
             link.addEventListener('click', function() {
-                if (window.innerWidth <= 991.98) {
-                    closeSidebar();
-                }
+                if (window.innerWidth <= 991.98) closeSidebar();
             });
         });
 
-        // Back to top button for all admin pages (scroll container is .main)
+        // Back to top button
         const adminMainContent = document.getElementById('mainContent');
         const adminBackToTop = document.getElementById('adminBackToTop');
 

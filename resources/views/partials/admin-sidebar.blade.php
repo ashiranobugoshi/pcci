@@ -41,6 +41,9 @@
         <a href="{{ route('admin.users') }}" class="nav-link {{ request()->routeIs('admin.users') ? 'active' : '' }}">
             <i class="bi bi-person-gear"></i> ADMIN USERS
         </a>
+        <a href="{{ route('admin.settings') }}" class="nav-link {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
+            <i class="bi bi-gear-fill"></i> SETTINGS
+    </a>
 
         {{-- CONTENT DROPDOWN --}}
         <div class="nav-dropdown">
@@ -54,6 +57,11 @@
                 <a href="{{ route('content.event-admin') }}" class="{{ request()->routeIs('content.event-admin') ? 'active' : '' }}">Event</a>
             </div>
         </div>
+
+        {{-- NEW SETTINGS TAB (BELOW CONTENT) --}}
+        <a href="{{ route('admin.settings') }}" class="nav-link {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
+            <i class="bi bi-gear-fill"></i> SETTINGS
+        </a>
     </nav>
 
     <div class="logout-box mt-auto">

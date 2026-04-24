@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('landing.home'); // or whatever your homepage view is
+    return view('landing.home');
 })->name('home');
 
 Route::get('/membership', function () {
@@ -12,7 +12,7 @@ Route::get('/membership', function () {
 
 Route::get('/about', function () {
     return view('landing.about');
-})->name('about');  // <--- This 'name' part is crucial!
+})->name('about');
     
 Route::get('/contact', function () {
     return view('landing.contact');
@@ -50,6 +50,16 @@ Route::get('/admin/users', function () {
     return view('admin.admin-users');
 })->name('admin.users');
 
+// --- NEW SETTINGS ROUTE ---
+Route::get('/setup-password', function () {
+    return view('auth.setup-password');
+})->name('setup-password');
+
+// --- NEW SETTINGS ROUTE ---
+Route::get('/admin/settings', function () {
+    return view('admin.settings');
+})->name('admin.settings');
+
 //treasurer dashboard route
 Route::get('/treasurer-dashboard', function () {
     return view('treasurer.dashboard');
@@ -76,9 +86,7 @@ Route::get('/applicants', function () {
     return view('admin.applicants');
 })->name('applicants');
 
-// The detailed Applicant Profile page
 Route::get('/applicant/{id}', function ($id) {
-    // Simulate different data based on ID for demonstration
     $applicantData = [
         'id' => $id,
         'name' => ($id == 1) ? 'Sarah Geronimo' : 'Bamboo Manalac',
@@ -89,7 +97,6 @@ Route::get('/applicant/{id}', function ($id) {
 
     return view('admin.applicant-profile', ['applicant' => $applicantData]);
 })->name('applicant.profile');
-
 
 Route::get('/content/board-of-trustees', function () {
     return view('landing.board-of-trustees');

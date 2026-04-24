@@ -57,6 +57,7 @@
     }
 
     .text-danger { color: #e32636; }
+    .text-success { color: #4ade80 !important; }
 
     .form-control-dark, .form-select-dark {
         background-color: #1f222e !important;
@@ -109,7 +110,7 @@
     }
 
     .step-progress-fill {
-        width: 20%;
+        width: 16%;
         height: 100%;
         background-color: #d1d5db; 
         border-radius: 3px;
@@ -173,6 +174,7 @@
     .btn-next:disabled {
         background-color: #555;
         cursor: not-allowed;
+        transform: none;
     }
 
     .btn-prev {
@@ -191,6 +193,21 @@
         transform: translateY(-2px);
     }
 
+    .btn-reset-form {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #d1d5db;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+    }
+    .btn-reset-form:hover {
+        background: rgba(220, 53, 69, 0.1);
+        color: #ff6b6b;
+        border-color: rgba(220, 53, 69, 0.3);
+    }
+
     .d-none { display: none !important; }
 
     #global-error {
@@ -203,6 +220,10 @@
         display: none;
         text-align: center;
     }
+
+    /* Animation for buttons */
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .spin { display: inline-block; animation: spin 1s linear infinite; }
 
     /* ===== RESPONSIVE MEDIA QUERIES ===== */
     @media (max-width: 767.98px) {
@@ -219,176 +240,9 @@
         .btn-prev, .btn-next {
             width: 100%;
         }
-        /* Make form label and helper text stack neatly */
         .d-flex.justify-content-between .helper-text-right {
             font-size: 0.65rem;
             align-self: flex-end;
-        }
-    }
-
-    .signup-gate-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 2000;
-        background: rgba(17, 20, 30, 0.48);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
-
-    .signup-gate-card {
-        width: 100%;
-        max-width: 430px;
-        background: #2a2e3e;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px;
-        box-shadow: 0 18px 55px rgba(0, 0, 0, 0.45);
-        padding: 28px 28px 24px;
-        text-align: center;
-        position: relative;
-    }
-
-    .signup-gate-close {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        width: 32px;
-        height: 32px;
-        border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        background: transparent;
-        color: #ffffff;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        line-height: 1;
-        cursor: pointer;
-        transition: background-color 0.2s ease, border-color 0.2s ease;
-    }
-
-    .signup-gate-close:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.4);
-    }
-
-    .signup-gate-icon {
-        width: 70px;
-        height: 70px;
-        margin: 0 auto 16px;
-        border-radius: 999px;
-        border: 2px solid rgba(255, 255, 255, 0.7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #ffffff;
-        font-size: 30px;
-    }
-
-    .signup-gate-title {
-        font-family: 'Poppins', sans-serif;
-        font-weight: 700;
-        font-size: 2rem;
-        margin-bottom: 16px;
-        line-height: 1.2;
-    }
-
-    .signup-gate-input {
-        width: 100%;
-        background: #232737;
-        border: 1px solid #3a3f50;
-        color: #fff;
-        border-radius: 10px;
-        padding: 12px 14px;
-        font-size: 1rem;
-        margin-bottom: 14px;
-    }
-
-    .signup-gate-input:focus {
-        outline: none;
-        border-color: #4e598c;
-        box-shadow: 0 0 0 0.2rem rgba(78, 89, 140, 0.25);
-    }
-
-    .signup-gate-desc {
-        color: #d1d5db;
-        font-size: 0.95rem;
-        line-height: 1.45;
-        margin-bottom: 16px;
-    }
-
-    .signup-gate-error {
-        display: none;
-        background: rgba(227, 38, 54, 0.18);
-        border: 1px solid rgba(227, 38, 54, 0.75);
-        color: #ffc3c7;
-        border-radius: 8px;
-        padding: 8px 10px;
-        margin-bottom: 12px;
-        font-size: 0.84rem;
-    }
-
-    .signup-gate-line {
-        width: 80px;
-        height: 3px;
-        border-radius: 2px;
-        margin: 18px auto 0;
-        background: rgba(255, 255, 255, 0.22);
-    }
-
-    .signup-gate-confirm {
-        min-width: 160px;
-        margin: 10px auto 0;
-        display: block;
-    }
-
-    .signup-gate-otp-wrap {
-        display: none;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 12px;
-    }
-
-    .signup-gate-otp-wrap.active {
-        display: flex;
-    }
-
-    .signup-gate-otp-input {
-        flex: 0 0 132px;
-        background: #232737;
-        border: 1px solid #3a3f50;
-        color: #fff;
-        border-radius: 10px;
-        padding: 10px 12px;
-        font-size: 1.1rem;
-        letter-spacing: 2px;
-        text-align: center;
-    }
-
-    .signup-gate-otp-input:focus {
-        outline: none;
-        border-color: #4e598c;
-        box-shadow: 0 0 0 0.2rem rgba(78, 89, 140, 0.25);
-    }
-
-    .signup-gate-otp-help {
-        color: #9ca3af;
-        font-size: 0.74rem;
-        line-height: 1.35;
-        text-align: left;
-        margin: 0;
-    }
-
-    @media (max-width: 575.98px) {
-        .signup-gate-card {
-            padding: 24px 18px 20px;
-        }
-
-        .signup-gate-title {
-            font-size: 1.65rem;
         }
     }
 </style>
@@ -430,7 +284,12 @@
                                     <i id="header-icon" class="bi bi-envelope fs-3 me-3"></i> 
                                     <h3 id="header-title" class="mb-0 fw-bold step-title fs-4 fs-sm-3">Verify Account</h3>
                                 </div>
-                                <span id="step-counter" class="text-white small">Step 1 of 6</span>
+                                <div class="d-flex align-items-center gap-3">
+                                    <button type="button" class="btn-reset-form" onclick="showResetModal()" title="Reset the entire form">
+                                        <i class="bi bi-arrow-clockwise"></i> Reset
+                                    </button>
+                                    <span id="step-counter" class="text-white small">Step 1 of 6</span>
+                                </div>
                             </div>
                             <p id="header-desc" class="text-white mb-3" style="color: #d1d5db !important;">Verify your email address to begin registration.</p>
                             <div class="step-progress">
@@ -443,13 +302,17 @@
                             <div class="mb-3">
                                 <label class="form-label-custom">Email Address <span class="text-danger">*</span></label>
                                 <input id="signupGateEmail" type="email" class="form-control form-control-dark" placeholder="Enter your email address" required>
+                                <div id="emailStatusMessage" class="helper-text-small mt-2 text-success" style="display: none;"></div>
                             </div>
+                            
                             <div class="mb-3 d-none" id="signupGateOtpWrap">
                                 <label class="form-label-custom">OTP Code <span class="text-danger">*</span></label>
-                                <input id="signupGateOtp" type="text" class="form-control form-control-dark" placeholder="Enter OTP" maxlength="6" inputmode="numeric">
-                                <div class="helper-text-small">Enter the one-time code sent to your email.</div>
+                                <input id="signupGateOtp" type="text" class="form-control form-control-dark" placeholder="Enter 6-digit OTP" maxlength="6" inputmode="numeric">
+                                <div class="helper-text-small mt-2 text-success" id="otpMessage"></div>
                             </div>
-                            <div id="signupGateError" class="signup-gate-error" style="display:none;">Please enter a valid email address.</div>
+                            
+                            <div id="signupGateError" style="display:none; color: #ff6b6b; font-size: 0.9rem; margin-bottom: 15px;"></div>
+                            
                             <div class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 mt-4">
                                 <a href="{{ route('login') }}" class="btn btn-prev">Back to Login</a>
                                 <button type="button" class="btn btn-next" id="signupGateActionBtn" onclick="handleSignupGateAction()">Verify Email</button>
@@ -457,15 +320,6 @@
                         </div>
 
                         <div id="step-2" class="d-none">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-person fs-3 me-3"></i> 
-                                    <h3 class="mb-0 fw-bold step-title fs-4 fs-sm-3">Basic Profile</h3>
-                                </div>
-                                <span class="text-white small">Step 2 of 6</span>
-                            </div>
-                            <p class="text-white mb-3" style="color: #d1d5db !important;">Tell us about yourself and your business.</p>
-                            <!-- Business info fields moved here from old step 1 -->
                             <div class="mb-3">
                                 <div class="d-flex justify-content-between">
                                     <label class="form-label-custom">Business Name <span class="text-danger">*</span></label>
@@ -521,7 +375,7 @@
                                 </div>
                                 <div class="col-sm-6">
                                     <label class="form-label-custom">Email <span class="text-danger">*</span></label>
-                                    <input type="email" name="email" class="form-control form-control-dark" placeholder="Enter your email" required>
+                                    <input type="email" name="email" class="form-control form-control-dark" placeholder="Verified Email" readonly required>
                                 </div>
                             </div>
                             <div class="row g-3 mb-4">
@@ -530,26 +384,13 @@
                                     <input type="text" name="tin_no" class="form-control form-control-dark" placeholder="Put N/A if none" required>
                                 </div>
                             </div>
-                            <div class="data-notice mb-4" style="background-color: rgba(63, 81, 181, 0.1); border: 1px solid #5c6bc0; border-radius: 8px; padding: 15px;">
-                                <div class="d-flex">
-                                    <i class="bi bi-info-circle me-2" style="color: #5c6bc0; margin-top: 2px;"></i>
-                                    <div>
-                                        <strong style="color: #7986cb; font-size: 0.95rem;">Data Usage Notice</strong><br>
-                                        <span style="font-size: 0.8rem; color: #8c9eff; line-height: 1.4; display: block;">
-                                            The information you provide will be reviewed by our administrators and, upon approval, will be listed in our public member directory.
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                            
                             <div class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 mt-4">
-                                <button type="button" class="btn btn-prev" onclick="goToStep(1)">Previous</button>
-                                <button type="button" class="btn btn-prev" onclick="goToStep(1)">Previous</button>
                                 <button type="button" class="btn btn-next" onclick="validateAndNext(2, 3)">Next</button>
                             </div>
                         </div>
-                        </div>
 
-                        <div id="step-2" class="d-none">
+                        <div id="step-3" class="d-none">
                             <div class="row g-3 mb-3">
                                 <div class="col-sm-6">
                                     <label class="form-label-custom">Surname <span class="text-danger">*</span></label>
@@ -581,14 +422,13 @@
                                 </div>
                             </div>
 
-                            {{-- RESPONSIVE BUTTON WRAPPER --}}
                             <div class="d-flex flex-column-reverse flex-sm-row justify-content-between gap-2 mt-4">
-                                <button type="button" class="btn btn-prev" onclick="goToStep(1)">Previous</button>
-                                <button type="button" class="btn btn-next" onclick="validateAndNext(2, 3)">Next</button>
+                                <button type="button" class="btn btn-prev" onclick="goToStep(2)">Previous</button>
+                                <button type="button" class="btn btn-next" onclick="validateAndNext(3, 4)">Next</button>
                             </div>
                         </div>
 
-                        <div id="step-3" class="d-none">
+                        <div id="step-4" class="d-none">
                             <div class="row g-3 mb-3">
                                 <div class="col-sm-6">
                                     <label class="form-label-custom">Surname <span class="text-danger">*</span></label>
@@ -620,14 +460,13 @@
                                 </div>
                             </div>
 
-                            {{-- RESPONSIVE BUTTON WRAPPER --}}
                             <div class="d-flex flex-column-reverse flex-sm-row justify-content-between gap-2 mt-4">
-                                <button type="button" class="btn btn-prev" onclick="goToStep(2)">Previous</button>
-                                <button type="button" class="btn btn-next" onclick="validateAndNext(3, 4)">Next</button>
+                                <button type="button" class="btn btn-prev" onclick="goToStep(3)">Previous</button>
+                                <button type="button" class="btn btn-next" onclick="validateAndNext(4, 5)">Next</button>
                             </div>
                         </div>
 
-                        <div id="step-4" class="d-none">
+                        <div id="step-5" class="d-none">
                             <div class="mb-4">
                                 <label class="form-label-custom">Are you a member of other organization(s)?</label>
                                 <select name="other_organizations" class="form-select form-select-dark" required>
@@ -637,14 +476,13 @@
                                 </select>
                             </div>
 
-                            {{-- RESPONSIVE BUTTON WRAPPER --}}
                             <div class="d-flex flex-column-reverse flex-sm-row justify-content-between gap-2 mt-5">
-                                <button type="button" class="btn btn-prev" onclick="goToStep(3)">Previous</button>
-                                <button type="button" class="btn btn-next" onclick="validateAndNext(4, 5)">Next</button>
+                                <button type="button" class="btn btn-prev" onclick="goToStep(4)">Previous</button>
+                                <button type="button" class="btn btn-next" onclick="validateAndNext(5, 6)">Next</button>
                             </div>
                         </div>
 
-                        <div id="step-5" class="d-none">
+                        <div id="step-6" class="d-none">
                             <div class="data-notice mb-4" style="background-color: rgba(63, 81, 181, 0.1); border: 1px solid #5c6bc0; border-radius: 8px; padding: 15px;">
                                 <div class="d-flex">
                                     <i class="bi bi-info-circle me-2" style="color: #5c6bc0; margin-top: 2px;"></i>
@@ -669,43 +507,24 @@
                             <div class="mb-5" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 10px; padding: 16px 18px;">
                                 <h6 class="mb-1" style="font-size: 1.1rem; font-weight: 700; color: #f8fafc;">Annual Membership Fee</h6>
                                 <p class="mb-1" style="font-size: 0.9rem; font-style: italic; font-weight: 600; color: #e5e7eb;">To be deposited to:</p>
-                                <p class="mb-0" style="font-size: 0.92rem; color: #e5e7eb; line-height: 1.5;">
-                                    ChinaBank<br>
-                                    Account Name: PCCI Valenzuela<br>
-                                    Account No.: 1054 0000 5989
-                                </p>
-
-                                <hr style="border-color: rgba(255, 255, 255, 0.18); margin: 16px 0 14px;">
-                                <h6 class="mb-2" style="font-size: 1rem; font-weight: 700; color: #f8fafc;">Your Bank Account Details</h6>
-                                <div class="row g-3 mb-2">
-                                    <div class="col-sm-6">
-                                        <label class="form-label-custom mb-1">Bank Name <span class="text-danger">*</span></label>
-                                        <input type="text" name="payer_bank_name" class="form-control form-control-dark" placeholder="Enter your bank name" required>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <label class="form-label-custom mb-1">Account Name <span class="text-danger">*</span></label>
-                                        <input type="text" name="payer_account_name" class="form-control form-control-dark" placeholder="Enter your account name" required>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <label class="form-label-custom mb-1">Account Number <span class="text-danger">*</span></label>
-                                        <input type="text" name="payer_account_number" class="form-control form-control-dark" placeholder="Enter your account number" required>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <label class="form-label-custom mb-1">Reference Number</label>
-                                        <input type="text" name="payment_reference_number" class="form-control form-control-dark" placeholder="Enter transfer reference no.">
-                                    </div>
+                                
+                                <div id="dynamicBankInfoBox" class="mb-3">
+                                    <p class="mb-0" style="font-size: 0.92rem; color: #a0aec0; line-height: 1.5;">
+                                        <i class="bi bi-arrow-repeat spin"></i> Loading bank details...
+                                    </p>
                                 </div>
 
-                                <p class="mt-2 mb-3" style="font-size: 0.78rem; color: #cbd5e1;">
+                                <hr style="border-color: rgba(255, 255, 255, 0.18); margin: 16px 0 14px;">
+
+                                <p class="mb-3" style="font-size: 0.78rem; color: #cbd5e1;">
                                     Upload 1 supported file: PDF, document or image. Max 100 MB.
                                 </p>
                                 <label class="form-label-custom mb-2">Proof of Payment <span class="text-danger">*</span></label>
                                 <input type="file" name="proof_of_payment" class="form-control form-control-dark" accept="image/*,.pdf" required>
                             </div>
 
-                            {{-- RESPONSIVE BUTTON WRAPPER --}}
                             <div class="d-flex flex-column-reverse flex-sm-row justify-content-between gap-2 mt-4">
-                                <button type="button" class="btn btn-prev" onclick="goToStep(4)">Previous</button>
+                                <button type="button" class="btn btn-prev" onclick="goToStep(5)">Previous</button>
                                 <button type="button" id="finalSubmitBtn" class="btn btn-next" onclick="submitData()">Submit</button>
                             </div>
                         </div>
@@ -733,92 +552,339 @@
     </div>
 </div>
 
+<div class="modal fade" id="resetModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background-color: #2b2d3c; color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Reset</h5>
+            </div>
+            <div class="modal-body border-0 pt-3">
+                <p style="color: #d1d5db; margin-bottom: 0;">Are you sure you want to completely reset the form? This will erase everything you have typed and send you back to Step 1. This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer border-0 pt-2">
+                <button type="button" class="btn btn-secondary" style="background: rgba(255,255,255,0.1); border: none;" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" style="background: #e32636; border: none; font-weight: 600;" onclick="executeReset()">Yes, Reset Form</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
-    let signupGateStep = 'email';
-
-    function goToLoginFromSignupGate() {
-        window.location.href = "{{ route('login') }}";
+    // --- RESET FORM LOGIC ---
+    function showResetModal() {
+        const modal = new bootstrap.Modal(document.getElementById('resetModal'));
+        modal.show();
     }
+
+    function executeReset() {
+        // 1. Reset the actual HTML form inputs
+        document.getElementById('registrationForm').reset();
+        
+        // 2. Erase everything from browser LocalStorage
+        clearAutoSave();
+        
+        // 3. Reset the Email Verification Gate UI
+        signupGateStep = 'verify_email';
+        
+        const emailEl = document.getElementById('signupGateEmail');
+        const otpEl = document.getElementById('signupGateOtp');
+        const actionBtn = document.getElementById('signupGateActionBtn');
+        const otpWrap = document.getElementById('signupGateOtpWrap');
+        const emailStatusMsg = document.getElementById('emailStatusMessage');
+        const errorEl = document.getElementById('signupGateError');
+        
+        if (emailEl) {
+            emailEl.readOnly = false;
+            emailEl.style.opacity = '1';
+            emailEl.value = '';
+        }
+        if (otpEl) otpEl.value = '';
+        if (actionBtn) {
+            actionBtn.textContent = 'Verify Email';
+            actionBtn.disabled = false;
+        }
+        if (otpWrap) otpWrap.classList.add('d-none');
+        if (emailStatusMsg) emailStatusMsg.style.display = 'none';
+        if (errorEl) errorEl.style.display = 'none';
+
+        // 4. Send them back to Step 1
+        goToStep(1);
+
+        // 5. Hide the Modal
+        const modalEl = document.getElementById('resetModal');
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) {
+            modalInstance.hide();
+        }
+    }
+
+
+    // --- FETCH DYNAMIC BANK DETAILS ---
+    async function loadPaymentChannels() {
+        const box = document.getElementById('dynamicBankInfoBox');
+        if (!box) return;
+
+        try {
+            const apiUrl = `${window.API_BASE_URL || 'https://pcciv-api.onrender.com/api'}/v1/payment-channels`;
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' }
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                const channels = result.data || result || [];
+                
+                if (channels.length > 0) {
+                    const bank = channels[0];
+                    const displayBankName = bank.bank_name || bank.name || 'Bank Name Not Set';
+                    const displayAccountName = bank.account_name || bank.account_title || 'N/A';
+                    const displayAccountNumber = bank.account_number || bank.account_no || bank.number || 'N/A';
+
+                    box.innerHTML = `
+                        <p class="mb-0" style="font-size: 0.92rem; color: #e5e7eb; line-height: 1.5;">
+                            <strong style="color: #fff; font-size: 1rem;">${displayBankName}</strong><br>
+                            Account Name: ${displayAccountName}<br>
+                            Account No.: <strong style="color: #4ade80;">${displayAccountNumber}</strong>
+                        </p>
+                    `;
+                } else {
+                    box.innerHTML = `<p style="color: #fbbf24; font-size: 0.9rem;">No bank details available at this time.</p>`;
+                }
+            } else {
+                box.innerHTML = `<p style="color: #f87171; font-size: 0.9rem;">Failed to load bank details.</p>`;
+            }
+        } catch (e) {
+            console.error('Error fetching bank details:', e);
+            box.innerHTML = `<p style="color: #f87171; font-size: 0.9rem;">Network error loading bank details.</p>`;
+        }
+    }
+
+    // --- AUTO-SAVE LOGIC ---
+    const AUTOSAVE_KEY = 'pcci_signup_autosave_data';
+
+    function saveFormData() {
+        const form = document.getElementById('registrationForm');
+        const inputs = form.querySelectorAll('input:not([type="file"]):not([type="hidden"]), select');
+        const dataObj = {};
+
+        const gateEmail = document.getElementById('signupGateEmail');
+        if (gateEmail) dataObj['signupGateEmail'] = gateEmail.value;
+
+        inputs.forEach(input => {
+            if (input.name) dataObj[input.name] = input.value;
+        });
+
+        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(dataObj));
+    }
+
+    function loadFormData() {
+        const savedData = localStorage.getItem(AUTOSAVE_KEY);
+        if (!savedData) return;
+
+        try {
+            const dataObj = JSON.parse(savedData);
+            const form = document.getElementById('registrationForm');
+
+            Object.keys(dataObj).forEach(key => {
+                if (key === 'signupGateEmail') {
+                    const el = document.getElementById('signupGateEmail');
+                    if(el) el.value = dataObj[key];
+                    return;
+                }
+
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input && input.type !== 'file') {
+                    input.value = dataObj[key];
+                }
+            });
+        } catch (e) {
+            console.error('Failed to load auto-save data', e);
+        }
+    }
+
+    function clearAutoSave() {
+        localStorage.removeItem(AUTOSAVE_KEY);
+        localStorage.removeItem('pcci_email_verified');
+        localStorage.removeItem('pcci_current_step');
+    }
+
+    // --- LIVE API: GATE / OTP LOGIC ---
+    let signupGateStep = 'verify_email'; 
 
     function isValidGateEmail(email) {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
     }
 
-    function openOtpStep(emailValue) {
+    async function handleSignupGateAction() {
         const emailEl = document.getElementById('signupGateEmail');
-        const otpWrapEl = document.getElementById('signupGateOtpWrap');
+        const otpWrap = document.getElementById('signupGateOtpWrap');
         const otpEl = document.getElementById('signupGateOtp');
-        const descEl = document.querySelector('.signup-gate-desc');
-        const actionBtn = document.getElementById('signupGateActionBtn');
-        const lineEl = document.getElementById('signupGateLine');
-
-        signupGateStep = 'otp';
-        if (emailEl) {
-            emailEl.readOnly = true;
-            emailEl.style.opacity = '0.75';
-        }
-        if (descEl) {
-            descEl.textContent = `OTP sent to ${emailValue}. Enter the code below to continue.`;
-        }
-        if (otpWrapEl) otpWrapEl.classList.add('active');
-        if (lineEl) lineEl.style.margin = '12px auto 14px';
-        if (actionBtn) actionBtn.textContent = 'Confirm';
-        otpEl?.focus();
-    }
-
-    function unlockSignupForm(emailValue) {
-        const signupEmailEl = document.querySelector('input[name="email"]');
-        if (signupEmailEl) signupEmailEl.value = emailValue;
-
-        const overlay = document.getElementById('signupGateOverlay');
-        if (overlay) overlay.style.display = 'none';
-    }
-
-    function handleSignupGateAction() {
-        const gateEmailEl = document.getElementById('signupGateEmail');
-        const gateOtpEl = document.getElementById('signupGateOtp');
         const errorEl = document.getElementById('signupGateError');
-        const emailValue = (gateEmailEl?.value || '').trim();
+        const actionBtn = document.getElementById('signupGateActionBtn');
+        const emailStatusMsg = document.getElementById('emailStatusMessage');
+        const otpMessage = document.getElementById('otpMessage');
+
+        const emailValue = emailEl.value.trim();
 
         if (!isValidGateEmail(emailValue)) {
-            if (errorEl) {
-                errorEl.textContent = 'Please enter a valid email address.';
+            errorEl.textContent = 'Please enter a valid email address.';
+            errorEl.style.display = 'block';
+            return;
+        }
+
+        errorEl.style.display = 'none';
+
+        // 1. STATE: SEND OTP 
+        if (signupGateStep === 'verify_email') {
+            actionBtn.disabled = true;
+            actionBtn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Sending OTP...';
+
+            try {
+                const apiUrl = `${window.API_BASE_URL || 'http://127.0.0.1:8000/api'}/email/send-otp`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email: emailValue }) 
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    emailEl.readOnly = true;
+                    emailEl.style.opacity = '0.6';
+                    emailStatusMsg.style.display = 'none';
+                    
+                    otpWrap.classList.remove('d-none');
+                    otpMessage.innerHTML = `<i class="bi bi-envelope-check"></i> A 6-digit code has been sent to <strong>${emailValue}</strong>.`;
+                    actionBtn.textContent = 'Verify OTP';
+                    
+                    signupGateStep = 'verify_otp';
+                    otpEl.focus();
+                } else {
+                    let errorHtml = `<b>Validation Failed:</b> ${data.message || 'Check your email.'}`;
+                    if (data.errors) {
+                        errorHtml += '<ul style="margin-bottom:0; margin-top:5px; padding-left:20px;">';
+                        for (const [field, messages] of Object.entries(data.errors)) {
+                            errorHtml += `<li><b>${field}</b>: ${messages.join(', ')}</li>`;
+                        }
+                        errorHtml += '</ul>';
+                    }
+                    errorEl.innerHTML = errorHtml;
+                    errorEl.style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                errorEl.textContent = 'Network error. Please make sure the server is running.';
                 errorEl.style.display = 'block';
+            } finally {
+                actionBtn.disabled = false;
+                if(signupGateStep !== 'verify_otp') {
+                    actionBtn.textContent = 'Verify Email';
+                }
             }
-            gateEmailEl?.focus();
             return;
         }
 
-        if (signupGateStep === 'email') {
-            if (errorEl) errorEl.style.display = 'none';
-            openOtpStep(emailValue);
-            return;
-        }
-
-        const otpValue = (gateOtpEl?.value || '').replace(/\D/g, '');
-        if (!/^\d{6}$/.test(otpValue)) {
-            if (errorEl) {
+        // 2. STATE: VERIFY OTP
+        if (signupGateStep === 'verify_otp') {
+            const otpValue = otpEl.value.trim();
+            
+            if (!/^\d{6}$/.test(otpValue)) {
                 errorEl.textContent = 'Please enter a valid 6-digit OTP code.';
                 errorEl.style.display = 'block';
+                return;
             }
-            gateOtpEl?.focus();
-            return;
-        }
 
-        if (errorEl) errorEl.style.display = 'none';
-        unlockSignupForm(emailValue);
+            actionBtn.disabled = true;
+            actionBtn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Verifying Code...';
+
+            try {
+                const apiUrl = `${window.API_BASE_URL || 'http://127.0.0.1:8000/api'}/email/verify-otp`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        email: emailValue,
+                        otp: otpValue
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    const step2EmailEl = document.querySelector('input[name="email"]');
+                    if (step2EmailEl) {
+                        step2EmailEl.value = emailValue;
+                        saveFormData();
+                    }
+                    
+                    localStorage.setItem('pcci_email_verified', 'true');
+                    goToStep(2);
+                } else {
+                    let errorHtml = `<b>Verification Failed:</b> ${data.message || 'Invalid OTP.'}`;
+                    if (data.errors) {
+                        errorHtml += '<ul style="margin-bottom:0; margin-top:5px; padding-left:20px;">';
+                        for (const [field, messages] of Object.entries(data.errors)) {
+                            errorHtml += `<li><b>${field}</b>: ${messages.join(', ')}</li>`;
+                        }
+                        errorHtml += '</ul>';
+                    }
+                    errorEl.innerHTML = errorHtml;
+                    errorEl.style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                errorEl.textContent = 'Network error. Please try again.';
+                errorEl.style.display = 'block';
+            } finally {
+                actionBtn.disabled = false;
+                actionBtn.textContent = 'Verify OTP';
+            }
+        }
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        loadFormData();
+        loadPaymentChannels();
+
+        const isVerified = localStorage.getItem('pcci_email_verified');
+        if (isVerified === 'true') {
+            const savedStep = parseInt(localStorage.getItem('pcci_current_step')) || 2;
+            if (savedStep > 1) {
+                goToStep(savedStep);
+            }
+        }
+
+        const formInputs = document.querySelectorAll('#registrationForm input:not([type="file"]):not([type="hidden"]), #registrationForm select');
+        formInputs.forEach(input => {
+            input.addEventListener('input', saveFormData);
+            input.addEventListener('change', saveFormData);
+        });
+
         const gateEmailEl = document.getElementById('signupGateEmail');
         const gateOtpEl = document.getElementById('signupGateOtp');
         const errorEl = document.getElementById('signupGateError');
+        const emailStatusMsg = document.getElementById('emailStatusMessage');
+        const actionBtn = document.getElementById('signupGateActionBtn');
 
         if (gateEmailEl) {
-            gateEmailEl.focus();
-            gateEmailEl.addEventListener('input', function () {
-                if (errorEl) errorEl.style.display = 'none';
+            gateEmailEl.addEventListener('input', function () { 
+                errorEl.style.display = 'none'; 
+                emailStatusMsg.style.display = 'none';
+                
+                if (signupGateStep !== 'verify_otp') {
+                    signupGateStep = 'verify_email';
+                    actionBtn.textContent = 'Verify Email';
+                }
             });
             gateEmailEl.addEventListener('keydown', function (event) {
                 if (event.key === 'Enter') {
@@ -831,7 +897,7 @@
         if (gateOtpEl) {
             gateOtpEl.addEventListener('input', function () {
                 this.value = this.value.replace(/\D/g, '').slice(0, 6);
-                if (errorEl) errorEl.style.display = 'none';
+                errorEl.style.display = 'none';
             });
             gateOtpEl.addEventListener('keydown', function (event) {
                 if (event.key === 'Enter') {
@@ -842,6 +908,7 @@
         }
     });
 
+    // --- FORM NAVIGATION LOGIC ---
     function validateAndNext(currentStepId, nextStepId) {
         const currentStepContainer = document.getElementById('step-' + currentStepId);
         const requiredFields = currentStepContainer.querySelectorAll('[required]');
@@ -856,16 +923,13 @@
         }
 
         if (allValid) {
-            if (nextStepId === 'success') {
-                // Do nothing, submitData handles this
-            } else {
-                goToStep(nextStepId);
-            }
+            goToStep(nextStepId);
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
         }
     }
 
     function goToStep(step) {
-        const steps = [1, 2, 3, 4, 5];
+        const steps = [1, 2, 3, 4, 5, 6];
         const headerContainer = document.getElementById('form-header');
         const headerTitle = document.getElementById('header-title');
         const headerDesc = document.getElementById('header-desc');
@@ -880,46 +944,53 @@
 
         document.getElementById('step-' + step).classList.remove('d-none');
 
-        // Logic to update headers/progress
         if (step === 1) {
+            headerTitle.innerText = 'Verify Account';
+            headerDesc.innerText = 'Verify your email address to begin registration.';
+            headerDesc.classList.remove('d-none');
+            headerIcon.className = 'bi bi-envelope fs-3 me-3';
+            progressBar.style.width = '16%';
+            stepCounter.innerText = 'Step 1 of 6';
+        } else if (step === 2) {
             headerTitle.innerText = 'Basic Profile';
             headerDesc.innerText = 'Tell us about yourself and your business.';
             headerDesc.classList.remove('d-none');
             headerIcon.className = 'bi bi-person fs-3 me-3';
-            progressBar.style.width = '20%';
-            stepCounter.innerText = 'Step 1 of 5';
-        } else if (step === 2) {
+            progressBar.style.width = '33%';
+            stepCounter.innerText = 'Step 2 of 6';
+        } else if (step === 3) {
             headerTitle.innerText = 'Official Representative';
             headerDesc.innerText = 'President or Officer.';
             headerDesc.classList.remove('d-none');
             headerIcon.className = 'bi bi-person fs-3 me-3'; 
-            progressBar.style.width = '40%';
-            stepCounter.innerText = 'Step 2 of 5';
-        } else if (step === 3) {
+            progressBar.style.width = '50%';
+            stepCounter.innerText = 'Step 3 of 6';
+        } else if (step === 4) {
             headerTitle.innerText = 'Alternative Representative/s';
             headerDesc.innerText = 'Add other business representatives.';
             headerDesc.classList.remove('d-none');
             headerIcon.className = 'bi bi-person fs-3 me-3';
-            progressBar.style.width = '60%';
-            stepCounter.innerText = 'Step 3 of 5';
-        } else if (step === 4) {
-            headerTitle.innerText = 'Membership in Other Business Organization';
+            progressBar.style.width = '66%';
+            stepCounter.innerText = 'Step 4 of 6';
+        } else if (step === 5) {
+            headerTitle.innerText = 'Other Organizations';
             headerDesc.classList.add('d-none'); 
             headerIcon.className = 'bi bi-person fs-3 me-3';
-            progressBar.style.width = '80%';
-            stepCounter.innerText = 'Step 4 of 5';
-        } else if (step === 5) {
+            progressBar.style.width = '83%';
+            stepCounter.innerText = 'Step 5 of 6';
+        } else if (step === 6) {
             headerTitle.innerText = 'Document Upload';
             headerDesc.innerText = 'Upload required business documents.';
             headerDesc.classList.remove('d-none');
             headerIcon.className = 'bi bi-file-earmark-text fs-3 me-3';
             progressBar.style.width = '100%';
-            stepCounter.innerText = 'Step 5 of 5';
+            stepCounter.innerText = 'Step 6 of 6';
         }
+
+        localStorage.setItem('pcci_current_step', step);
     }
 
     async function submitData() {
-        // Button State
         const submitBtn = document.getElementById('finalSubmitBtn');
         const errorDiv = document.getElementById('global-error');
         
@@ -927,33 +998,28 @@
         submitBtn.innerText = 'Submitting...';
         errorDiv.style.display = 'none';
 
-        // Gather Data as FormData (supports file uploads)
         const form = document.getElementById('registrationForm');
         const formData = new FormData(form);
 
-        // Remove Laravel CSRF token — not needed for external API
         formData.delete('_token');
 
-        // Fix Type Conversions (API expects integers)
         formData.set('number_of_employees', parseInt(formData.get('number_of_employees') || 0));
         formData.set('year_established', parseInt(formData.get('year_established') || 2024));
 
         try {
-            // Post to the API as multipart/form-data (for file uploads)
             const response = await fetch(`${window.API_BASE_URL}/v1/apply`, {
                 method: 'POST',
-                headers: {
-                    'Accept': 'application/json'
-                },
+                headers: { 'Accept': 'application/json' },
                 body: formData
             });
 
             const result = await response.json();
 
             if (response.ok) {
+                // IMPORTANT: Wipe everything when they succeed!
+                clearAutoSave(); 
                 showSuccessStep();
             } else {
-                // Error Handling — show specific validation errors
                 console.error('API validation errors:', result);
                 let msg = result.message || 'Submission failed.';
                 if (result.errors) {
@@ -978,7 +1044,7 @@
     }
 
     function showSuccessStep() {
-        const steps = [1, 2, 3, 4, 5];
+        const steps = [1, 2, 3, 4, 5, 6];
         const headerContainer = document.getElementById('form-header');
         
         steps.forEach(s => document.getElementById('step-' + s).classList.add('d-none'));
