@@ -215,7 +215,7 @@
 {{-- ======== ACTION BUTTONS ======== --}}
 <div id="actionButtons" class="applicant-actions">
     <button class="btn-approve" id="btnApprove" type="button" onclick="openApproveModal()">Approve</button>
-    <button class="btn-reject" id="btnReject" type="button" onclick="handleStatusUpdate('rejected')">Reject</button>
+    <button class="btn-reject" id="btnReject" type="button" onclick="handleReject()">Reject</button>
 </div>
 
 {{-- ======== APPROVE MODAL ======== --}}
@@ -229,6 +229,7 @@
         <form id="approveForm" onsubmit="submitApprove(event)">
             <div class="form-group">
                 <label>Membership Type</label>
+                {{-- Values reverted to exact strings as expected by the Admin route --}}
                 <select id="approveMembershipType" required>
                     <option value="Regular">Regular</option>
                     <option value="Life">Life</option>
@@ -244,7 +245,7 @@
 
 <script>
     const token = localStorage.getItem('token');
-    // Extract ID from the URL (e.g., /applicant/5 -> 5)
+    // Extract ID from the URL (e.g., /applicant/66 -> 66)
     const applicantId = window.location.pathname.split('/').pop();
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -255,11 +256,18 @@
         fetchApplicantData();
     });
 
+    // Helper function to force HTTPS for API requests
+    function getSecureApiUrl() {
+        let secureApiUrl = window.API_BASE_URL || 'https://pcciv-api.onrender.com/api';
+        if (secureApiUrl.includes('onrender.com') && secureApiUrl.startsWith('http://')) {
+            secureApiUrl = secureApiUrl.replace('http://', 'https://');
+        }
+        return secureApiUrl;
+    }
+
     async function fetchApplicantData() {
         try {
-            // First, try to fetch the specific applicant if your API supports it.
-            // If there's no specific GET /v1/applicants/{id} endpoint, we fetch all and filter.
-            const response = await fetch(`${window.API_BASE_URL}/v1/applicants`, {
+            const response = await fetch(`${getSecureApiUrl()}/v1/applicants`, {
                 headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
             });
 
@@ -271,7 +279,6 @@
 
             const result = await response.json();
             if (response.ok && result.data) {
-                // Find the specific applicant from the array
                 const applicant = result.data.find(app => app.id == applicantId);
                 
                 if (applicant) {
@@ -295,15 +302,12 @@
         const rep = app.official_representative || {};
         const org = app.organization_membership || {};
 
-        // Hide Loading, Show Data
         document.getElementById('loadingState').style.display = 'none';
         document.getElementById('detailCard').style.display = 'block';
         document.getElementById('actionButtons').style.display = 'flex';
 
-        // Header Title
         document.getElementById('headerTitle').innerText = `Applicant Details: ${safe(profile.registered_business_name).toUpperCase()}`;
 
-        // Basic Profile & Location
         document.getElementById('val-registered-name').innerText = safe(profile.registered_business_name);
         document.getElementById('val-trade-name').innerText = safe(profile.trade_name);
         document.getElementById('val-email').innerText = safe(profile.email);
@@ -316,13 +320,11 @@
         document.getElementById('val-region').innerText = safe(loc.region);
         document.getElementById('val-zip').innerText = safe(loc.zip_code);
 
-        // Representative
         document.getElementById('val-rep-first').innerText = safe(rep.first_name);
         document.getElementById('val-rep-last').innerText = safe(rep.surname);
         document.getElementById('val-rep-designation').innerText = safe(rep.designation);
         document.getElementById('val-rep-contact').innerText = safe(rep.contact_no);
 
-        // Organization
         document.getElementById('val-org-type').innerText = safe(org.type_of_company);
         document.getElementById('val-org-reg-no').innerText = safe(org.registration_number);
         document.getElementById('val-org-date').innerText = safe(org.date_of_registration);
@@ -334,17 +336,16 @@
         const statusEl = document.getElementById('val-status');
         statusEl.innerText = safe(app.status);
         
-        if (status === 'approved') {
-            statusEl.style.color = '#15803d'; // Green
+        if (status === 'approved' || status === 'paid') {
+            statusEl.style.color = '#15803d'; 
             document.getElementById('btnApprove').style.display = 'none';
         } else if (status === 'rejected' || status === 'declined') {
-            statusEl.style.color = '#b91c1c'; // Red
+            statusEl.style.color = '#b91c1c'; 
             document.getElementById('btnReject').style.display = 'none';
         } else {
-            statusEl.style.color = '#c2410c'; // Orange (Pending)
+            statusEl.style.color = '#c2410c'; 
         }
 
-        // Pre-select membership type in modal if it exists
         if (app.membership_type && app.membership_type !== 'N/A') {
             const select = document.getElementById('approveMembershipType');
             for(let i=0; i < select.options.length; i++) {
@@ -361,7 +362,6 @@
         document.getElementById('loadingState').style.color = '#b91c1c';
     }
 
-    // --- APPROVAL MODAL LOGIC ---
     function openApproveModal() {
         document.getElementById('approveModal').style.display = 'flex';
         document.getElementById('approveError').style.display = 'none';
@@ -371,70 +371,106 @@
         document.getElementById('approveModal').style.display = 'none';
     }
 
+    // --- DIRECT ADMIN APPROVE API CALL (PUT /v1/applicants/{id}) ---
     async function submitApprove(e) {
         e.preventDefault();
-        const membershipType = document.getElementById('approveMembershipType').value;
-        await handleStatusUpdate('approved', membershipType);
-    }
-
-    // --- API STATUS UPDATE ---
-    async function handleStatusUpdate(newStatus, membershipType = null) {
+        
+        const membershipTypeString = document.getElementById('approveMembershipType').value;
         const btnApprove = document.getElementById('approveSubmitBtn');
-        const btnReject = document.getElementById('btnReject');
         const errorDiv = document.getElementById('approveError');
         
-        // UI Loading State
-        if (newStatus === 'approved') {
-            btnApprove.disabled = true; btnApprove.innerText = 'Approving...';
-        } else {
-            if(!confirm('Are you sure you want to reject this applicant?')) return;
-            btnReject.disabled = true; btnReject.innerText = 'Rejecting...';
-        }
+        btnApprove.disabled = true; 
+        btnApprove.innerText = 'Approving...';
+        errorDiv.style.display = 'none';
 
         try {
-            const payload = { status: newStatus };
-            if (membershipType) payload.membership_type = membershipType;
-
-            const response = await fetch(`${window.API_BASE_URL}/v1/applicants/${applicantId}`, {
+            const targetUrl = `${getSecureApiUrl()}/v1/applicants/${applicantId}`;
+            
+            // Log exactly what we are sending for debugging
+            console.log("Submitting Admin Approval to:", targetUrl);
+            
+            const response = await fetch(targetUrl, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    status: "approved",
+                    membership_type: membershipTypeString
+                })
             });
 
-            const data = await response.json();
+            // Capture raw response to expose backend server errors
+            const responseText = await response.text();
+            let data = {};
+            try { data = JSON.parse(responseText); } catch(e) { console.error("Non-JSON API Response"); }
 
             if (response.ok) {
-                if (newStatus === 'approved') closeApproveModal();
-                // Refresh data to show updated status
-                fetchApplicantData();
+                closeApproveModal();
+                fetchApplicantData(); // Refresh UI instantly
             } else {
-                if (newStatus === 'approved') {
-                    errorDiv.innerText = data.message || 'Approval failed.';
-                    errorDiv.style.display = 'block';
-                } else {
-                    alert(data.message || 'Rejection failed.');
-                }
+                console.error("Backend Error:", response.status, data);
+                // Expose the exact API failure directly to the user
+                errorDiv.innerHTML = `<strong>Backend API Error (${response.status}):</strong><br> ${data.message || responseText || 'Unknown backend failure.'}`;
+                errorDiv.style.display = 'block';
             }
         } catch (err) {
-            console.error(err);
-            if (newStatus === 'approved') {
-                errorDiv.innerText = 'Network error. Please try again.';
-                errorDiv.style.display = 'block';
-            } else {
-                alert('Network error. Please try again.');
-            }
+            console.error("Network Catch:", err);
+            errorDiv.innerText = 'Network error: ' + err.message;
+            errorDiv.style.display = 'block';
         } finally {
-            if (newStatus === 'approved') {
-                btnApprove.disabled = false; btnApprove.innerText = 'Confirm Approval';
-            } else {
-                btnReject.disabled = false; btnReject.innerText = 'Reject';
-            }
+            btnApprove.disabled = false; 
+            btnApprove.innerText = 'Confirm Approval';
         }
     }
-</script>
+
+    // --- DIRECT ADMIN REJECT API CALL (PUT /v1/applicants/{id}) ---
+    async function handleReject() {
+        if (!confirm("Are you sure you want to reject this applicant?")) {
+            return;
+        }
+
+        const btnReject = document.getElementById('btnReject');
+        btnReject.disabled = true; 
+        btnReject.innerText = 'Rejecting...';
+
+        try {
+            const targetUrl = `${getSecureApiUrl()}/v1/applicants/${applicantId}`;
+            
+            console.log("Submitting Admin Rejection to:", targetUrl);
+            
+            const response = await fetch(targetUrl, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    status: "rejected"
+                })
+            });
+
+            const responseText = await response.text();
+            let data = {};
+            try { data = JSON.parse(responseText); } catch(e) {}
+
+            if (response.ok) {
+                fetchApplicantData(); 
+            } else {
+                console.error("Backend Error:", response.status, data);
+                alert(`Backend API Error (${response.status}): \n\n${data.message || responseText || 'Unknown backend failure.'}`);
+            }
+        } catch (err) {
+            console.error("Network Catch:", err);
+            alert('Network error: ' + err.message);
+        } finally {
+            btnReject.disabled = false; 
+            btnReject.innerText = 'Reject';
+        }
+    }
+</script>   
 
 @endsection

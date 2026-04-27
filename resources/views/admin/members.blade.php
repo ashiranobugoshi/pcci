@@ -104,7 +104,7 @@
         border: 2px solid var(--pcci-red);
         border-radius: 12px;
         overflow: hidden;
-            table-layout: fixed;
+        table-layout: fixed;
     }
 
     .members-table {
@@ -112,7 +112,7 @@
         border-collapse: collapse;
         font-size: 0.88rem;
     }
-            padding: 12px 10px;
+
     /* --- Table Header --- */
     .members-table thead th {
         background-color: var(--pcci-red);
@@ -120,13 +120,11 @@
         font-weight: 700;
         font-size: 0.82rem;
         padding: 14px 12px;
-            padding: 12px 10px;
         white-space: nowrap;
         border-right: 1px solid rgba(255,255,255,0.15);
         position: relative;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
         cursor: default;
     }
 
@@ -134,7 +132,6 @@
         border-right: none;
     }
 
-    /* Sort icon styling */
     .sort-icon {
         font-size: 0.7rem;
         margin-left: 4px;
@@ -280,7 +277,6 @@
         to { opacity: 1; transform: scale(1) translateY(0); }
     }
 
-    /* --- Red Top Accent Bar --- */
     .modal-card::before {
         content: '';
         display: block;
@@ -289,7 +285,6 @@
         flex-shrink: 0;
     }
 
-    /* --- Header --- */
     .modal-header {
         display: flex;
         align-items: center;
@@ -352,14 +347,12 @@
         transform: rotate(90deg) scale(1.05);
     }
 
-    /* --- Divider --- */
     .modal-divider {
         height: 1px;
         background: #eee;
         margin: 0 28px;
     }
 
-    /* --- Body (Scrollable) --- */
     .modal-body {
         padding: 24px 32px 12px;
         overflow-y: auto;
@@ -370,7 +363,6 @@
     .modal-body::-webkit-scrollbar-track { background: transparent; }
     .modal-body::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
 
-    /* --- Section Label inside modal --- */
     .modal-section-label {
         font-size: 0.7rem;
         font-weight: 700;
@@ -391,7 +383,6 @@
         background: #eee;
     }
 
-    /* --- Field --- */
     .modal-field {
         margin-bottom: 32px;
     }
@@ -415,7 +406,7 @@
 
     .modal-field input,
     .modal-field select {
-        width: 90%;
+        width: 100%;
         padding: 12px 14px;
         border: 1.5px solid #9d9d9db9;
         border-radius: 10px;
@@ -441,13 +432,13 @@
         box-shadow: 0 0 0 3px rgba(190, 30, 56, 0.08);
     }
 
-    /* --- Input with icon --- */
     .modal-input-icon-wrap {
         position: relative;
     }
 
     .modal-input-icon-wrap input {
         padding-left: 40px;
+        width: 100%;
     }
 
     .modal-input-icon-wrap .input-icon {
@@ -465,26 +456,23 @@
         color: var(--pcci-red);
     }
 
-    /* --- Select arrow --- */
    .modal-select-wrap {
-    position: relative;
-    width: 100%;
+        position: relative;
+        width: 100%;
     }
 
     .modal-select-wrap select {
         width: 100%;
-        padding: 12px 40px 12px 16px; /* extra right padding for arrow */
+        padding: 12px 40px 12px 16px;
         border-radius: 12px;
         border: 1px solid #ccc;
-        appearance: none; /* remove default arrow */
+        appearance: none;
         -webkit-appearance: none;
-        -moz-appearance: none;
         background: #fff;
         font-size: 1rem;
         cursor: pointer;
     }
 
-    /* Custom Arrow */
     .modal-select-wrap::after {
         content: '\F282';
         font-family: 'bootstrap-icons';
@@ -494,27 +482,20 @@
         transform: translateY(-50%);
         pointer-events: none;
         font-size: 0.8rem;
-        color: #d32f2f; /* use your red variable if needed */
+        color: #d32f2f;
     }
 
-    /* --- Two-column row --- */
     .modal-row {
         display: flex;
+        gap: 16px;
     }
 
     .modal-row .modal-field {
         flex: 1;
+        margin-right: 0;
+        margin-left: 0;
     }
 
-    .modal-row .modal-field:first-child {
-        margin-right: 16px;
-    }
-
-    .modal-row .modal-field:last-child {
-        margin-left: 16px;
-    }
-
-    /* --- Date input --- */
     .modal-field input[type="date"] {
         color: #999;
     }
@@ -529,7 +510,6 @@
         opacity: 0.7;
     }
 
-    /* --- Footer --- */
     .modal-footer {
         display: flex;
         justify-content: flex-end;
@@ -578,77 +558,24 @@
         box-shadow: 0 4px 14px rgba(190, 30, 56, 0.35);
     }
 
-    /* --- Responsive --- */
     @media (max-width: 992px) {
-        .members-header-banner {
-            padding: 20px 24px;
-            font-size: 1.5rem;
-        }
-
-        .members-table-wrapper {
-            overflow-x: auto;
-        }
-
-        .members-table {
-                min-width: 720px;
-        }
+        .members-header-banner { padding: 20px 24px; font-size: 1.5rem; }
+        .members-table-wrapper { overflow-x: auto; }
+        .members-table { min-width: 720px; }
     }
-        @media (max-width: 768px) {
-            .members-table th,
-            .members-table td {
-                padding: 10px 8px;
-            }
-        }
-
+    @media (max-width: 768px) {
+        .members-table th, .members-table td { padding: 10px 8px; }
+    }
     @media (max-width: 576px) {
-        .members-toolbar {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .search-box {
-            max-width: 100%;
-        }
-
-        .btn-add-new {
-            text-align: center;
-            justify-content: center;
-        }
-
-        .members-pagination {
-            flex-direction: column;
-            gap: 12px;
-            text-align: center;
-        }
-
-        .modal-card {
-            margin: 12px;
-            max-height: 95vh;
-        }
-
-        .modal-header {
-            padding: 16px 20px 12px;
-        }
-
-        .modal-body {
-            padding: 16px 20px 8px;
-        }
-
-        .modal-footer {
-            padding: 14px 20px 18px;
-        }
-
-        .modal-row {
-            flex-direction: column;
-        }
-
-        .modal-row .modal-field:first-child {
-            margin-right: 0;
-        }
-
-        .modal-row .modal-field:last-child {
-            margin-left: 0;
-        }
+        .members-toolbar { flex-direction: column; align-items: stretch; }
+        .search-box { max-width: 100%; }
+        .btn-add-new { text-align: center; justify-content: center; }
+        .members-pagination { flex-direction: column; gap: 12px; text-align: center; }
+        .modal-card { margin: 12px; max-height: 95vh; }
+        .modal-header { padding: 16px 20px 12px; }
+        .modal-body { padding: 16px 20px 8px; }
+        .modal-footer { padding: 14px 20px 18px; }
+        .modal-row { flex-direction: column; gap: 0; }
     }
 </style>
 
@@ -682,7 +609,6 @@
             </tr>
         </thead>
         <tbody id="membersTableBody">
-            {{-- This row shows while Javascript is fetching data --}}
             <tr>
                 <td colspan="8" style="text-align: center; padding: 30px; color: #888;">
                     <i class="bi bi-arrow-repeat" style="display:inline-block; animation: spin 1s linear infinite;"></i> Loading members...
@@ -725,7 +651,7 @@
                 </div>
                 <h3>
                     Add New Member
-                    <span>Fill in the details below to register a new member.</span>
+                    <span>Select an eligible company to register as a new member.</span>
                 </h3>
             </div>
             <button class="modal-close-btn" id="closeModal" type="button">
@@ -738,70 +664,62 @@
         {{-- Body --}}
         <div class="modal-body">
 
-            {{-- Section: Company Info --}}
             <div class="modal-section-label">Company Information</div>
 
-            {{-- Company Name --}}
             <div class="modal-field">
-                <label>Company Name <span class="required">*</span></label>
+                <label>Eligible Company <span class="required">*</span></label>
                 <div class="modal-select-wrap">
                     <select id="addMemberCompanySelect">
-                        <option value="">Select treasurer-approved company . . .</option>
+                        <option value="">Loading eligible companies . . .</option>
                     </select>
                 </div>
             </div>
 
-            {{-- Section: Membership Details --}}
             <div class="modal-section-label">Membership Details</div>
 
             <div class="modal-field">
-                <label>Membership Type (Selected by Treasurer) <span class="required">*</span></label>
-                <input type="text" id="addMembershipType" value="Select a company first" readonly>
+                <label>Membership Type</label>
+                <input type="text" id="addMembershipType" value="Select a company first" readonly style="background: #e9ecef;">
             </div>
 
-            {{-- Member Type & Status --}}
             <div class="modal-row">
                 <div class="modal-field">
-                    <label>Member Type <span class="required">*</span></label>
-                    <input type="text" id="addMemberType" value="Member" readonly>
+                    <label>Member Type</label>
+                    <input type="text" id="addMemberType" value="Member" readonly style="background: #e9ecef;">
                 </div>
                 <div class="modal-field">
-                    <label>Status <span class="required">*</span></label>
-                    <input type="text" id="addMemberStatus" value="Active" readonly>
+                    <label>Status</label>
+                    <input type="text" id="addMemberStatus" value="Active" readonly style="background: #e9ecef;">
                 </div>
             </div>
 
-            {{-- Business Address --}}
             <div class="modal-field">
-                <label>Business Address <span class="required">*</span></label>
+                <label>Business Address</label>
                 <div class="modal-input-icon-wrap">
-                    <input type="text" id="addMemberBusinessAddress" placeholder="Business address will auto-fill" readonly>
+                    <input type="text" id="addMemberBusinessAddress" placeholder="Business address will auto-fill" readonly style="background: #e9ecef;">
                     <i class="bi bi-geo-alt input-icon"></i>
                 </div>
             </div>
 
-            {{-- Section: Contact Details --}}
             <div class="modal-section-label">Contact Details</div>
 
-            {{-- Email & Contact --}}
             <div class="modal-row">
                 <div class="modal-field">
-                    <label>Email <span class="required">*</span></label>
+                    <label>Email</label>
                     <div class="modal-input-icon-wrap">
-                        <input type="email" id="addMemberEmail" placeholder="Email will auto-fill" readonly>
+                        <input type="email" id="addMemberEmail" placeholder="Email will auto-fill" readonly style="background: #e9ecef;">
                         <i class="bi bi-envelope input-icon"></i>
                     </div>
                 </div>
                 <div class="modal-field">
                     <label>Contact Number</label>
                     <div class="modal-input-icon-wrap">
-                        <input type="text" id="addMemberContact" placeholder="Contact number will auto-fill" readonly>
+                        <input type="text" id="addMemberContact" placeholder="Contact number will auto-fill" readonly style="background: #e9ecef;">
                         <i class="bi bi-phone input-icon"></i>
                     </div>
                 </div>
             </div>
 
-            {{-- Registration Date --}}
             <div class="modal-field">
                 <label>Induction Date <span class="required">*</span></label>
                 <input type="date" id="addMemberInductionDate">
@@ -822,7 +740,7 @@
 
 <script>
     // ==============================================
-    // MODAL LOGIC 
+    // MODAL UI LOGIC 
     // ==============================================
     document.querySelector('.btn-add-new').addEventListener('click', function() {
         document.getElementById('addMemberModal').classList.add('active');
@@ -843,15 +761,14 @@
     });
 
     // ==============================================
-    // REAL API FETCH LOGIC
+    // API AND DATA LOGIC
     // ==============================================
     let allMembersData = [];
     let approvedApplicantsForModal = [];
-    const ADMIN_MEMBERS_API_BASE = '/api';
-    const ADMIN_MEMBERS_AUTO_REFRESH_MS = 15000;
     let currentPage = 1;
     let rowsPerPage = 10;
     let currentSearchTerm = '';
+    const ADMIN_MEMBERS_AUTO_REFRESH_MS = 15000;
 
     document.addEventListener('DOMContentLoaded', function() {
         fetchMembers();
@@ -898,6 +815,7 @@
             renderMembers(currentSearchTerm);
         });
 
+        // Event listener for Dropdown Auto-Fill
         const companySelect = document.getElementById('addMemberCompanySelect');
         if (companySelect) {
             companySelect.addEventListener('change', function () {
@@ -920,9 +838,6 @@
     }
 
     function populateAddMemberReadOnlyFields(applicant) {
-        const profile = applicant?.basic_profile || {};
-        const representative = applicant?.official_representative || {};
-
         const businessAddressInput = document.getElementById('addMemberBusinessAddress');
         const emailInput = document.getElementById('addMemberEmail');
         const contactInput = document.getElementById('addMemberContact');
@@ -930,103 +845,122 @@
         const memberTypeInput = document.getElementById('addMemberType');
         const statusSelect = document.getElementById('addMemberStatus');
 
+        if (!applicant) {
+            if (businessAddressInput) businessAddressInput.value = '';
+            if (emailInput) emailInput.value = '';
+            if (contactInput) contactInput.value = '';
+            if (membershipTypeInput) membershipTypeInput.value = 'Select a company first';
+            if (memberTypeInput) memberTypeInput.value = 'Member';
+            if (statusSelect) statusSelect.value = 'Active';
+            return;
+        }
+
+        const profile = applicant?.basic_profile || {};
+        const representative = applicant?.official_representative || {};
+
         if (businessAddressInput) {
-            businessAddressInput.value = applicant ? (getApplicantBusinessAddress(profile) || 'N/A') : '';
+            businessAddressInput.value = getApplicantBusinessAddress(profile) || 'N/A';
         }
         if (emailInput) {
-            emailInput.value = applicant ? (profile.email || 'N/A') : '';
+            emailInput.value = profile.email || 'N/A';
         }
         if (contactInput) {
-            contactInput.value = applicant ? (profile.telephone_no || representative.contact_no || 'N/A') : '';
+            contactInput.value = profile.telephone_no || representative.contact_no || 'N/A';
         }
         if (membershipTypeInput) {
-            const treasurerPickedMembershipType = String(applicant?.membership_type || '').trim().toLowerCase();
-            let normalizedMembershipType = '';
-
-            if (Number(applicant?.membership_type_id) === 1) {
-                normalizedMembershipType = 'Micro';
-            } else if (Number(applicant?.membership_type_id) === 2) {
-                normalizedMembershipType = 'Small Enterprises';
-            } else if (treasurerPickedMembershipType.includes('small')) {
-                normalizedMembershipType = 'Small Enterprises';
-            } else if (treasurerPickedMembershipType.includes('micro')) {
-                normalizedMembershipType = 'Micro';
-            } else if (treasurerPickedMembershipType === 'regular') {
-                // Legacy value from old flow; treat as Micro in the current 2-option setup.
-                normalizedMembershipType = 'Micro';
-            }
-
-            membershipTypeInput.value = applicant
-                ? (normalizedMembershipType || 'Micro')
-                : 'Select a company first';
+            membershipTypeInput.value = applicant.membership_type || 'Annual';
         }
         if (memberTypeInput) {
-            memberTypeInput.value = applicant ? 'Member' : 'Member';
+            memberTypeInput.value = 'Member';
         }
         if (statusSelect) {
             statusSelect.value = 'Active';
         }
     }
 
+    // --- FETCH ELIGIBLE APPLICANTS FOR ADD MODAL ---
     async function fetchTreasurerApprovedApplicantsForModal() {
         const companySelect = document.getElementById('addMemberCompanySelect');
         const token = localStorage.getItem('token');
         if (!companySelect) return;
 
-        companySelect.innerHTML = '<option value="">Loading treasurer-approved companies . . .</option>';
+        companySelect.innerHTML = '<option value="">Loading eligible companies . . .</option>';
 
         try {
-            const response = await fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            // Fetch fresh members list, paid applicants, and approved applicants simultaneously
+            const [membersRes, paidRes, approvedRes] = await Promise.all([
+                fetch(`${window.API_BASE_URL}/v1/members`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+                }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+                }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+                })
+            ]);
 
-            if (!response.ok) throw new Error('Failed to load paid applicants');
+            if (!membersRes.ok || !paidRes.ok || !approvedRes.ok) {
+                throw new Error('Failed to load necessary API data');
+            }
 
-            const data = await response.json();
-            const paidApplicants = Array.isArray(data.data) ? data.data : [];
+            const membersData = await membersRes.json();
+            const paidData = await paidRes.json();
+            const approvedData = await approvedRes.json();
 
+            const freshMembers = Array.isArray(membersData.data) ? membersData.data : [];
+            const paidApplicants = Array.isArray(paidData.data) ? paidData.data : [];
+            const approvedApplicants = Array.isArray(approvedData.data) ? approvedData.data : [];
+            
+            // Combine both paid and approved applicants into one pool
+            const combinedApplicants = [...paidApplicants, ...approvedApplicants];
+
+            // Map exact emails and company names from the fresh members list for strict validation
             const existingMemberEmails = new Set(
-                (Array.isArray(allMembersData) ? allMembersData : [])
+                freshMembers
                     .map((member) => String(member?.applicant?.basic_profile?.email || '').trim().toLowerCase())
                     .filter(Boolean)
             );
 
             const existingMemberCompanyNames = new Set(
-                (Array.isArray(allMembersData) ? allMembersData : [])
+                freshMembers
                     .map((member) => String(member?.applicant?.basic_profile?.registered_business_name || '').trim().toLowerCase())
                     .filter(Boolean)
             );
 
-            approvedApplicantsForModal = paidApplicants.filter((applicant) => {
+            // Filter out anyone who is already an existing member
+            approvedApplicantsForModal = combinedApplicants.filter((applicant) => {
                 const email = String(applicant?.basic_profile?.email || '').trim().toLowerCase();
                 const companyName = String(applicant?.basic_profile?.registered_business_name || '').trim().toLowerCase();
 
                 if (email && existingMemberEmails.has(email)) return false;
                 if (companyName && existingMemberCompanyNames.has(companyName)) return false;
+                
                 return true;
             });
 
-            companySelect.innerHTML = '<option value="">Select treasurer-approved company . . .</option>';
+            companySelect.innerHTML = '<option value="">Select eligible company . . .</option>';
 
             approvedApplicantsForModal.forEach((applicant) => {
                 const companyName = applicant?.basic_profile?.registered_business_name || `Applicant #${applicant.id}`;
+                const statusLabel = String(applicant.status || '').toUpperCase();
+                
                 companySelect.insertAdjacentHTML(
                     'beforeend',
-                    `<option value="${applicant.id}">${companyName}</option>`
+                    `<option value="${applicant.id}">${companyName} (${statusLabel})</option>`
                 );
             });
 
             if (approvedApplicantsForModal.length === 0) {
-                companySelect.innerHTML = '<option value="">No treasurer-approved companies available</option>';
+                companySelect.innerHTML = '<option value="">No eligible companies available</option>';
             }
         } catch (error) {
-            console.error('Error loading treasurer-approved applicants for modal:', error);
+            console.error('Error loading eligible applicants for modal:', error);
             approvedApplicantsForModal = [];
-            companySelect.innerHTML = '<option value="">No treasurer-approved companies available</option>';
+            companySelect.innerHTML = '<option value="">No eligible companies available</option>';
         }
 
         populateAddMemberReadOnlyFields(null);
@@ -1044,7 +978,7 @@
         const inductionDate = (inductionDateInput?.value || '').trim();
 
         if (!selectedApplicant) {
-            alert('Please select a treasurer-approved company first.');
+            alert('Please select an eligible company first.');
             return;
         }
 
@@ -1068,7 +1002,7 @@
                 saveBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
             }
 
-            const response = await fetch(`${ADMIN_MEMBERS_API_BASE}/v1/members`, {
+            const response = await fetch(`${window.API_BASE_URL}/v1/members`, {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -1076,8 +1010,9 @@
                     'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({
+                    applicant_id: selectedApplicant.id, // <--- FIXED: Now sending the applicant ID
                     company_name: companyName,
-                    email,
+                    email: email,
                     induction_date: inductionDate,
                 }),
             });
@@ -1110,7 +1045,7 @@
         const token = localStorage.getItem('token');
 
         try {
-            const response = await fetch(`${ADMIN_MEMBERS_API_BASE}/v1/members`, {
+            const response = await fetch(`${window.API_BASE_URL}/v1/members`, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
@@ -1157,74 +1092,73 @@
         }
 
         pageItems.forEach(member => {
-                    
-                    // 1. Safely grab nested objects matching actual API structure
-                    const applicant = member.applicant || {};
-                    const profile = applicant.basic_profile || {};
-                    const loc = profile.business_location || {};
-                    const rep = applicant.official_representative || {};
+            const applicant = member.applicant || {};
+            const profile = applicant.basic_profile || {};
+            const loc = profile.business_location || {};
+            const rep = applicant.official_representative || {};
 
-                    // 2. Map standard fields from basic_profile
-                    const companyName = profile.registered_business_name || 'N/A';
-                    const email = profile.email || 'N/A';
-                    const status = member.status || 'Pending';
-                    const contact = profile.telephone_no || rep.contact_no || 'N/A';
-                    const memberType = member.membership_type_id === 1 ? 'Directory Member' : 'Regular Member';
+            const companyName = profile.registered_business_name || 'N/A';
+            const email = profile.email || 'N/A';
+            const status = member.status || 'Pending';
+            const contact = profile.telephone_no || rep.contact_no || 'N/A';
+            const memberType = member.membership_type_id === 1 ? 'Directory Member' : 'Regular Member';
 
-                    // 3. Construct full address from business_location
-                    let fullAddress = [];
-                    if (loc.business_address) fullAddress.push(loc.business_address);
-                    if (loc.city_municipality) fullAddress.push(loc.city_municipality);
-                    if (loc.province) fullAddress.push(loc.province);
-                    if (loc.region) fullAddress.push(loc.region);
-                    if (loc.zip_code) fullAddress.push(loc.zip_code);
+            let fullAddress = [];
+            if (loc.business_address) fullAddress.push(loc.business_address);
+            if (loc.city_municipality) fullAddress.push(loc.city_municipality);
+            if (loc.province) fullAddress.push(loc.province);
+            if (loc.region) fullAddress.push(loc.region);
+            if (loc.zip_code) fullAddress.push(loc.zip_code);
 
-                    const address = fullAddress.length > 0 ? fullAddress.join(', ') : 'N/A';
+            const address = fullAddress.length > 0 ? fullAddress.join(', ') : 'N/A';
 
-                    // 4. Construct Representative Name from official_representative
-                    let repName = [];
-                    if (rep.first_name) repName.push(rep.first_name);
-                    if (rep.mid_name) repName.push(rep.mid_name);
-                    if (rep.surname) repName.push(rep.surname);
-                    const registeredBy = repName.length > 0 ? repName.join(' ') : 'N/A';
+            let repName = [];
+            if (rep.first_name) repName.push(rep.first_name);
+            if (rep.mid_name) repName.push(rep.mid_name);
+            if (rep.surname) repName.push(rep.surname);
+            const registeredBy = repName.length > 0 ? repName.join(' ') : 'N/A';
 
-                    // 5. Format the date nicely (e.g., "3/12/2026")
-                    const regDate = member.created_at ? new Date(member.created_at).toLocaleDateString('en-US') : 'N/A';
+            const regDate = member.created_at ? new Date(member.created_at).toLocaleDateString('en-US') : 'N/A';
 
-                    // Make the Status color dynamic (Green for active, Yellow for pending, Red for disabled)
-                    let statusColor = '#be1e38'; // Default Red
-                    let statusBg = '#fdf2f2';
-                    
-                    if (status.toLowerCase() === 'active') {
-                        statusColor = '#15803d'; // Green
-                        statusBg = '#dcfce7';
-                    } else if (status.toLowerCase() === 'pending') {
-                        statusColor = '#b45309'; // Yellow/Orange
-                        statusBg = '#fef3c7';
-                    }
+            let statusColor = '#be1e38'; 
+            let statusBg = '#fdf2f2';
+            
+            if (status.toLowerCase() === 'active') {
+                statusColor = '#15803d'; 
+                statusBg = '#dcfce7';
+            } else if (status.toLowerCase() === 'pending') {
+                statusColor = '#b45309'; 
+                statusBg = '#fef3c7';
+            }
 
-                    // Inject the row into the table
-                    tbody.innerHTML += `
-                        <tr>
-                            <td style="font-weight: 700; color: #1a1a1a;">${companyName}</td>
-                            <td style="text-transform: capitalize;">${memberType}</td>
-                            <td>
-                                <span style="background: ${statusBg}; color: ${statusColor}; padding: 4px 10px; border-radius: 50rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
-                                    ${status}
-                                </span>
-                            </td>
-                            <td>${address}</td>
-                            <td>${email}</td>
-                            <td>${contact}</td>
-                            <td style="text-transform: capitalize;">${registeredBy}</td>
-                            <td>${regDate}</td>
-                        </tr>
-                    `;
-                });
+            tbody.innerHTML += `
+                <tr>
+                    <td style="font-weight: 700; color: #1a1a1a;">${companyName}</td>
+                    <td style="text-transform: capitalize;">${memberType}</td>
+                    <td>
+                        <span style="background: ${statusBg}; color: ${statusColor}; padding: 4px 10px; border-radius: 50rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
+                            ${status}
+                        </span>
+                    </td>
+                    <td>${address}</td>
+                    <td>${email}</td>
+                    <td>${contact}</td>
+                    <td style="text-transform: capitalize;">${registeredBy}</td>
+                    <td>${regDate}</td>
+                </tr>
+            `;
+        });
     }
 
     function getFilteredMembers(searchTerm) {
         return allMembersData.filter(member => {
+            const status = (member.status || '').toLowerCase();
+
+            // Block any member that is not paid, approved, or active
+            if (!['paid', 'approved', 'active'].includes(status)) {
+                return false;
+            }
+
             if (!searchTerm) return true;
 
             const applicant = member.applicant || {};
@@ -1237,9 +1171,13 @@
             const contact = (profile.telephone_no || '').toLowerCase();
             const repName = [rep.first_name, rep.mid_name, rep.surname].filter(Boolean).join(' ').toLowerCase();
             const address = [loc.business_address, loc.city_municipality, loc.province].filter(Boolean).join(' ').toLowerCase();
-            const status = (member.status || '').toLowerCase();
 
-            return companyName.includes(searchTerm) || email.includes(searchTerm) || contact.includes(searchTerm) || repName.includes(searchTerm) || address.includes(searchTerm) || status.includes(searchTerm);
+            return companyName.includes(searchTerm) || 
+            email.includes(searchTerm) || 
+            contact.includes(searchTerm) || 
+            repName.includes(searchTerm) || 
+            address.includes(searchTerm) || 
+            status.includes(searchTerm);
         });
     }
 

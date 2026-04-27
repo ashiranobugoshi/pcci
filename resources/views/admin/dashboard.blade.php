@@ -136,7 +136,5 @@
             el.textContent = Math.round(current);
         }, stepTime);
     }
-
-    function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
 </script>
 @endsection

@@ -28,7 +28,6 @@
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
         gap: 16px; 
-        /* Removed the max-height lock so the whole page scrolls normally */
     }
 
     /* --- Individual Card --- */
@@ -55,7 +54,6 @@
         color: inherit;
     }
 
-    /* Text wraps naturally now instead of hiding */
     .applicant-card-name {
         font-size: 1.05rem; 
         font-weight: 800;
@@ -63,17 +61,16 @@
         text-transform: uppercase;
         margin-bottom: 6px;
         width: 100%;
-        word-wrap: break-word; /* Allows long text to go to the next line */
+        word-wrap: break-word; 
         line-height: 1.3;
     }
 
-    /* Text wraps naturally now instead of hiding */
     .applicant-card-industry {
         font-size: 0.85rem; 
         color: #666;
         margin-bottom: 12px;
         width: 100%;
-        word-wrap: break-word; /* Allows long text to go to the next line */
+        word-wrap: break-word; 
         line-height: 1.4;
     }
 
@@ -96,7 +93,7 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        margin-top: auto; /* Pushes the badge to the bottom of the card */
+        margin-top: auto;
     }
 
     .status-pending { background-color: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
@@ -207,38 +204,18 @@
 
     /* --- Responsive --- */
     @media (max-width: 768px) {
-        .applicant-header-banner {
-            padding: 36px 24px;
-            font-size: 1.5rem;
-        }
-        .applicant-search-wrapper {
-            max-width: 100%;
-        }
-        .applicant-toolbar {
-            gap: 8px;
-        }
-        .applicant-toolbar .toolbar-group:last-child {
-            margin-left: 0;
-        }
+        .applicant-header-banner { padding: 36px 24px; font-size: 1.5rem; }
+        .applicant-search-wrapper { max-width: 100%; }
+        .applicant-toolbar { gap: 8px; }
+        .applicant-toolbar .toolbar-group:last-child { margin-left: 0; }
     }
 
     @media (max-width: 576px) {
         .applicant-header-banner { padding: 24px 20px; font-size: 1.3rem; }
-        .applicant-toolbar {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-        }
-        .applicant-toolbar .toolbar-group {
-            flex-wrap: wrap;
-        }
-        .applicant-toolbar .toolbar-group:last-child {
-            margin-left: 0;
-        }
-        .applicant-search {
-            font-size: 0.85rem;
-            padding: 9px 12px 9px 36px;
-        }
+        .applicant-toolbar { flex-direction: column; align-items: flex-start; gap: 10px; }
+        .applicant-toolbar .toolbar-group { flex-wrap: wrap; }
+        .applicant-toolbar .toolbar-group:last-child { margin-left: 0; }
+        .applicant-search { font-size: 0.85rem; padding: 9px 12px 9px 36px; }
     }
 </style>
 
@@ -257,9 +234,14 @@
 <div class="applicant-toolbar">
     <div class="toolbar-group">
         <span class="toolbar-label">Status:</span>
-        <button class="sort-btn active" type="button" disabled>
-            <i class="bi bi-clock"></i> Pending
-        </button>
+        {{-- NEW: Dropdown replaces the static button --}}
+        <select id="applicantStatusFilter" class="form-select form-select-sm text-muted fw-bold" style="height: 36px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; box-shadow: none; cursor:pointer; width: 140px; padding: 4px 10px;" onchange="applyFiltersAndSort()">
+            <option value="all">All Statuses</option>
+            <option value="pending" selected>Pending</option>
+            <option value="approved">Approved</option>
+            <option value="paid">Paid</option>
+            <option value="rejected">Rejected</option>
+        </select>
     </div>
     <div class="toolbar-group" style="margin-left: auto;">
         <span class="toolbar-label">Sort:</span>
@@ -294,6 +276,7 @@
         const grid = document.getElementById('applicantGrid');
 
         try {
+            // Fetch all applicants regardless of status
             const response = await fetch(`${window.API_BASE_URL}/v1/applicants`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -339,7 +322,7 @@
     function applyFiltersAndSort() {
         let filtered = [...allApplicants];
 
-        // Search
+        // 1. Search Filter
         const query = (document.getElementById('applicantSearch').value || '').toLowerCase().trim();
         if (query) {
             filtered = filtered.filter(app => {
@@ -352,13 +335,17 @@
             });
         }
 
-        // Always show pending applicants only
-        filtered = filtered.filter(app => {
-            const status = (app.status || '').toLowerCase();
-            return status === 'pending';
-        });
+        // 2. Status Filter
+        const statusVal = document.getElementById('applicantStatusFilter').value;
+        if (statusVal !== 'all') {
+            filtered = filtered.filter(app => {
+                const status = (app.status || '').toLowerCase();
+                if (statusVal === 'rejected' && status === 'declined') return true; // Safety check
+                return status === statusVal;
+            });
+        }
 
-        // Sort by name
+        // 3. Sort by Name
         if (nameSortAsc !== null) {
             filtered.sort((a, b) => {
                 const nameA = ((a.basic_profile || {}).registered_business_name || '').toLowerCase();
@@ -375,7 +362,7 @@
         grid.innerHTML = '';
 
         if (applicants.length === 0) {
-            grid.innerHTML = '<div class="grid-message">No pending applicants found.</div>';
+            grid.innerHTML = '<div class="grid-message">No applicants found matching the selected filters.</div>';
             return;
         }
 

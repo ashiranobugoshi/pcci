@@ -1,4 +1,4 @@
-{{-- APPLICANTS TAB --}}
+{{-- APPLICANTS TAB (TREASURER) --}}
 <div id="section-applicants" class="content-section" style="display: none;">
     <div class="mb-4">
         <h3 class="fw-bold text-dark mb-1" style="font-family: 'Poppins', sans-serif;">Applicants Queue</h3>
@@ -13,6 +13,12 @@
             </div>
             
             <div class="d-flex align-items-center gap-3">
+                {{-- STRICT STATUS FILTER FOR TREASURER --}}
+                <select id="applicantStatusFilter" class="form-select form-select-sm text-muted fw-bold" style="height: 36px; border-radius: 6px; border-color: #eee; font-size: 13px; box-shadow: none; cursor:pointer; width: 140px; background-color: #f8f9fb;">
+                    <option value="approved" selected>Approved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+
                 <select id="applicantSort" class="form-select form-select-sm text-muted fw-bold" style="height: 36px; border-radius: 6px; border-color: #eee; font-size: 13px; box-shadow: none; cursor:pointer; width: 140px; background-color: #f8f9fb;">
                     <option value="newest">Newest First</option>
                     <option value="oldest">Oldest First</option>

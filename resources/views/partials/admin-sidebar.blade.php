@@ -65,11 +65,8 @@
     </nav>
 
     <div class="logout-box mt-auto">
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="btn-logout d-flex justify-content-center align-items-center gap-2">
-                <i class="bi bi-box-arrow-right"></i> LOG OUT
-            </button>
-        </form>
-    </div>
+    <button type="button" class="btn-logout d-flex justify-content-center align-items-center gap-2" onclick="handleLogout(event)">
+        <i class="bi bi-box-arrow-right"></i> LOG OUT
+    </button>
+</div>
 </aside>

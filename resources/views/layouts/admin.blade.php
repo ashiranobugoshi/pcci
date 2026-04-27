@@ -506,12 +506,9 @@
         </nav>
 
         <div class="logout-box mt-auto">
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="btn-logout d-flex justify-content-center align-items-center gap-2">
-                    <i class="bi bi-box-arrow-right"></i> LOG OUT
-                </button>
-            </form>
+            <button type="button" class="btn-logout d-flex justify-content-center align-items-center gap-2" onclick="handleLogout(event)">
+                <i class="bi bi-box-arrow-right"></i> LOG OUT
+            </button>
         </div>
     </aside>
 
@@ -586,6 +583,39 @@
             });
             toggleAdminBackToTop();
         }
+
+        async function handleLogout(event) {
+        if (event) event.preventDefault();
+
+        try {
+            const token = localStorage.getItem('token');
+            
+            let secureApiUrl = window.API_BASE_URL || 'https://pcciv-api.onrender.com/api';
+            if (secureApiUrl.includes('onrender.com') && secureApiUrl.startsWith('http://')) {
+                secureApiUrl = secureApiUrl.replace('http://', 'https://');
+            }
+
+            if (token) {
+                await fetch(`${secureApiUrl}/v1/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+            }
+
+        } catch (error) {
+            console.error("Error during API logout:", error);
+        } finally {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userEmail');
+            
+            window.location.href = '/login';
+        }
+    }
     </script>
 </body>
 </html>

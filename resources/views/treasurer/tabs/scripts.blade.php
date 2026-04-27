@@ -1,13 +1,5 @@
 <script>
     const token = localStorage.getItem('token');
-    const apiBaseUrl = (window.API_BASE_URL || '').replace(/\/$/, '');
-    const apiOrigin = (() => {
-        try {
-            return apiBaseUrl ? new URL(apiBaseUrl).origin : window.location.origin;
-        } catch (_) {
-            return window.location.origin;
-        }
-    })();
     const TREASURER_MEMBERS_AUTO_REFRESH_MS = 15000;
     
     // Global data
@@ -25,6 +17,7 @@
     let filteredTransactionsData = [];
     let currentTransactionPage = 1;
     const transactionsPerPage = 10;
+    
     let dashboardPaymentRange = 'day';
     let dashboardRevenueRange = 'month';
     let dashboardBarChartInstance = null;
@@ -38,6 +31,8 @@
     let currentPasswordOtpCode = '';
     let currentPasswordOtpEmail = '';
     let accountImageFile = null;
+    
+    let approvedApplicantsForModal = []; // Used for the Add Member Modal
 
     let membershipTypes = [
         { "id": 1, "name": "Micro", "price": "500.00", "duration_in_months": 12 },
@@ -134,14 +129,7 @@
             const weekEnd = addDays(weekStart, 6);
             const prevWeekEnd = addDays(weekStart, -1);
             const prevWeekStart = addDays(prevWeekEnd, -6);
-            return {
-                currentStart: weekStart,
-                currentEnd: weekEnd,
-                prevStart: prevWeekStart,
-                prevEnd: prevWeekEnd,
-                currentLabel: "This Week's Payments:",
-                previousLabel: 'Last week payment:'
-            };
+            return { currentStart: weekStart, currentEnd: weekEnd, prevStart: prevWeekStart, prevEnd: prevWeekEnd, currentLabel: "This Week's Payments:", previousLabel: 'Last week payment:' };
         }
 
         if (rangeKey === 'month') {
@@ -149,14 +137,7 @@
             const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
             const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
             const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
-            return {
-                currentStart: monthStart,
-                currentEnd: monthEnd,
-                prevStart: prevMonthStart,
-                prevEnd: prevMonthEnd,
-                currentLabel: "This Month's Payments:",
-                previousLabel: 'Last month payment:'
-            };
+            return { currentStart: monthStart, currentEnd: monthEnd, prevStart: prevMonthStart, prevEnd: prevMonthEnd, currentLabel: "This Month's Payments:", previousLabel: 'Last month payment:' };
         }
 
         if (rangeKey === 'year') {
@@ -164,25 +145,11 @@
             const yearEnd = new Date(now.getFullYear(), 11, 31);
             const prevYearStart = new Date(now.getFullYear() - 1, 0, 1);
             const prevYearEnd = new Date(now.getFullYear() - 1, 11, 31);
-            return {
-                currentStart: yearStart,
-                currentEnd: yearEnd,
-                prevStart: prevYearStart,
-                prevEnd: prevYearEnd,
-                currentLabel: "This Year's Payments:",
-                previousLabel: 'Last year payment:'
-            };
+            return { currentStart: yearStart, currentEnd: yearEnd, prevStart: prevYearStart, prevEnd: prevYearEnd, currentLabel: "This Year's Payments:", previousLabel: 'Last year payment:' };
         }
 
         const yesterdayStart = addDays(todayStart, -1);
-        return {
-            currentStart: todayStart,
-            currentEnd: todayStart,
-            prevStart: yesterdayStart,
-            prevEnd: yesterdayStart,
-            currentLabel: "Today's Payments:",
-            previousLabel: 'Yesterday payment:'
-        };
+        return { currentStart: todayStart, currentEnd: todayStart, prevStart: yesterdayStart, prevEnd: yesterdayStart, currentLabel: "Today's Payments:", previousLabel: 'Yesterday payment:' };
     }
 
     function isDateBetween(dateObj, startDate, endDate) {
@@ -594,7 +561,6 @@
             });
         }
 
-        // Dashboard charts use the same computed values so they stay in sync with reports.
         const dashboardBar = document.getElementById('barChart');
         if (dashboardBar) {
             const revenueSeries = buildDashboardRevenueSeries(dashboardRevenueRange);
@@ -658,16 +624,12 @@
         const modal = document.getElementById('otpFeedbackModal');
         if (modal) modal.style.display = 'flex';
     }
-
     function hideOtpFeedbackModal() {
         const modal = document.getElementById('otpFeedbackModal');
         if (modal) modal.style.display = 'none';
     }
-
     function closeOtpFeedbackOverlay(e) {
-        if (e.target && e.target.id === 'otpFeedbackModal') {
-            hideOtpFeedbackModal();
-        }
+        if (e.target && e.target.id === 'otpFeedbackModal') hideOtpFeedbackModal();
     }
 
     async function requestPasswordChangeOtp() {
@@ -695,22 +657,16 @@
                     'Content-Type': 'application/json',
                     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
                 },
-                body: JSON.stringify({
-                    email: candidateEmail || null,
-                })
+                body: JSON.stringify({ email: candidateEmail || null })
             });
 
             const { data: result, raw } = await readApiResponse(response);
-            if (!response.ok) {
-                throw new Error(result.message || raw || 'Failed to request OTP. Please try again.');
-            }
+            if (!response.ok) throw new Error(result.message || raw || 'Failed to request OTP. Please try again.');
 
             const otpPayload = result?.data || {};
             const otpEmailEl = document.getElementById('otpTargetEmail');
             const emailFromApi = (otpPayload.email || candidateEmail || '').trim();
-            if (!emailFromApi) {
-                throw new Error('OTP response missing email.');
-            }
+            if (!emailFromApi) throw new Error('OTP response missing email.');
 
             currentPasswordOtpCode = otpPayload.otp ? String(otpPayload.otp) : '';
             if (otpEmailEl) otpEmailEl.innerText = emailFromApi;
@@ -729,18 +685,12 @@
         }
     }
 
-    function openOtpModal() {
-        document.getElementById('otpModal').style.display = 'flex';
-    }
-    
+    function openOtpModal() { document.getElementById('otpModal').style.display = 'flex'; }
     function hideOtpModal() {
         document.getElementById('otpModal').style.display = 'none';
         document.querySelectorAll('.otp-box').forEach(box => box.value = '');
     }
-    
-    function closeOtpOverlay(e) {
-        if (e.target.id === 'otpModal') hideOtpModal();
-    }
+    function closeOtpOverlay(e) { if (e.target.id === 'otpModal') hideOtpModal(); }
     
     function moveToNext(input, event) {
         input.value = String(input.value || '').replace(/\D/g, '').slice(-1);
@@ -749,7 +699,6 @@
             if (next && next.tagName.toLowerCase() === 'input') {
                 next.focus();
             } else if (!next) {
-                // Last OTP digit entered: verify OTP with backend before allowing reset flow.
                 currentPasswordOtpCode = Array.from(document.querySelectorAll('.otp-box')).map(box => box.value).join('');
                 verifyEnteredOtpAndProceed();
             }
@@ -758,24 +707,16 @@
 
     function pasteOtpIntoTreasurerBoxes(event) {
         event.preventDefault();
-
         const pasted = (event.clipboardData?.getData('text') || '').replace(/\D/g, '');
         if (!pasted) return;
 
         const boxes = Array.from(document.querySelectorAll('.otp-box'));
         const digits = pasted.slice(0, boxes.length).split('');
 
-        boxes.forEach((box, index) => {
-            box.value = digits[index] || '';
-        });
-
+        boxes.forEach((box, index) => { box.value = digits[index] || ''; });
         currentPasswordOtpCode = boxes.map(box => box.value).join('');
         const firstEmpty = boxes.find(box => !box.value);
-        if (firstEmpty) {
-            firstEmpty.focus();
-        } else {
-            verifyEnteredOtpAndProceed();
-        }
+        if (firstEmpty) { firstEmpty.focus(); } else { verifyEnteredOtpAndProceed(); }
     }
 
     async function verifyEnteredOtpAndProceed() {
@@ -783,7 +724,6 @@
             openOtpFeedbackModal('Invalid OTP', 'Please enter a valid 6-digit OTP.');
             return;
         }
-
         hideOtpModal();
         openResetPasswordModal();
     }
@@ -792,28 +732,21 @@
         box.addEventListener('keydown', function(e) {
             if (e.key === 'Backspace' && !this.value) {
                 let prev = this.previousElementSibling;
-                if (prev && prev.tagName.toLowerCase() === 'input') {
-                    prev.focus();
-                }
+                if (prev && prev.tagName.toLowerCase() === 'input') prev.focus();
             }
         });
-
         box.addEventListener('paste', pasteOtpIntoTreasurerBoxes);
     });
 
     // --- RESET PASSWORD MODAL FUNCTIONS ---
-    function openResetPasswordModal() {
-        document.getElementById('resetPasswordModal').style.display = 'flex';
-    }
+    function openResetPasswordModal() { document.getElementById('resetPasswordModal').style.display = 'flex'; }
     function hideResetPasswordModal() {
         document.getElementById('resetPasswordModal').style.display = 'none';
         document.getElementById('newPasswordInput').value = '';
         document.getElementById('rePasswordInput').value = '';
-        validatePassword(); // Reset checklist
+        validatePassword();
     }
-    function closeResetPasswordOverlay(e) {
-        if (e.target.id === 'resetPasswordModal') hideResetPasswordModal();
-    }
+    function closeResetPasswordOverlay(e) { if (e.target.id === 'resetPasswordModal') hideResetPasswordModal(); }
     function togglePasswordView(inputId) {
         const input = document.getElementById(inputId);
         input.type = input.type === "password" ? "text" : "password";
@@ -827,18 +760,12 @@
         const submitBtn = document.getElementById('resetPwSubmitBtn');
 
         let validCount = 0;
-
         if(/[a-z]/.test(pw)) { reqLower.classList.add('valid'); validCount++; } else { reqLower.classList.remove('valid'); }
         if(pw.length >= 8) { reqLen.classList.add('valid'); validCount++; } else { reqLen.classList.remove('valid'); }
         if(/[A-Z]/.test(pw)) { reqUpper.classList.add('valid'); validCount++; } else { reqUpper.classList.remove('valid'); }
         if(/[0-9]/.test(pw)) { reqNum.classList.add('valid'); validCount++; } else { reqNum.classList.remove('valid'); }
 
-        // Light up button if all 4 conditions met
-        if(validCount === 4) {
-            submitBtn.classList.add('active');
-        } else {
-            submitBtn.classList.remove('active');
-        }
+        if(validCount === 4) { submitBtn.classList.add('active'); } else { submitBtn.classList.remove('active'); }
     }
     async function submitNewPassword() {
         const pw1 = document.getElementById('newPasswordInput').value;
@@ -846,19 +773,9 @@
         const btn = document.getElementById('resetPwSubmitBtn');
         const otpApiBase = (window.PCCI_API_BASE_URL || window.API_BASE_URL || '').replace(/\/$/, '');
 
-        if(!btn.classList.contains('active')) {
-            alert("Please ensure your password meets all security requirements.");
-            return;
-        }
-        if(pw1 !== pw2) {
-            alert("Passwords do not match!");
-            return;
-        }
-
-        if (!currentPasswordOtpCode || currentPasswordOtpCode.length !== 6) {
-            alert('OTP is missing or invalid. Please request and enter OTP again.');
-            return;
-        }
+        if(!btn.classList.contains('active')) { alert("Please ensure your password meets all security requirements."); return; }
+        if(pw1 !== pw2) { alert("Passwords do not match!"); return; }
+        if (!currentPasswordOtpCode || currentPasswordOtpCode.length !== 6) { alert('OTP is missing or invalid. Please request and enter OTP again.'); return; }
 
         try {
             btn.disabled = true;
@@ -882,9 +799,7 @@
             });
 
             const { data: result, raw } = await readApiResponse(response);
-            if (!response.ok) {
-                throw new Error(result.message || raw || 'Failed to reset password.');
-            }
+            if (!response.ok) throw new Error(result.message || raw || 'Failed to reset password.');
 
             alert(result.message || 'Password updated successfully.');
             currentPasswordOtpCode = '';
@@ -899,19 +814,10 @@
     }
 
     // --- CROP PROFILE PICTURE MODAL LOGIC ---
-    function openCropModal() {
-        document.getElementById('cropModal').style.display = 'flex';
-    }
-    function hideCropModal() {
-        document.getElementById('cropModal').style.display = 'none';
-    }
-    function closeCropOverlay(e) {
-        if (e.target.id === 'cropModal') hideCropModal();
-    }
-    function setNewProfilePicture() {
-        alert("Profile picture successfully updated!");
-        hideCropModal();
-    }
+    function openCropModal() { document.getElementById('cropModal').style.display = 'flex'; }
+    function hideCropModal() { document.getElementById('cropModal').style.display = 'none'; }
+    function closeCropOverlay(e) { if (e.target.id === 'cropModal') hideCropModal(); }
+    function setNewProfilePicture() { alert("Profile picture successfully updated!"); hideCropModal(); }
 
     // --- DROPDOWN MENUS LOGIC ---
     function toggleReportDropdown(e) {
@@ -934,7 +840,6 @@
         alert(`Initiating ${type.toUpperCase()} Report Download...`);
         document.getElementById('reportDropdownMenu').style.display = 'none';
     }
-    
     function exportTransactions() {
         alert("Preparing transaction data for export...");
         document.getElementById('transDropdownMenu').style.display = 'none';
@@ -949,13 +854,10 @@
         applyTransactionFilters(); 
     }
 
-    const transSearchInput = document.getElementById('transactionSearch');
-    if (transSearchInput) {
-        transSearchInput.addEventListener('input', applyTransactionFilters);
-    }
-
     function applyTransactionFilters() {
-        const searchTerm = document.getElementById('transactionSearch').value.toLowerCase();
+        const transSearchInput = document.getElementById('transactionSearch');
+        const searchTerm = transSearchInput ? transSearchInput.value.toLowerCase() : '';
+        
         filteredTransactionsData = allTransactionsData.filter((txn, index) => {
             const status = String(txn.status || 'pending').toLowerCase();
             const businessName = (txn.applicant?.basic_profile?.registered_business_name || txn.basic_profile?.registered_business_name || '').toLowerCase();
@@ -972,11 +874,9 @@
             }
             
             const matchesSearch = rowText.includes(searchTerm);
-
             return matchesFilter && matchesSearch;
         });
 
-        // Sort to put pending transactions at the top
         filteredTransactionsData.sort((a, b) => {
             const statusA = String(a.status || 'pending').toLowerCase();
             const statusB = String(b.status || 'pending').toLowerCase();
@@ -997,17 +897,14 @@
         if (reportMenu && reportMenu.style.display === 'flex' && !e.target.closest('#reportDropdownContainer')) {
             reportMenu.style.display = 'none';
         }
-        
         const transMenu = document.getElementById('transDropdownMenu');
         if (transMenu && transMenu.style.display === 'flex' && !e.target.closest('#transMenuContainer')) {
             transMenu.style.display = 'none';
         }
-
         const filterMenu = document.getElementById('transFilterMenu');
         if (filterMenu && filterMenu.style.display === 'flex' && !e.target.closest('#transFilterContainer')) {
             filterMenu.style.display = 'none';
         }
-
         const p = document.getElementById('notificationPanel'); 
         if (p && p.style.display === 'flex' && !p.contains(e.target) && !e.target.closest('.fa-bell')) {
             p.style.display = 'none';
@@ -1055,45 +952,29 @@
         document.getElementById(id).style.display = 'none';
         document.getElementById('settings-main').style.display = 'block';
     }
-
     function triggerAccountImagePicker() {
         const imageInput = document.getElementById('settingsImageInput');
         if (imageInput) imageInput.click();
     }
-
-    function resolveUserFromResponse(payload) {
-        return payload?.data?.user || payload?.data || payload?.user || payload || {};
-    }
-
+    function resolveUserFromResponse(payload) { return payload?.data?.user || payload?.data || payload?.user || payload || {}; }
     function normalizeImageUrl(value) {
         const raw = String(value || '').trim();
         if (!raw) return '';
         if (/^https?:\/\//i.test(raw)) return raw;
         return `${apiOrigin}/${raw.replace(/^\/+/, '')}`;
     }
-
     function applyAccountAvatar(imageValue) {
         const imageUrl = normalizeImageUrl(imageValue);
         if (!imageUrl) return;
-
         ['topbarAvatar', 'sidebarAvatar', 'settingsAccountAvatar'].forEach((id) => {
             const el = document.getElementById(id);
             if (el) el.src = imageUrl;
         });
-
         localStorage.setItem('userImage', imageUrl);
     }
-
     function extractUserImage(user) {
-        return user?.image_url
-            || user?.image
-            || user?.avatar
-            || user?.profile_image
-            || user?.profile_photo
-            || user?.photo
-            || '';
+        return user?.image_url || user?.image || user?.avatar || user?.profile_image || user?.profile_photo || user?.photo || '';
     }
-
     function handleAccountImageChange(event) {
         const file = event?.target?.files?.[0] || null;
         accountImageFile = file;
@@ -1105,11 +986,9 @@
             });
         }
     }
-
     function toggleAccountField(fieldId) {
         const input = document.getElementById(fieldId);
         if (!input) return;
-
         const editButton = input.parentElement ? input.parentElement.querySelector('.new-acc-edit') : null;
         const isReadOnly = input.hasAttribute('readonly');
 
@@ -1123,7 +1002,6 @@
             if (editButton) editButton.innerHTML = '<i class="fa fa-edit"></i> Edit';
         }
     }
-
     async function saveAccountSettings() {
         const firstNameInput = document.getElementById('settingsFirstName');
         const lastNameInput = document.getElementById('settingsLastName');
@@ -1135,15 +1013,8 @@
         const email = (emailInput?.value || '').trim();
         const contact = (contactInput?.value || '').trim();
 
-        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            alert('Please enter a valid email address.');
-            return;
-        }
-
-        if (!email) {
-            alert('Email is required.');
-            return;
-        }
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('Please enter a valid email address.'); return; }
+        if (!email) { alert('Email is required.'); return; }
 
         const endpointBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
         const endpoint = `${endpointBase}/v1/user/change-info`;
@@ -1156,32 +1027,21 @@
         payload.append('last_name', lastName);
 
         const saveButton = document.querySelector('#settings-account .new-acc-action-dark');
-        if (saveButton) {
-            saveButton.disabled = true;
-            saveButton.dataset.originalText = saveButton.innerText;
-            saveButton.innerText = 'Saving...';
-        }
+        if (saveButton) { saveButton.disabled = true; saveButton.dataset.originalText = saveButton.innerText; saveButton.innerText = 'Saving...'; }
 
         try {
             const response = await fetch(endpoint, {
                 method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-                },
+                headers: { 'Accept': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
                 body: payload
             });
 
             const { data: result, raw } = await readApiResponse(response);
-            if (!response.ok) {
-                throw new Error(result.message || raw || 'Failed to save account settings.');
-            }
+            if (!response.ok) throw new Error(result.message || raw || 'Failed to save account settings.');
 
             const userPayload = resolveUserFromResponse(result);
             const responseImage = extractUserImage(userPayload);
-            if (responseImage) {
-                applyAccountAvatar(responseImage);
-            }
+            if (responseImage) applyAccountAvatar(responseImage);
 
             const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
             if (fullName) {
@@ -1213,10 +1073,7 @@
             console.error('Error updating account settings:', error);
             alert(error.message || 'Failed to save account settings.');
         } finally {
-            if (saveButton) {
-                saveButton.disabled = false;
-                saveButton.innerText = saveButton.dataset.originalText || 'Save Changes';
-            }
+            if (saveButton) { saveButton.disabled = false; saveButton.innerText = saveButton.dataset.originalText || 'Save Changes'; }
         }
     }
 
@@ -1242,23 +1099,16 @@
         if (settingsContactInput) settingsContactInput.value = storedContact;
 
         const storedImage = localStorage.getItem('userImage') || '';
-        if (storedImage) {
-            applyAccountAvatar(storedImage);
-        }
+        if (storedImage) applyAccountAvatar(storedImage);
     }
 
     async function loadAccountSettingsFromApi() {
         if (!token) return false;
-
         try {
             const endpointBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
             const response = await fetch(`${endpointBase}/v1/user`, {
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
+                headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
             });
-
             if (!response.ok) return false;
 
             const { data: result } = await readApiResponse(response);
@@ -1278,12 +1128,9 @@
             const imageValue = extractUserImage(user) || localStorage.getItem('userImage') || '';
 
             if (fullName) {
-                if (!localName && apiFullName) {
-                    localStorage.setItem('userName', fullName);
-                }
+                if (!localName && apiFullName) localStorage.setItem('userName', fullName);
                 const sidebarName = document.getElementById('sidebarName');
                 if (sidebarName) sidebarName.innerText = fullName;
-
                 const nameParts = fullName.split(' ');
                 const firstNameInput = document.getElementById('settingsFirstName');
                 const lastNameInput = document.getElementById('settingsLastName');
@@ -1292,9 +1139,7 @@
             }
 
             if (email) {
-                if (!localEmail && String(user.email || '').trim()) {
-                    localStorage.setItem('userEmail', email);
-                }
+                if (!localEmail && String(user.email || '').trim()) localStorage.setItem('userEmail', email);
                 const sidebarEmail = document.getElementById('sidebarEmail');
                 if (sidebarEmail) sidebarEmail.innerText = email;
                 const settingsEmailInput = document.getElementById('settingsEmailInput');
@@ -1302,32 +1147,21 @@
             }
 
             if (contact) {
-                if (!localContact && String(user.contact || user.contact_no || user.phone || '').trim()) {
-                    localStorage.setItem('userContact', contact);
-                }
+                if (!localContact && String(user.contact || user.contact_no || user.phone || '').trim()) localStorage.setItem('userContact', contact);
                 const settingsContactInput = document.getElementById('settingsContactInput');
                 if (settingsContactInput) settingsContactInput.value = contact;
             }
 
-            if (imageValue) {
-                applyAccountAvatar(imageValue);
-            }
-
+            if (imageValue) applyAccountAvatar(imageValue);
             return Boolean(fullName || email || contact);
-        } catch (_) {
-            // Keep UI usable with localStorage fallback if profile endpoint is unavailable.
-            return false;
-        }
+        } catch (_) { return false; }
     }
 
     // --- NOTIFICATION SYSTEM ---
     function updateNotificationsPanel() {
         const today = new Date();
         const items = [];
-
-        const addItem = (title, subtitle, iconClass, toneClass, sortDate) => {
-            items.push({ title, subtitle, iconClass, toneClass, sortDate });
-        };
+        const addItem = (title, subtitle, iconClass, toneClass, sortDate) => { items.push({ title, subtitle, iconClass, toneClass, sortDate }); };
 
         allApplicantsData.forEach(app => {
             const businessName = app.basic_profile?.registered_business_name || 'Unknown Business';
@@ -1336,21 +1170,9 @@
             const sortDate = new Date(rawDate).getTime() || 0;
 
             if (status === 'paid') {
-                addItem(
-                    'Payment processed',
-                    `${businessName} was marked as paid`,
-                    'fa-check-circle',
-                    'text-success',
-                    sortDate
-                );
+                addItem('Payment processed', `${businessName} was marked as paid`, 'fa-check-circle', 'text-success', sortDate);
             } else if (status === 'approved') {
-                addItem(
-                    'Applicant awaiting payment',
-                    `${businessName} is approved and waiting for treasurer action`,
-                    'fa-clock',
-                    'text-warning',
-                    sortDate
-                );
+                addItem('Applicant awaiting payment', `${businessName} is approved and waiting for treasurer action`, 'fa-clock', 'text-warning', sortDate);
             }
         });
 
@@ -1361,27 +1183,14 @@
             const sortDate = new Date(rawDate).getTime() || 0;
 
             if (status === 'failed' || status === 'cancelled') {
-                addItem(
-                    status === 'failed' ? 'Payment failed' : 'Payment cancelled',
-                    `${businessName} has a ${status} payment record`,
-                    status === 'failed' ? 'fa-times-circle' : 'fa-ban',
-                    'text-danger',
-                    sortDate
-                );
+                addItem(status === 'failed' ? 'Payment failed' : 'Payment cancelled', `${businessName} has a ${status} payment record`, status === 'failed' ? 'fa-times-circle' : 'fa-ban', 'text-danger', sortDate);
             } else if (status === 'paid') {
-                addItem(
-                    'Payment recorded',
-                    `${businessName} payment is now complete`,
-                    'fa-receipt',
-                    'text-success',
-                    sortDate
-                );
+                addItem('Payment recorded', `${businessName} payment is now complete`, 'fa-receipt', 'text-success', sortDate);
             }
         });
 
         allMembersData.forEach(member => {
             const endDateString = member.membership_end_date || (member.created_at ? new Date(new Date(member.created_at).setFullYear(new Date(member.created_at).getFullYear() + 1)).toISOString() : null);
-
             if (!endDateString) return;
 
             const expDate = new Date(endDateString);
@@ -1431,31 +1240,21 @@
     }
 
     function checkAuth(res) {
-        if (res.status === 401) {
-            localStorage.removeItem('token');
-            window.location.href = '/login';
-            return false;
-        }
+        if (res.status === 401) { localStorage.removeItem('token'); window.location.href = '/login'; return false; }
         return true;
     }
 
     async function readApiResponse(response) {
         const contentType = (response.headers.get('content-type') || '').toLowerCase();
-        if (contentType.includes('application/json')) {
-            return { data: await response.json().catch(() => ({})), raw: '' };
-        }
-
+        if (contentType.includes('application/json')) { return { data: await response.json().catch(() => ({})), raw: '' }; }
         return { data: {}, raw: await response.text().catch(() => '') };
     }
 
     function sanitizeSearchAutofill() {
         const isEmailLike = (value) => /\S+@\S+\.\S+/.test(String(value || '').trim());
-
         const searchInputs = [
-            document.getElementById('memberSearch'),
-            document.getElementById('applicantSearch'),
-            document.getElementById('transactionSearch'),
-            document.querySelector('.topbar-search')
+            document.getElementById('memberSearch'), document.getElementById('applicantSearch'),
+            document.getElementById('transactionSearch'), document.querySelector('.topbar-search')
         ].filter(Boolean);
 
         searchInputs.forEach((input, index) => {
@@ -1464,20 +1263,17 @@
             input.setAttribute('autocorrect', 'off');
             input.setAttribute('spellcheck', 'false');
             input.setAttribute('name', `search_query_${index + 1}`);
-
-            if (isEmailLike(input.value)) {
-                input.value = '';
-            }
+            if (isEmailLike(input.value)) input.value = '';
         });
     }
 
-    // Modals
+    // --- MODALS FOR PAYMENTS ---
     function openSimpleProof(url) {
         if (!url || url === '#' || url === 'null') { alert("No proof found."); return; }
         const img = document.getElementById('simpleModalImage');
         document.getElementById('simpleModalSpinner').style.display = 'flex';
         img.style.display = 'none';
-        img.src = url.startsWith('http') ? url : `${apiOrigin}/${url.replace(/^\/+/, '')}`;
+        img.src = url.startsWith('http') ? url : `${window.API_BASE_URL || ''}/${url.replace(/^\/+/, '')}`;
         document.getElementById('simpleProofModal').style.display = 'flex';
     }
     function onSimpleImageLoad() { document.getElementById('simpleModalImage').style.display = 'block'; document.getElementById('simpleModalSpinner').style.display = 'none'; }
@@ -1490,7 +1286,7 @@
         const img = document.getElementById('modalImage');
         document.getElementById('modalSpinner').style.display = 'flex';
         img.style.display = 'none';
-        img.src = url.startsWith('http') ? url : `${apiOrigin}/${url.replace(/^\/+/, '')}`;
+        img.src = url.startsWith('http') ? url : `${window.API_BASE_URL || ''}/${url.replace(/^\/+/, '')}`;
         selectType(1); 
         document.getElementById('proofModal').style.display = 'flex';
     }
@@ -1504,12 +1300,14 @@
         document.getElementById('toggleBtn2').className = (id == 2) ? 'type-toggle-btn active-2 flex-grow-1' : 'type-toggle-btn flex-grow-1';
     }
 
+    // POST /v1/payments (Approve)
     async function confirmProcessing() {
         const data = membershipTypes.find(m => m.id == currentSelectedType);
         if (!data || !currentApplicantId) return;
 
         try {
-            const response = await fetch('/api/v1/payments', {
+            const endpointBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
+            const response = await fetch(`${endpointBase}/v1/payments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1517,16 +1315,13 @@
                     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
                 },
                 body: JSON.stringify({
-                    applicant_id: currentApplicantId,
-                    membership_type_id: currentSelectedType,
-                    membership_type: data.name
+                    applicant_id: parseInt(currentApplicantId),
+                    membership_type_id: parseInt(currentSelectedType)
                 })
             });
 
             if (response.ok || response.status === 200 || response.status === 201) {
                 hideProofModal();
-
-                // Tell the Admin Members page to refresh so the new member appears there.
                 localStorage.setItem('membersNeedsRefresh', '1');
                 localStorage.setItem('membersNeedsRefreshAt', String(Date.now()));
 
@@ -1547,18 +1342,56 @@
             } else {
                 const result = await response.json().catch(() => ({}));
                 if (response.status === 401 || response.status === 403) {
-                    alert("Access denied. Your account may not have permission to process payments. Please contact the administrator to grant treasurer access to the applicants endpoint.");
-                } else if (response.status === 422 && result.errors) {
-                    let errorMessages = "Validation Failed:\n\n";
-                    for (let field in result.errors) {
-                        errorMessages += `- ${field}: ${result.errors[field].join(', ')}\n`;
-                    }
-                    alert(errorMessages);
+                    alert("Access denied. Your account may not have permission to process payments.");
                 } else {
                     alert(`Error: ${result.message || 'Something went wrong. Please try again.'}`);
                 }
             }
         } catch (err) { alert("Network error: Could not reach the server."); }
+    }
+
+    // PATCH /v1/payments/{id}/reject
+    async function rejectPaymentProcessing() {
+        if (!currentApplicantId) return;
+
+        const rejectionReason = prompt("Please enter the reason for rejection (e.g., 'Payment is Fraud!'):");
+        if (!rejectionReason || rejectionReason.trim() === '') return;
+
+        try {
+            const endpointBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
+            const response = await fetch(`${endpointBase}/v1/payments/${currentApplicantId}/reject`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify({ rejection_reason: rejectionReason.trim() })
+            });
+
+            if (response.ok) {
+                hideProofModal();
+                const amtLbl = document.getElementById(`amount-label-${currentApplicantId}`);
+                const typeLbl = document.getElementById(`type-label-${currentApplicantId}`);
+                const bge = document.getElementById(`status-badge-${currentApplicantId}`);
+                const actionBox = document.getElementById(`action-container-${currentApplicantId}`);
+
+                if(amtLbl) { amtLbl.innerText = `---`; amtLbl.className = "fw-bold text-muted"; }
+                if(typeLbl) { typeLbl.innerText = "REJECTED"; typeLbl.className = "text-danger fw-bold"; }
+                if(bge) { bge.innerHTML = `<i class="fa fa-times-circle me-1"></i> REJECTED`; bge.className = "badge bg-danger text-white px-2 py-1 rounded-pill fw-bold shadow-sm"; }
+                if(actionBox) { actionBox.innerHTML = `<button class="action-btn btn-gray" disabled style="width: 130px;"><i class="fa fa-times"></i> Rejected</button>`; }
+
+                fetchMembers();
+                fetchTransactions();
+                fetchRecentPayments();
+                alert("Success: Payment Rejected.");
+            } else {
+                const result = await response.json().catch(() => ({}));
+                alert(`Error: ${result.message || 'Failed to reject payment.'}`);
+            }
+        } catch (err) {
+            alert("Network error: Could not reach the server.");
+        }
     }
 
     function viewMemberDetails(memberId) {
@@ -1578,7 +1411,7 @@
     function hideMemberModal() { document.getElementById('memberDetailsModal').style.display = 'none'; }
     function closeMemberModal(e) { if (e.target.id === 'memberDetailsModal') hideMemberModal(); }
 
-    // --- ADD PAYMENT MODAL LOGIC ---
+    // --- ADD PAYMENT MODAL ---
     function openAddPaymentModal(mode = 'add') {
         if (mode !== 'edit') {
             editingTransactionId = null;
@@ -1600,13 +1433,7 @@
         document.getElementById('addPaymentModalTitle').innerText = 'Add Payment';
         document.getElementById('transactionModalConfirmBtn').innerText = 'Confirm';
     }
-    function closeAddPaymentModal(e) {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        hideAddPaymentModal();
-    }
+    function closeAddPaymentModal(e) { if (e) { e.preventDefault(); e.stopPropagation(); } hideAddPaymentModal(); }
     function closeAddPaymentOverlay(e) { if (e.target.id === 'addPaymentModal') hideAddPaymentModal(); }
     function clearPaymentForm() {
         document.getElementById('transactionMemberInput').value = '';
@@ -1618,39 +1445,22 @@
         document.getElementById('transactionReceiverSelect').selectedIndex = 0;
     }
     async function confirmPaymentAdd() {
-        if (!editingTransactionId) {
-            alert('Payment details confirmed!');
-            hideAddPaymentModal();
-            return;
-        }
-
+        if (!editingTransactionId) { alert('Payment details confirmed!'); hideAddPaymentModal(); return; }
         const record = getTransactionRecordByKey(editingTransactionId);
-        if (!record) {
-            hideAddPaymentModal();
-            editingTransactionId = null;
-            return;
-        }
+        if (!record) { hideAddPaymentModal(); editingTransactionId = null; return; }
 
-        const updatedBusinessName = document.getElementById('transactionMemberInput').value || 'Unknown';
         const updatedOrNumber = document.getElementById('transactionOrNumber').value || record.or_number || '---';
         const updatedDate = document.getElementById('transactionPaymentDate').value || getRecordDate(record);
         const updatedPaymentType = document.getElementById('transactionPaymentType').value || 'GCash';
         const updatedMembership = document.getElementById('transactionMembershipType').value || 'Annual';
         const apiId = getTransactionApiId(editingTransactionId);
 
-        if (!apiId) {
-            alert('This transaction cannot be updated because it has no backend id.');
-            return;
-        }
+        if (!apiId) { alert('This transaction cannot be updated because it has no backend id.'); return; }
 
         try {
             const response = await fetch(`/treasurer/transactions/${apiId}`, {
                 method: 'PUT',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({
                     or_number: updatedOrNumber,
                     payment_type: updatedPaymentType,
@@ -1679,12 +1489,10 @@
             document.getElementById('transactionModalConfirmBtn').innerText = 'Confirm';
             await fetchTransactions();
             alert('Transaction updated.');
-        } catch (error) {
-            console.error(error);
-            alert(error.message || 'Failed to update transaction.');
-        }
+        } catch (error) { console.error(error); alert(error.message || 'Failed to update transaction.'); }
     }
 
+    // --- INITIALIZATION ---
     document.addEventListener('DOMContentLoaded', async () => {
         if (!token) { window.location.href = '/login'; return; }
 
@@ -1692,9 +1500,7 @@
         setTimeout(sanitizeSearchAutofill, 120);
 
         const loadedFromApi = await loadAccountSettingsFromApi();
-        if (!loadedFromApi) {
-            applyStoredAccountSettings();
-        }
+        if (!loadedFromApi) applyStoredAccountSettings();
         
         fetchApplicants();
         fetchMembers();
@@ -1702,11 +1508,34 @@
         fetchTransactions();
         initCharts(); 
 
-        document.getElementById('memberSearch').addEventListener('input', applyMemberFilters);
-        document.getElementById('memberSort').addEventListener('change', applyMemberFilters);
+        const searchInputs = [
+            { id: 'memberSearch', func: applyMemberFilters },
+            { id: 'memberSort', func: applyMemberFilters },
+            { id: 'applicantSearch', func: applyApplicantFilters },
+            { id: 'applicantSort', func: applyApplicantFilters },
+            { id: 'applicantStatusFilter', func: applyApplicantFilters } // Strict Treasurer Dropdown
+        ];
         
-        document.getElementById('applicantSearch').addEventListener('input', applyApplicantFilters);
-        document.getElementById('applicantSort').addEventListener('change', applyApplicantFilters);
+        searchInputs.forEach(input => {
+            const el = document.getElementById(input.id);
+            if (el) {
+                el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', input.func);
+            }
+        });
+
+        // Event listener for Add Member Dropdown
+        const companySelect = document.getElementById('addMemberCompanySelect');
+        if (companySelect) {
+            companySelect.addEventListener('change', function() {
+                const selectedId = this.value;
+                if (!selectedId) {
+                    populateAddMemberReadOnlyFields(null);
+                    return;
+                }
+                const selectedApplicant = approvedApplicantsForModal.find(app => String(app.id) === String(selectedId));
+                populateAddMemberReadOnlyFields(selectedApplicant);
+            });
+        }
 
         const dashboardPaymentRangeEl = document.getElementById('dashboardPaymentRange');
         if (dashboardPaymentRangeEl) {
@@ -1726,7 +1555,6 @@
             });
         }
 
-        // 🌟 THIS IS WHERE IT BELONGS: Check memory and switch tab immediately on load
         const savedTab = localStorage.getItem('activeTab') || 'dashboard';
         switchTab(savedTab, false);
 
@@ -1739,12 +1567,14 @@
 
     // --- MEMBER FILTER/SORT ---
     function applyMemberFilters() {
-        const term = document.getElementById('memberSearch').value.toLowerCase();
-        const sortVal = document.getElementById('memberSort').value;
+        const term = document.getElementById('memberSearch')?.value.toLowerCase() || '';
+        const sortVal = document.getElementById('memberSort')?.value || 'newest';
 
         filteredMembersData = allMembersData.filter(m => {
+            const status = String(m.status || m.applicant?.status || '').toLowerCase();
+            const isPaidOrApproved = ['paid', 'approved', 'active'].includes(status);
             const name = (m.applicant?.basic_profile?.registered_business_name || '').toLowerCase();
-            return name.includes(term);
+            return isPaidOrApproved && name.includes(term);
         });
 
         filteredMembersData.sort((a, b) => {
@@ -1759,14 +1589,27 @@
             return dateB - dateA;
         });
 
+        const paidCount = filteredMembersData.length;
+        const unpaidCount = allMembersData.filter(m => {
+            const s = String(m.status || m.applicant?.status || '').toLowerCase();
+            return ['pending', 'unpaid', 'failed'].includes(s);
+        }).length;
+
+        const paidCountEl = document.getElementById('paid-count');
+        const unpaidCountEl = document.getElementById('unpaid-count');
+        if (paidCountEl) paidCountEl.innerText = paidCount;
+        if (unpaidCountEl) unpaidCountEl.innerText = unpaidCount;
+
         currentMemberPage = 1; 
         displayMembersPage();
     }
 
-    // --- APPLICANT FILTER/SORT ---
+    // --- STRICT TREASURER APPLICANT FILTER/SORT ---
     function applyApplicantFilters() {
-        const term = document.getElementById('applicantSearch').value.toLowerCase();
-        const sortVal = document.getElementById('applicantSort').value;
+        const term = document.getElementById('applicantSearch')?.value.toLowerCase() || '';
+        const sortVal = document.getElementById('applicantSort')?.value || 'newest';
+        const statusFilterEl = document.getElementById('applicantStatusFilter');
+        const statusVal = statusFilterEl ? statusFilterEl.value : 'approved'; // Default to approved for Treasurer
 
         const memberEmails = new Set(
             (Array.isArray(allMembersData) ? allMembersData : [])
@@ -1784,6 +1627,10 @@
             const name = (a.basic_profile?.registered_business_name || '').toLowerCase();
             const email = String(a.basic_profile?.email || '').trim().toLowerCase();
             const companyName = String(a.basic_profile?.registered_business_name || '').trim().toLowerCase();
+            const appStatus = String(a.status || '').toLowerCase();
+
+            // STRICT STATUS MATCH
+            if (appStatus !== statusVal) return false;
 
             const isExistingMember = (email && memberEmails.has(email)) || (companyName && memberCompanyNames.has(companyName));
             if (isExistingMember) return false;
@@ -1803,7 +1650,7 @@
             return dateB - dateA;
         });
 
-        const pendingCount = filteredApplicantsData.filter(a => String(a.status).toLowerCase() !== 'approved').length;
+        const pendingCount = allApplicantsData.filter(a => String(a.status).toLowerCase() === 'approved').length;
         const pendingCountEl = document.getElementById('report-pending-count');
         const pendingBadgeEl = document.getElementById('report-pending-count-badge');
         if (pendingCountEl) pendingCountEl.innerText = pendingCount;
@@ -1813,52 +1660,157 @@
         displayApplicantsPage();
     }
 
+    // --- ADD MEMBER MODAL API & READ-ONLY LOGIC ---
+    async function fetchTreasurerApprovedApplicantsForModal() {
+        const companySelect = document.getElementById('addMemberCompanySelect');
+        const token = localStorage.getItem('token');
+        if (!companySelect) return;
 
-    // API Fetches
+        companySelect.innerHTML = '<option value="">Loading eligible companies . . .</option>';
+
+        try {
+            // FIX: Only fetch the fresh members list and PAID applicants (removed 'approved')
+            const [membersRes, paidRes] = await Promise.all([
+                fetch(`${window.API_BASE_URL}/v1/members`, { 
+                    method: 'GET', 
+                    headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } 
+                }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, { 
+                    method: 'GET', 
+                    headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } 
+                })
+            ]);
+
+            if (!membersRes.ok || !paidRes.ok) {
+                throw new Error('Failed to load necessary API data');
+            }
+
+            const membersData = await membersRes.json();
+            const paidData = await paidRes.json();
+
+            const freshMembers = Array.isArray(membersData.data) ? membersData.data : [];
+            const paidApplicants = Array.isArray(paidData.data) ? paidData.data : [];
+
+            // Map exact emails and company names from the fresh members list for strict validation
+            const existingMemberEmails = new Set(
+                freshMembers
+                    .map((member) => String(member?.applicant?.basic_profile?.email || '').trim().toLowerCase())
+                    .filter(Boolean)
+            );
+
+            const existingMemberCompanyNames = new Set(
+                freshMembers
+                    .map((member) => String(member?.applicant?.basic_profile?.registered_business_name || '').trim().toLowerCase())
+                    .filter(Boolean)
+            );
+
+            // Filter out anyone who is already an existing member
+            approvedApplicantsForModal = paidApplicants.filter((applicant) => {
+                const email = String(applicant?.basic_profile?.email || '').trim().toLowerCase();
+                const companyName = String(applicant?.basic_profile?.registered_business_name || '').trim().toLowerCase();
+                
+                if (email && existingMemberEmails.has(email)) return false;
+                if (companyName && existingMemberCompanyNames.has(companyName)) return false;
+                
+                return true;
+            });
+
+            companySelect.innerHTML = '<option value="">Select eligible company . . .</option>';
+
+            approvedApplicantsForModal.forEach((applicant) => {
+                const companyName = applicant?.basic_profile?.registered_business_name || `Applicant #${applicant.id}`;
+                const statusLabel = String(applicant.status || '').toUpperCase();
+                
+                companySelect.insertAdjacentHTML(
+                    'beforeend',
+                    `<option value="${applicant.id}">${companyName} (${statusLabel})</option>`
+                );
+            });
+
+            if (approvedApplicantsForModal.length === 0) {
+                companySelect.innerHTML = '<option value="">No eligible companies available</option>';
+            }
+        } catch (error) {
+            console.error('Error loading eligible applicants for modal:', error);
+            approvedApplicantsForModal = [];
+            companySelect.innerHTML = '<option value="">No eligible companies available</option>';
+        }
+
+        populateAddMemberReadOnlyFields(null);
+    }
+
+    function populateAddMemberReadOnlyFields(applicant) {
+        if (!applicant) {
+            document.getElementById('memberTradeName').value = '';
+            document.getElementById('memberEmail').value = '';
+            document.getElementById('memberContactNo').value = '';
+            document.getElementById('memberAddress').value = '';
+            document.getElementById('memberRepName').value = '';
+            document.getElementById('memberRepDesignation').value = '';
+            document.getElementById('memberOrgType').value = '';
+            document.getElementById('memberSecDti').value = '';
+            document.getElementById('memberExpDate').value = '';
+            document.getElementById('memberOrNo').value = '';
+            return;
+        }
+
+        const safe = (val) => val || '';
+        const profile = applicant.basic_profile || {};
+        const loc = profile.business_location || {};
+        const rep = applicant.official_representative || {};
+        const org = applicant.organization_membership || {};
+
+        const repName = [safe(rep.first_name), safe(rep.surname)].filter(Boolean).join(' ');
+        const addressParts = [safe(loc.business_address), safe(loc.city_municipality), safe(loc.province)].filter(Boolean);
+        const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : '';
+
+        let expDateStr = '';
+        if (applicant.date_approved) {
+            const approvedDate = new Date(applicant.date_approved);
+            if (!isNaN(approvedDate)) {
+                approvedDate.setFullYear(approvedDate.getFullYear() + 1);
+                expDateStr = approvedDate.toISOString().split('T')[0];
+            }
+        }
+
+        document.getElementById('memberTradeName').value = safe(profile.trade_name);
+        document.getElementById('memberEmail').value = safe(profile.email);
+        document.getElementById('memberContactNo').value = safe(profile.telephone_no);
+        document.getElementById('memberAddress').value = fullAddress;
+        document.getElementById('memberRepName').value = repName;
+        document.getElementById('memberRepDesignation').value = safe(rep.designation);
+        document.getElementById('memberOrgType').value = safe(org.type_of_company);
+        document.getElementById('memberSecDti').value = safe(org.registration_number);
+        document.getElementById('memberExpDate').value = expDateStr;
+        document.getElementById('memberOrNo').value = `OR-${10000 + applicant.id}`;
+    }
+
+    // --- API FETCHES ---
     async function fetchApplicants() {
         try {
-            const [resApproved, resPending] = await Promise.all([
+            const [resApproved, resRejected] = await Promise.all([
                 fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } })
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=rejected`, { headers: { 'Authorization': `Bearer ${token}` } })
             ]);
 
             let combinedData = [];
-
-            if (resApproved.ok) {
-                const data1 = await resApproved.json();
-                if (data1.data) combinedData = combinedData.concat(data1.data);
-            }
-            if (resPending.ok) {
-                const data2 = await resPending.json();
-                if (data2.data) combinedData = combinedData.concat(data2.data);
-            }
+            if (resApproved.ok) { const data1 = await resApproved.json(); if (data1.data) combinedData = combinedData.concat(data1.data); }
+            if (resRejected.ok) { const data2 = await resRejected.json(); if (data2.data) combinedData = combinedData.concat(data2.data); }
 
             allApplicantsData = combinedData;
 
-            // Keep applicant filtering accurate even when applicants load before members.
             try {
-                const membersRes = await fetch('/api/v1/members', {
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                const membersRes = await fetch('/api/v1/members', { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } });
                 if (membersRes.ok) {
                     const membersJson = await membersRes.json();
-                    if (Array.isArray(membersJson?.data)) {
-                        allMembersData = membersJson.data;
-                    }
+                    if (Array.isArray(membersJson?.data)) allMembersData = membersJson.data;
                 }
-            } catch (_) {
-                // Fall back to existing allMembersData when member refresh fails.
-            }
+            } catch (_) {}
 
             applyApplicantFilters();
             updateNotificationsPanel();
             updateReportsDashboard();
-        } catch (err) {
-            console.error('Error fetching applicants:', err);
-        }
+        } catch (err) { console.error('Error fetching applicants:', err); }
     }
 
     function displayApplicantsPage() {
@@ -1867,25 +1819,32 @@
         if (currentApplicantPage < 1) currentApplicantPage = 1;
         
         const pageData = filteredApplicantsData.slice((currentApplicantPage - 1) * applicantsPerPage, currentApplicantPage * applicantsPerPage);
-        
         const tbody = document.getElementById('applicants-table-body');
-        tbody.innerHTML = '';
+        if(!tbody) return;
         
+        tbody.innerHTML = '';
         if(pageData.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted fw-bold">No applicants found.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted fw-bold">No applicants found matching the selected status.</td></tr>`;
         }
 
         pageData.forEach(app => {
             const profile = app.basic_profile || {};
-            const isPaid = String(app.status).toLowerCase() === 'paid';
+            const appStatus = String(app.status).toLowerCase();
             
-            let typeLabelHTML = isPaid ? `<span id="type-label-${app.id}" class="text-success fw-bold">PAID</span>` : `<span id="type-label-${app.id}" class="text-danger fw-bold">PENDING</span>`;
-            let statusBadge = isPaid ? `<span id="status-badge-${app.id}" class="badge bg-success text-white px-2 py-1 rounded-pill fw-bold shadow-sm" style="font-size:10px;"><i class="fa fa-check-double me-1"></i> PAID</span>` : `<span id="status-badge-${app.id}" class="badge bg-warning text-dark px-2 py-1 rounded-pill fw-bold" style="font-size:10px;">APPROVED</span>`;
-            let amountText = isPaid ? '₱ Processed' : '---';
-            
-            let actionButton = isPaid 
-                ? `<button class="action-btn btn-gray" disabled style="width: 130px;"><i class="fa fa-check"></i> Processed</button>`
-                : `<button onclick="openProof('${app.proof_of_payment_url}', ${app.id})" class="action-btn btn-green" style="width: 130px;"><i class="fa fa-image me-1"></i> Process Payment</button>`;
+            let typeLabelHTML = '';
+            let statusBadge = '';
+            let amountText = '---';
+            let actionButton = '';
+
+            if (appStatus === 'approved') {
+                 typeLabelHTML = `<span id="type-label-${app.id}" class="text-warning fw-bold" style="color: #d97706 !important;">PENDING PAYMENT</span>`;
+                 statusBadge = `<span id="status-badge-${app.id}" class="badge bg-warning text-dark px-2 py-1 rounded-pill fw-bold shadow-sm" style="font-size:10px;"><i class="fa fa-clock me-1"></i> APPROVED</span>`;
+                 actionButton = `<button onclick="openProof('${app.proof_of_payment_url}', ${app.id})" class="action-btn btn-green" style="width: 130px;"><i class="fa fa-image me-1"></i> Process Payment</button>`;
+            } else if (appStatus === 'rejected') {
+                 typeLabelHTML = `<span id="type-label-${app.id}" class="text-danger fw-bold">REJECTED</span>`;
+                 statusBadge = `<span id="status-badge-${app.id}" class="badge bg-danger text-white px-2 py-1 rounded-pill fw-bold shadow-sm" style="font-size:10px;"><i class="fa fa-times-circle me-1"></i> REJECTED</span>`;
+                 actionButton = `<button class="action-btn btn-gray" disabled style="width: 130px;"><i class="fa fa-times"></i> Rejected</button>`;
+            }
 
             tbody.insertAdjacentHTML('beforeend', `
                 <tr id="applicant-row-${app.id}">
@@ -1900,68 +1859,28 @@
                 </tr>
             `);
         });
-        document.getElementById('applicant-pagination-text').innerText = `Page ${currentApplicantPage} of ${totalPages}`;
+        const paginationText = document.getElementById('applicant-pagination-text');
+        if(paginationText) paginationText.innerText = `Page ${currentApplicantPage} of ${totalPages}`;
     }
 
     function prevApplicantPage() { if (currentApplicantPage > 1) { currentApplicantPage--; displayApplicantsPage(); } }
     function nextApplicantPage() { if (currentApplicantPage < Math.ceil(filteredApplicantsData.length / applicantsPerPage)) { currentApplicantPage++; displayApplicantsPage(); } }
 
-
-    // 🌟 HERE IS THE MEMBER FETCH YOU ASKED FOR
     async function fetchMembers() {
         try {
-            const memberEndpoints = [];
-            memberEndpoints.push('/api/v1/members');
-            if (apiBaseUrl) {
-                memberEndpoints.push(`${apiBaseUrl}/v1/members`);
-            }
+            const response = await fetch(`${window.API_BASE_URL}/v1/members`, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+            });
 
-            let membersData = null;
-            let lastError = null;
+            if (!checkAuth(response)) return;
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-            for (const endpoint of memberEndpoints) {
-                try {
-                    const response = await fetch(endpoint, {
-                        headers: {
-                            'Accept': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-
-                    if (!checkAuth(response)) return;
-                    if (!response.ok) {
-                        lastError = new Error(`HTTP ${response.status} from ${endpoint}`);
-                        continue;
-                    }
-
-                    const contentType = (response.headers.get('content-type') || '').toLowerCase();
-                    if (!contentType.includes('application/json')) {
-                        const bodyPreview = (await response.text()).slice(0, 120);
-                        lastError = new Error(`Non-JSON response from ${endpoint}: ${bodyPreview}`);
-                        continue;
-                    }
-
-                    const data = await response.json();
-                    if (data && Array.isArray(data.data)) {
-                        membersData = data.data;
-                        break;
-                    }
-
-                    lastError = new Error(`Invalid members payload from ${endpoint}`);
-                } catch (endpointError) {
-                    lastError = endpointError;
-                }
-            }
-
-            if (!membersData) {
-                throw lastError || new Error('Failed to load members from available endpoints.');
-            }
-
-            allMembersData = membersData;
+            const data = await response.json();
+            allMembersData = (data && Array.isArray(data.data)) ? data.data : [];
 
             const totalMembersBadge = document.getElementById('total-members-badge');
             if (totalMembersBadge) totalMembersBadge.innerText = `${allMembersData.length} Active`;
-
             const reportActive = document.getElementById('report-active-members');
             if (reportActive) reportActive.innerText = allMembersData.length;
 
@@ -1969,6 +1888,7 @@
             applyApplicantFilters();
             updateNotificationsPanel();
             updateReportsDashboard();
+
         } catch (err) {
             console.error("Failed to fetch members:", err);
             const tbody = document.getElementById('members-table-body');
@@ -1990,7 +1910,6 @@
         let startIndex = (currentMemberPage - 1) * membersPerPage;
         let pageData = filteredMembersData.slice(startIndex, startIndex + membersPerPage);
 
-        // If data exists but this page became empty (race/filter edge case), snap to last valid page.
         if (pageData.length === 0 && totalRecords > 0 && currentMemberPage > 1) {
             currentMemberPage = totalPages;
             startIndex = (currentMemberPage - 1) * membersPerPage;
@@ -1998,16 +1917,14 @@
         }
         
         const tbody = document.getElementById('members-table-body');
+        if(!tbody) return;
+
         tbody.innerHTML = '';
-        
-        if(totalRecords === 0) {
-            tbody.innerHTML = `<tr><td colspan="9" class="text-center py-5 text-muted fw-bold">No members found matching your search.</td></tr>`;
-        }
+        if(totalRecords === 0) tbody.innerHTML = `<tr><td colspan="9" class="text-center py-5 text-muted fw-bold">No members found matching your search.</td></tr>`;
 
         pageData.forEach(member => {
             const name = member.applicant?.basic_profile?.registered_business_name || 'N/A';
             const orNumber = `OR-${10000 + member.id}`; 
-            
             const regDate = member.created_at ? member.created_at.split('T')[0] : 'N/A';
             let expDate = member.membership_end_date ? member.membership_end_date.split('T')[0] : 'N/A';
             if(expDate === 'N/A' && member.created_at) {
@@ -2030,37 +1947,31 @@
                 </tr>
             `);
         });
-        document.getElementById('member-pagination-text').innerText = `Page ${currentMemberPage} of ${totalPages}`;
+        const paginationText = document.getElementById('member-pagination-text');
+        if(paginationText) paginationText.innerText = `Page ${currentMemberPage} of ${totalPages}`;
     }
 
     function prevMemberPage() { if (currentMemberPage > 1) { currentMemberPage--; displayMembersPage(); } }
     function nextMemberPage() { if (currentMemberPage < getMembersTotalPages()) { currentMemberPage++; displayMembersPage(); } }
 
-    function verifyRecentPayment(proofUrl, applicantId) {
-        openProof(proofUrl, applicantId);
-    }
-
+    function verifyRecentPayment(proofUrl, applicantId) { openProof(proofUrl, applicantId); }
+    function printRecentReceipt(applicantId) { window.print(); }
+    
     function rejectRecentPayment(applicantId) {
         const row = document.getElementById(`recent-payment-row-${applicantId}`);
         if (row) row.remove();
-
         const tbody = document.getElementById('recent-payments-table-body');
-        if (tbody && tbody.children.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No recent payments available.</td></tr>`;
-        }
-    }
-
-    function printRecentReceipt(applicantId) {
-        window.print();
+        if (tbody && tbody.children.length === 0) tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No recent payments available.</td></tr>`;
     }
 
     async function fetchRecentPayments() {
         try {
-            const response = await fetch(`${apiBaseUrl}/v1/applicants?status=approved`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!checkAuth(response)) return;
             const data = await response.json();
             if (response.ok && data.data) {
                 const tbody = document.getElementById('recent-payments-table-body');
+                if(!tbody) return;
                 tbody.innerHTML = ''; 
                 data.data.forEach(app => {
                     tbody.insertAdjacentHTML('beforeend', `
@@ -2081,10 +1992,7 @@
                         </tr>
                     `);
                 });
-
-                if ((data.data || []).length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No recent payments available.</td></tr>`;
-                }
+                if ((data.data || []).length === 0) tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No recent payments available.</td></tr>`;
             }
         } catch (err) {}
     }
@@ -2092,18 +2000,10 @@
     async function fetchTransactions() {
         try {
             const [paidRes, approvedRes, failedRes, cancelledRes] = await Promise.all([
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, {
-                    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-                }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, {
-                    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-                }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=failed`, {
-                    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-                }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=cancelled`, {
-                    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-                })
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=failed`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=cancelled`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } })
             ]);
 
             if (!checkAuth(paidRes) || !checkAuth(approvedRes) || !checkAuth(failedRes) || !checkAuth(cancelledRes)) return;
@@ -2117,6 +2017,7 @@
             const pendingRows = (approvedData.data || []).map(app => ({ ...app, status: 'approved' }));
             const failedRows = (failedData.data || []).map(app => ({ ...app, status: 'failed' }));
             const cancelledRows = (cancelledData.data || []).map(app => ({ ...app, status: 'cancelled' }));
+            
             const rows = [...pendingRows, ...paidRows, ...failedRows, ...cancelledRows];
 
             allTransactionsData = rows;
@@ -2134,90 +2035,58 @@
             currentTransactionPage = 1;
             updateTransactionSummary([]);
             displayTransactionsPage();
-            updateNotificationsPanel();
-            updateReportsDashboard();
         }
     }
 
-    // --- CHARTS (DASHBOARD & REPORTS) ---
-    function initCharts() {
-        // Charts are rendered from live aggregates inside updateReportsDashboard().
-        updateReportsDashboard();
-    }
+    function initCharts() { updateReportsDashboard(); }
 
     function refreshTabData(tabName) {
         if (!token) return;
 
         if (tabName === 'dashboard') {
-            fetchApplicants();
+            fetchApplicants(); fetchMembers(); fetchRecentPayments(); fetchTransactions(); initCharts();
+        } else if (tabName === 'members') {
             fetchMembers();
-            fetchRecentPayments();
+            fetchTreasurerApprovedApplicantsForModal(); 
+        } else if (tabName === 'applicants') {
+            fetchApplicants(); fetchRecentPayments();
+        } else if (tabName === 'transactions') {
             fetchTransactions();
-            initCharts();
-            return;
-        }
-
-        if (tabName === 'members') {
-            fetchMembers();
-            return;
-        }
-
-        if (tabName === 'applicants') {
-            fetchApplicants();
-            fetchRecentPayments();
-            return;
-        }
-
-        if (tabName === 'transactions') {
-            fetchTransactions();
-            return;
-        }
-
-        if (tabName === 'reports') {
-            fetchApplicants();
-            fetchMembers();
-            fetchTransactions();
-            initCharts();
+        } else if (tabName === 'reports') {
+            fetchApplicants(); fetchMembers(); fetchTransactions(); initCharts();
         }
     }
 
     // Mobile Sidebar Toggle
     function toggleSidebar() {
         const sidebar = document.querySelector('.sidebar');
-        if (sidebar) {
-            sidebar.classList.toggle('active');
-        }
+        if (sidebar) sidebar.classList.toggle('active');
     }
 
-    // Close sidebar when clicking on a menu item (mobile)
     document.querySelectorAll('.sidebar-menu li').forEach(item => {
         item.addEventListener('click', () => {
-            if (window.innerWidth <= 768) {
-                document.querySelector('.sidebar').classList.remove('active');
-            }
+            if (window.innerWidth <= 768) document.querySelector('.sidebar').classList.remove('active');
         });
     });
 
-    // UI Tab Switcher
-    // Track current active tab
     let currentActiveTab = 'dashboard';
 
     function switchTab(tabName, shouldReload = true) {
         currentActiveTab = tabName;
         localStorage.setItem('activeTab', tabName);
 
-        // For user tab clicks: always hard refresh (same tab or different tab)
-        // to guarantee fresh data and avoid being blocked by in-page refresh errors.
         if (shouldReload) {
             window.location.href = `${window.location.pathname}?refresh=${Date.now()}#${tabName}`;
             return;
         }
 
-        // Initial page load path (shouldReload=false): render tab and refresh data in-place.
         document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
         document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
-        document.getElementById('section-' + tabName).style.display = 'block';
-        document.getElementById('nav-' + tabName).classList.add('active');
+        
+        const targetSection = document.getElementById('section-' + tabName);
+        const targetNav = document.getElementById('nav-' + tabName);
+        if(targetSection) targetSection.style.display = 'block';
+        if(targetNav) targetNav.classList.add('active');
         
         if(tabName !== 'settings') {
             const mainSet = document.getElementById('settings-main');

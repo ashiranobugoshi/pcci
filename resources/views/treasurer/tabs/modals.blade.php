@@ -20,9 +20,13 @@
                 </button>
             </div>
 
-            <div class="text-end border-top pt-3">
-                <button class="btn btn-success px-4 fw-bold rounded-pill shadow-sm" onclick="confirmProcessing()" style="height: 45px; background: #22c55e; border: none; width: 100%;">
-                    Confirm Payment Processing
+            {{-- NEW: Two Buttons for Reject and Approve --}}
+            <div class="d-flex gap-2 border-top pt-3">
+                <button class="btn btn-danger px-4 fw-bold rounded-pill shadow-sm flex-grow-1" onclick="rejectPaymentProcessing()" style="height: 45px; border: none;">
+                    <i class="fa fa-times me-1"></i> Reject
+                </button>
+                <button class="btn btn-success px-4 fw-bold rounded-pill shadow-sm flex-grow-1" onclick="confirmProcessing()" style="height: 45px; background: #22c55e; border: none;">
+                    <i class="fa fa-check me-1"></i> Approve
                 </button>
             </div>
         </div>
