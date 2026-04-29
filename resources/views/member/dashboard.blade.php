@@ -1443,7 +1443,7 @@ document.addEventListener('DOMContentLoaded', function(){
 // --- NEW FIRST-TIME LOGIN API CALL ---
 async function checkFirstTimeMemberLogin(token) {
     try {
-        const response = await fetch(`${window.API_BASE_URL || 'https://pcciv-api.onrender.com/api'}/v1/user`, {
+        const response = await fetch(`${window.API_BASE_URL}/v1/user`, {
             headers: {
                 'Accept': 'application/json',
                 'Authorization': `Bearer ${token}`

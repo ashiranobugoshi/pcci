@@ -842,7 +842,7 @@ main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; 
         const img = document.getElementById('simpleModalImage');
         document.getElementById('simpleModalSpinner').style.display = 'block';
         img.style.display = 'none';
-        img.src = url.startsWith('http') ? url : `https://pcci-laravel-api.onrender.com/${url.replace(/^\/+/, '')}`;
+        img.src = url.startsWith('http') ? url : `https://pccivalph.onrender.com/${url.replace(/^\/+/, '')}`;
         document.getElementById('simpleProofModal').style.display = 'flex';
     }
     function onSimpleImageLoad() { document.getElementById('simpleModalImage').style.display = 'block'; document.getElementById('simpleModalSpinner').style.display = 'none'; }
@@ -855,7 +855,7 @@ main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; 
         const img = document.getElementById('modalImage');
         document.getElementById('modalSpinner').style.display = 'block';
         img.style.display = 'none';
-        img.src = url.startsWith('http') ? url : `https://pcci-laravel-api.onrender.com/${url.replace(/^\/+/, '')}`;
+        img.src = url.startsWith('http') ? url : `https://pccivalph.onrender.com/${url.replace(/^\/+/, '')}`;
         selectType(1); 
         document.getElementById('proofModal').style.display = 'flex';
     }
@@ -1052,7 +1052,7 @@ main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; 
 
     async function fetchRecentPayments() {
         try {
-            const response = await fetch('https://pcci-laravel-api.onrender.com/api/v1/applicants?status=approved', { headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await fetch('https://pccivalph.onrender.com/api/v1/applicants?status=approved', { headers: { 'Authorization': `Bearer ${token}` } });
             if (!checkAuth(response)) return;
             const data = await response.json();
             if (response.ok && data.data) {

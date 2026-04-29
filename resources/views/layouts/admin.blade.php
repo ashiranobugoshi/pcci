@@ -590,7 +590,7 @@
         try {
             const token = localStorage.getItem('token');
             
-            let secureApiUrl = window.API_BASE_URL || 'https://pcciv-api.onrender.com/api';
+            let secureApiUrl = window.API_BASE_URL;
             if (secureApiUrl.includes('onrender.com') && secureApiUrl.startsWith('http://')) {
                 secureApiUrl = secureApiUrl.replace('http://', 'https://');
             }

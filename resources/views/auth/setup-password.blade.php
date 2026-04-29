@@ -126,7 +126,7 @@
 
         try {
             // FIXED: Added backticks around the API URL template
-            const apiUrl = `${window.API_BASE_URL || 'https://pcciv-api.onrender.com/api'}/v1/user/first-time-password-change`;
+            const apiUrl = `${window.API_BASE_URL}/v1/user/first-time-password-change`;
             
             const response = await fetch(apiUrl, {
                 method: 'POST', 

@@ -565,8 +565,8 @@
     let forgotStep = 'email';
     let toastTimer = null;
     const forgotApi = {
-        sendOtp: 'https://pcciv-api.onrender.com/api/forgot-password/send-otp',
-        reset: 'https://pcciv-api.onrender.com/api/forgot-password/reset',
+        sendOtp: 'https://pccivalph.onrender.com/api/forgot-password/send-otp',
+        reset: 'https://pccivalph.onrender.com/api/forgot-password/reset',
     };
 
     function toggleLoginPassword() {
@@ -812,7 +812,7 @@
         submitBtn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Authenticating...';
 
         try {
-            const response = await fetch(`${window.API_BASE_URL || 'https://pcciv-api.onrender.com/api'}/login`, {
+            const response = await fetch(`${window.API_BASE_URL}/login`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',

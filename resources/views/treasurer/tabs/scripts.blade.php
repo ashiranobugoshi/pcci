@@ -1247,7 +1247,7 @@
     async function readApiResponse(response) {
         const contentType = (response.headers.get('content-type') || '').toLowerCase();
         if (contentType.includes('application/json')) { return { data: await response.json().catch(() => ({})), raw: '' }; }
-        return { data: {}, raw: await response.text().catch(() => '') };
+        return { data: {}, raw: await response.text().catch(() => '') };    
     }
 
     function sanitizeSearchAutofill() {

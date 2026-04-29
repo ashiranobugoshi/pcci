@@ -625,7 +625,7 @@
         if (!box) return;
 
         try {
-            const apiUrl = `${window.API_BASE_URL || 'https://pcciv-api.onrender.com/api'}/v1/payment-channels`;
+            const apiUrl = `${window.API_BASE_URL}/v1/payment-channels`;
             const response = await fetch(apiUrl, {
                 method: 'GET',
                 headers: { 'Accept': 'application/json' }
@@ -741,7 +741,7 @@
             actionBtn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Sending OTP...';
 
             try {
-                const apiUrl = `${window.API_BASE_URL || 'http://127.0.0.1:8000/api'}/email/send-otp`;
+                const apiUrl = `${window.API_BASE_URL}/email/send-otp`;
 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
@@ -804,7 +804,7 @@
             actionBtn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Verifying Code...';
 
             try {
-                const apiUrl = `${window.API_BASE_URL || 'http://127.0.0.1:8000/api'}/email/verify-otp`;
+                const apiUrl = `${window.API_BASE_URL}/email/verify-otp`;
 
                 const response = await fetch(apiUrl, {
                     method: 'POST',

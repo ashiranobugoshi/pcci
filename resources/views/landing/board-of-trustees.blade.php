@@ -519,7 +519,7 @@
     let positionsData = [];
     let currentPage = 1;
     let itemsPerPage = 10;
-    const baseUrl = window.API_BASE_URL || 'https://pcci-laravel-api.onrender.com/api';
+    const baseUrl = window.API_BASE_URL;
 
     document.addEventListener('DOMContentLoaded', () => {
         loadPositions();
