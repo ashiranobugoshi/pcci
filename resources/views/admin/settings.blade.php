@@ -140,9 +140,9 @@
             if (channels.length > 0) {
                 defaultChannelData = channels[0];
                 document.getElementById('channelId').value = defaultChannelData.id;
-                document.getElementById('bankName').value = defaultChannelData.bank_name || defaultChannelData.name || '';
+                document.getElementById('bankName').value = defaultChannelData.payment_method || '';
                 document.getElementById('accountName').value = defaultChannelData.account_name || '';
-                document.getElementById('accountNumber').value = defaultChannelData.account_number || defaultChannelData.account_no || '';
+                document.getElementById('accountNumber').value = defaultChannelData.account_no || '';
             } else {
                 defaultChannelData = null;
                 document.getElementById('channelId').value = '';
@@ -178,9 +178,9 @@
         document.getElementById('cancelBtn').style.display = 'none';
         
         if(defaultChannelData) {
-            document.getElementById('bankName').value = defaultChannelData.bank_name || defaultChannelData.name || '';
+            document.getElementById('bankName').value = defaultChannelData.payment_method || '';
             document.getElementById('accountName').value = defaultChannelData.account_name || '';
-            document.getElementById('accountNumber').value = defaultChannelData.account_number || defaultChannelData.account_no || '';
+            document.getElementById('accountNumber').value = defaultChannelData.account_no || '';
         } else {
             document.getElementById('bankName').value = '';
             document.getElementById('accountName').value = '';
@@ -199,16 +199,10 @@
 
         const bankNameValue = document.getElementById('bankName').value;
 
-        const updatedData = {
-            name: bankNameValue,                        
-            bank_name: bankNameValue,
+        const updatedData = {                    
+            payment_method: bankNameValue,
             account_name: document.getElementById('accountName').value,
-            account_number: document.getElementById('accountNumber').value,
-            payment_method: 'bank_transfer',            
-            type: 'bank',                               
-            status: 'active',
-            is_active: 1,
-            currency: 'PHP'
+            account_no: document.getElementById('accountNumber').value,
         };
 
         const method = id ? 'PUT' : 'POST';

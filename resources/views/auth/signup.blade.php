@@ -501,7 +501,7 @@
                             </div>
                             <div class="mb-4">
                                 <label class="form-label-custom">DTI/SEC Business Registration Copy</label>
-                                <input type="file" name="dti_sec_registration" class="form-control form-control-dark" accept="image/*,.pdf">
+                                <input type="file" name="dti_sec" class="form-control form-control-dark" accept="image/*,.pdf">
                             </div>
 
                             <div class="mb-5" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 10px; padding: 16px 18px;">
@@ -637,9 +637,9 @@
                 
                 if (channels.length > 0) {
                     const bank = channels[0];
-                    const displayBankName = bank.bank_name || bank.name || 'Bank Name Not Set';
-                    const displayAccountName = bank.account_name || bank.account_title || 'N/A';
-                    const displayAccountNumber = bank.account_number || bank.account_no || bank.number || 'N/A';
+                    const displayBankName = bank.payment_method || 'Bank Name Not Set';
+                    const displayAccountName = bank.account_name || 'N/A';
+                    const displayAccountNumber = bank.account_no || 'N/A';
 
                     box.innerHTML = `
                         <p class="mb-0" style="font-size: 0.92rem; color: #e5e7eb; line-height: 1.5;">
