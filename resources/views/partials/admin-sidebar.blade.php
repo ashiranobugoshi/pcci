@@ -25,6 +25,9 @@
     </script>
 
     <div class="menu-label">Admin Panel</div>
+
+
+    
     <nav>
         <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="bi bi-grid-fill"></i> DASHBOARD

@@ -234,12 +234,11 @@
 <div class="applicant-toolbar">
     <div class="toolbar-group">
         <span class="toolbar-label">Status:</span>
-        {{-- NEW: Dropdown replaces the static button --}}
         <select id="applicantStatusFilter" class="form-select form-select-sm text-muted fw-bold" style="height: 36px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; box-shadow: none; cursor:pointer; width: 140px; padding: 4px 10px;" onchange="applyFiltersAndSort()">
             <option value="all">All Statuses</option>
             <option value="pending" selected>Pending</option>
             <option value="approved">Approved</option>
-            <option value="paid">Paid</option>
+            {{-- Note: "Paid" option removed because paid applicants are now Members --}}
             <option value="rejected">Rejected</option>
         </select>
     </div>
@@ -276,7 +275,6 @@
         const grid = document.getElementById('applicantGrid');
 
         try {
-            // Fetch all applicants regardless of status
             const response = await fetch(`${window.API_BASE_URL}/v1/applicants`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -293,7 +291,17 @@
             const result = await response.json();
 
             if (response.ok && result.data) {
-                allApplicants = result.data;
+                // =========================================================
+                // NEW: Filter out 'paid' applicants so they go to Members
+                // =========================================================
+                let fetchedData = result.data || [];
+                
+                // Keep only pending, approved, or rejected (exclude paid)
+                allApplicants = fetchedData.filter(app => {
+                    const status = (app.status || '').toLowerCase();
+                    return status === 'pending' || status === 'approved' || status === 'rejected' || status === 'declined';
+                });
+
                 applyFiltersAndSort();
             } else {
                 grid.innerHTML = `<div class="grid-message" style="color: #b91c1c;">Failed to load applicants: ${result.message || 'Unknown error'}</div>`;
@@ -340,7 +348,7 @@
         if (statusVal !== 'all') {
             filtered = filtered.filter(app => {
                 const status = (app.status || '').toLowerCase();
-                if (statusVal === 'rejected' && status === 'declined') return true; // Safety check
+                if (statusVal === 'rejected' && status === 'declined') return true; 
                 return status === statusVal;
             });
         }
@@ -385,9 +393,6 @@
             } else if (statusRaw === 'rejected' || statusRaw === 'declined') {
                 statusClass = 'status-rejected';
                 iconClass = 'bi-x-circle';
-            } else if (statusRaw === 'paid') {
-                statusClass = 'status-approved';
-                iconClass = 'bi-cash-stack';
             }
 
             const displayStatus = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);

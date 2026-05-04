@@ -483,18 +483,6 @@
                         </div>
 
                         <div id="step-6" class="d-none">
-                            <div class="data-notice mb-4" style="background-color: rgba(63, 81, 181, 0.1); border: 1px solid #5c6bc0; border-radius: 8px; padding: 15px;">
-                                <div class="d-flex">
-                                    <i class="bi bi-info-circle me-2" style="color: #5c6bc0; margin-top: 2px;"></i>
-                                    <div>
-                                        <strong style="color: #7986cb; font-size: 0.95rem;">Document Upload Notice</strong><br>
-                                        <span style="font-size: 0.8rem; color: #8c9eff; line-height: 1.4; display: block;">
-                                            (Skipped for API connection - text data only)
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            
                             <div class="mb-4">
                                 <label class="form-label-custom">Mayor's Permit</label>
                                 <input type="file" name="mayors_permit" class="form-control form-control-dark" accept="image/*,.pdf">
@@ -637,9 +625,9 @@
                 
                 if (channels.length > 0) {
                     const bank = channels[0];
-                    const displayBankName = bank.payment_method || 'Bank Name Not Set';
-                    const displayAccountName = bank.account_name || 'N/A';
-                    const displayAccountNumber = bank.account_no || 'N/A';
+                    const displayBankName = bank.payment_method || 'China Bank';
+                    const displayAccountName = bank.account_name || 'PCCI Valenzuela';
+                    const displayAccountNumber = bank.account_no || '1054 0000 5989';
 
                     box.innerHTML = `
                         <p class="mb-0" style="font-size: 0.92rem; color: #e5e7eb; line-height: 1.5;">

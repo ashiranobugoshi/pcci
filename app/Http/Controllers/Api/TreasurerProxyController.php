@@ -275,34 +275,27 @@ class TreasurerProxyController extends Controller
 
         return response()->json($response->json(), $response->status());
     }
+    
+    //app/Http/Controllers/Api/TreasurerProxyController.php (FRONTEND)
 
+    /**
+     * Confirms payment and triggers the Backend's notification logic.
+     */
     private function syncApplicantPayment(Request $request, $id)
     {
         $adminToken = config('services.pcci_api.admin_token');
-        $requestToken = $request->bearerToken();
-
-        // Allow the proxy to work even when the admin token is not configured locally.
-        $authToken = $adminToken ?: $requestToken;
-
-        if (!$authToken) {
-            return response()->json([
-                'message' => 'Admin API token not configured. Set PCCI_API_ADMIN_TOKEN in .env or send a valid bearer token.'
-            ], 500);
-        }
-
         $apiBase = $this->getApiBaseUrl();
 
-        $membershipTypeId = $request->input('membership_type_id');
-        $membershipType = $request->input('membership_type') ?: 'Regular';
-
+        // We send the 'paid' status to the Backend API.
+        // The Backend's ApplicantController will detect this and notify Admins.
         $response = Http::withHeaders([
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
-            'Authorization' => 'Bearer ' . $authToken,
+            'Authorization' => 'Bearer ' . $adminToken,
         ])->put("{$apiBase}/v1/applicants/{$id}", [
             'status' => 'paid',
-            'membership_type_id' => $membershipTypeId,
-            'membership_type' => $membershipType,
+            'membership_type_id' => $request->input('membership_type_id'),
+            'membership_type' => $request->input('membership_type'),
         ]);
 
         return response()->json($response->json(), $response->status());
@@ -352,24 +345,18 @@ class TreasurerProxyController extends Controller
         return response()->json($response->json(), $response->status());
     }
 
+    /**
+     * Cancels a transaction and triggers the Backend's rejection notification.
+     */
     public function cancelTransaction(Request $request, $id)
     {
         $adminToken = config('services.pcci_api.admin_token');
-        $requestToken = $request->bearerToken();
-        $authToken = $adminToken ?: $requestToken;
-
-        if (!$authToken) {
-            return response()->json([
-                'message' => 'Admin API token not configured. Set PCCI_API_ADMIN_TOKEN in .env or send a valid bearer token.'
-            ], 500);
-        }
-
         $apiBase = $this->getApiBaseUrl();
 
         $response = Http::withHeaders([
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
-            'Authorization' => 'Bearer ' . $authToken,
+            'Authorization' => 'Bearer ' . $adminToken,
         ])->put("{$apiBase}/v1/applicants/{$id}", [
             'status' => 'cancelled',
         ]);

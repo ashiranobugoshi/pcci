@@ -711,21 +711,28 @@ body.dark-mode .back-to-top-btn:hover {
     </div>
 </div>
 
-{{-- NOTIFICATION PANEL --}}
-<div class="notification-panel" id="notificationPanel">
-    <div class="notif-header">
-        <h6 class="notif-header-title">Notifications <span class="notif-badge" id="notifBadge">0 New</span></h6>
-        <button class="notif-clear-btn" onclick="clearNotifications(event)"><i class="fa fa-times"></i></button>
-    </div>
-    <div class="notif-body" id="notifBody">
-        <div class="notif-item" style="background: #f9fafb;">
-            <div class="notif-icon" style="background: white; border: 1px solid #ddd;"><i class="fa fa-info-circle text-primary fs-5"></i></div>
-            <div class="notif-text-content">
-                <p>No notifications yet.</p>
-            </div>
-        </div>
-    </div>
-    <div class="notif-footer" onclick="clearNotifications(event)">Close Panel</div>
+{{-- NOTIFICATION PANEL --}} 
+<div class="notification-panel" id="notificationPanel">     
+    <div class="notif-header">         
+        <h6 class="notif-header-title">Notifications <span class="notif-badge" id="notifBadge">0 New</span></h6>         
+        <button class="notif-clear-btn" onclick="clearNotifications(event)"><i class="fa fa-times"></i></button>     
+    </div>     
+    <div class="notif-body" id="notifBody">         
+        <div class="notif-item" style="background: #f9fafb;">             
+            <div class="notif-icon" style="background: white; border: 1px solid #ddd;"><i class="fa fa-info-circle text-primary fs-5"></i></div>             
+            <div class="notif-text-content">                 
+                <p>No notifications yet.</p>             
+            </div>         
+        </div>     
+    </div>     
+    <div class="notif-footer d-flex justify-content-between align-items-center p-2" style="background: #f8f9fb; border-top: 1px solid #e5e7eb;">         
+        <span class="text-primary fw-bold" style="cursor:pointer; font-size: 12px;" onclick="openFullNotificationsModal()">             
+            <i class="fa fa-expand me-1"></i> View All         
+        </span>         
+        <span class="text-success fw-bold" style="cursor:pointer; font-size: 12px;" onclick="markAllNotificationsAsRead()">             
+            <i class="fa fa-check-double me-1"></i> Mark all read         
+        </span>     
+    </div> 
 </div>
 
 {{-- SIDEBAR --}}
@@ -775,6 +782,21 @@ body.dark-mode .back-to-top-btn:hover {
 <button class="back-to-top-btn" id="treasurerBackToTop" aria-label="Back to top">
     <i class="fa fa-arrow-up"></i>
 </button>
+
+{{-- FULLSCREEN / LARGE NOTIFICATIONS MODAL --}}
+<div class="modal fade" id="fullNotificationsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div class="modal-header" style="background-color: #b61b2a; color: white; border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title fw-bold"><i class="fa fa-bell me-2"></i> All Notifications</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0" id="fullNotificationsBody" style="background-color: #f3f4f6;">
+                <!-- JavaScript will inject all notifications here -->
+            </div>
+        </div>
+    </div>
+</div>
 
 {{-- JAVASCRIPT LOGIC --}}
 @include('treasurer.tabs.scripts')

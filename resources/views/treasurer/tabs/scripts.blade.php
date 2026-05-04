@@ -1157,115 +1157,157 @@
         } catch (_) { return false; }
     }
 
-    // --- NOTIFICATION SYSTEM ---
-    function updateNotificationsPanel() {
-        const today = new Date();
-        const items = [];
-        const addItem = (title, subtitle, iconClass, toneClass, sortDate) => { items.push({ title, subtitle, iconClass, toneClass, sortDate }); };
-
-        allApplicantsData.forEach(app => {
-            const businessName = app.basic_profile?.registered_business_name || 'Unknown Business';
-            const status = String(app.status || '').toLowerCase();
-            const rawDate = app.date_approved || app.created_at || app.date_submitted || '';
-            const sortDate = new Date(rawDate).getTime() || 0;
-
-            if (status === 'paid') {
-                addItem('Payment processed', `${businessName} was marked as paid`, 'fa-check-circle', 'text-success', sortDate);
-            } else if (status === 'approved') {
-                addItem('Applicant awaiting payment', `${businessName} is approved and waiting for treasurer action`, 'fa-clock', 'text-warning', sortDate);
+    console.log("Fetching from:", `${window.API_BASE_URL}/v1/notifications`);
+ 
+async function updateNotificationsPanel() {
+    try {
+        // Fetch from your new single endpoint
+        const response = await fetch(`${window.API_BASE_URL}/v1/notifications`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                // Add Authorization header here if you aren't using session cookies
+                'Authorization': `Bearer ${localStorage.getItem('token')}` 
             }
         });
 
-        allTransactionsData.forEach(txn => {
-            const businessName = txn.applicant?.basic_profile?.registered_business_name || txn.basic_profile?.registered_business_name || 'Unknown Business';
-            const status = String(txn.status || '').toLowerCase();
-            const rawDate = txn.updated_at || txn.date_approved || txn.created_at || '';
-            const sortDate = new Date(rawDate).getTime() || 0;
+        if (!response.ok) throw new Error('Failed to fetch notifications');
 
-            if (status === 'failed' || status === 'cancelled') {
-                addItem(status === 'failed' ? 'Payment failed' : 'Payment cancelled', `${businessName} has a ${status} payment record`, status === 'failed' ? 'fa-times-circle' : 'fa-ban', 'text-danger', sortDate);
-            } else if (status === 'paid') {
-                addItem('Payment recorded', `${businessName} payment is now complete`, 'fa-receipt', 'text-success', sortDate);
-            }
-        });
-
-        allMembersData.forEach(member => {
-            const endDateString = member.membership_end_date || (member.created_at ? new Date(new Date(member.created_at).setFullYear(new Date(member.created_at).getFullYear() + 1)).toISOString() : null);
-            if (!endDateString) return;
-
-            const expDate = new Date(endDateString);
-            const diffTime = expDate - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            if (diffDays <= 30) {
-                const name = member.applicant?.basic_profile?.registered_business_name || 'Unknown Business';
-                if (diffDays < 0) {
-                    addItem('Membership expired', `${name} expired ${Math.abs(diffDays)} days ago`, 'fa-times-circle', 'text-danger', expDate.getTime());
-                } else if (diffDays === 0) {
-                    addItem('Membership expires today', `${name} expires today`, 'fa-exclamation-circle', 'text-danger', expDate.getTime());
-                } else {
-                    addItem('Membership expiring soon', `${name} expires in ${diffDays} days`, 'fa-exclamation-triangle', 'text-warning', expDate.getTime());
-                }
-            }
-        });
-
-        items.sort((a, b) => b.sortDate - a.sortDate);
+        const data = await response.json();
+        const items = data.notifications || [];
+        const unreadCount = data.unread_count || 0;
+        
+        // Save globally so the Modal can use the exact same data without re-fetching
+        window.allNotificationItems = items;
 
         const notifBody = document.getElementById('notifBody');
         const notifBadge = document.getElementById('notifBadge');
-        const redDot = document.querySelector('.fa-bell').nextElementSibling;
+        const redDot = document.querySelector('.fa-bell')?.nextElementSibling;
 
         if (items.length > 0) {
-            notifBody.innerHTML = items.slice(0, 6).map(item => `
-                <div class="notif-item" style="background: #f9fafb;">
-                    <div class="notif-icon" style="background: white; border: 1px solid #ddd;"><i class="fa ${item.iconClass} ${item.toneClass} fs-5"></i></div>
-                    <div class="notif-text-content">
-                        <p class="fw-bold mb-1 text-dark" style="font-size: 13px;">${item.title}</p>
-                        <small>${item.subtitle}</small>
+            // Slice the top 6 for the compact dropdown view
+            notifBody.innerHTML = items.slice(0, 6).map(item => {
+                const dateObj = new Date(item.created_at);
+                const dateStr = isNaN(dateObj.getTime()) ? 'Recent' : dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                
+                // Laravel stores our custom data inside the 'data' JSON column
+                const payload = item.data; 
+                
+                // Slight green tint if unread, white if read
+                const bgStyle = item.read_at === null ? 'background: #f0fdf4;' : 'background: #ffffff;';
+
+                return `
+                <div class="notif-item" style="${bgStyle} padding: 12px 15px; border-bottom: 1px solid #f3f4f6; display: flex; gap: 12px; align-items: flex-start; cursor: pointer; transition: background 0.2s;" onclick="markNotificationAsRead('${item.id}')">
+                    <div class="notif-icon" style="width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; background: #f9fafb; border: 1px solid #e5e7eb; flex-shrink: 0;">
+                        <i class="fa ${payload.icon} ${payload.tone}" style="font-size: 13px;"></i>
+                    </div>
+                    <div class="notif-text-content" style="width: 100%;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <p class="fw-bold mb-0 text-dark" style="font-size: 13px;">${payload.title}</p>
+                            <small class="text-muted" style="font-size: 10px;">${dateStr}</small>
+                        </div>
+                        <small style="font-size: 11px; color: #4b5563; display: block; margin-top: 2px;">${payload.message}</small>
                     </div>
                 </div>
-            `).join('');
-            notifBadge.innerText = `${items.length} New`;
-            if (redDot) redDot.style.display = 'block';
+            `}).join('');
+            
+            // Update Badges
+            if (notifBadge) notifBadge.innerText = `${unreadCount} New`;
+            if (redDot) redDot.style.display = unreadCount > 0 ? 'block' : 'none';
         } else {
+            // Empty State
             notifBody.innerHTML = `
-                <div class="notif-item" style="background: #f9fafb;">
-                    <div class="notif-icon" style="background: white; border: 1px solid #ddd;"><i class="fa fa-check-circle text-success fs-5"></i></div>
-                    <div class="notif-text-content"><p class="text-dark">No live notifications right now.</p><small>You're all caught up!</small></div>
+                <div class="notif-item" style="background: #f9fafb; padding: 15px; text-align: center;">
+                    <i class="fa fa-check-circle text-success fs-3 mb-2 d-block"></i>
+                    <p class="text-dark fw-bold mb-0" style="font-size: 13px;">No live notifications</p>
+                    <small class="text-muted" style="font-size: 11px;">You're all caught up!</small>
                 </div>
             `;
-            notifBadge.innerText = `0 New`;
+            if (notifBadge) notifBadge.innerText = `0 New`;
             if (redDot) redDot.style.display = 'none';
         }
+    } catch (error) {
+        console.error('Error updating notifications:', error);
+    }
+}
+ 
+ 
+// Initialize on page load and set up auto-refresh
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof allApplicantsData !== 'undefined' && 
+        typeof allTransactionsData !== 'undefined' && 
+        typeof allMembersData !== 'undefined') {
+        updateNotificationsPanel();
+        
+        // Auto-refresh notifications every 30 seconds
+        setInterval(() => {
+            if (typeof allApplicantsData !== 'undefined') {
+                updateNotificationsPanel();
+            }
+        }, 30000);
+    }
+});
+
+function openFullNotificationsModal() {
+    document.getElementById('notificationPanel').style.display = 'none';
+    
+    const modalBody = document.getElementById('fullNotificationsBody');
+    const items = window.allNotificationItems || [];
+
+    if (items.length > 0) {
+        // Render ALL items in the array, unsliced
+        modalBody.innerHTML = items.map(item => {
+            const dateObj = new Date(item.created_at);
+            const dateStr = isNaN(dateObj.getTime()) 
+                ? 'Recent' 
+                : dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+            
+            const payload = item.data;
+            const bgStyle = item.read_at === null ? 'background: #f0fdf4;' : 'background: #ffffff;';
+
+            return `
+            <div class="p-4 border-bottom d-flex align-items-start gap-3 transition-hover" style="${bgStyle} cursor: pointer;" onclick="markNotificationAsRead('${item.id}')">
+                <div style="width: 45px; height: 45px; border-radius: 50%; background: #f9fafb; border: 1px solid #e5e7eb; display: flex; justify-content: center; align-items: center; flex-shrink: 0;">
+                    <i class="fa ${payload.icon} ${payload.tone} fs-5"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-1 text-dark">${payload.title}</h6>
+                    <p class="mb-2 text-muted" style="font-size: 14px;">${payload.message}</p>
+                    <small class="text-secondary fw-bold" style="font-size: 11px;"><i class="fa fa-clock me-1"></i> ${dateStr}</small>
+                </div>
+            </div>`;
+        }).join('');
+    } else {
+        modalBody.innerHTML = `<div class="p-5 text-center text-muted fw-bold">No notifications found.</div>`;
     }
 
-    function checkAuth(res) {
-        if (res.status === 401) { localStorage.removeItem('token'); window.location.href = '/login'; return false; }
-        return true;
-    }
+    const modal = new bootstrap.Modal(document.getElementById('fullNotificationsModal'));
+    modal.show();
+}
 
-    async function readApiResponse(response) {
-        const contentType = (response.headers.get('content-type') || '').toLowerCase();
-        if (contentType.includes('application/json')) { return { data: await response.json().catch(() => ({})), raw: '' }; }
-        return { data: {}, raw: await response.text().catch(() => '') };    
-    }
-
-    function sanitizeSearchAutofill() {
-        const isEmailLike = (value) => /\S+@\S+\.\S+/.test(String(value || '').trim());
-        const searchInputs = [
-            document.getElementById('memberSearch'), document.getElementById('applicantSearch'),
-            document.getElementById('transactionSearch'), document.querySelector('.topbar-search')
-        ].filter(Boolean);
-
-        searchInputs.forEach((input, index) => {
-            input.setAttribute('autocomplete', 'off');
-            input.setAttribute('autocapitalize', 'off');
-            input.setAttribute('autocorrect', 'off');
-            input.setAttribute('spellcheck', 'false');
-            input.setAttribute('name', `search_query_${index + 1}`);
-            if (isEmailLike(input.value)) input.value = '';
+// 4. INTERACTIVE HELPER: MARK ALL AS READ
+async function markAllNotificationsAsRead() {
+    try {
+        await fetch('/api/v1/notifications/read-all', {
+            method: 'POST', // The route we made uses POST for this
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}` // Ensure token is sent
+            }
         });
+        
+        // Refresh the panel immediately to clear all green backgrounds and red dots
+        updateNotificationsPanel(); 
+        
+        if (document.getElementById('fullNotificationsModal').classList.contains('show')) {
+            setTimeout(openFullNotificationsModal, 200); 
+        }
+    } catch (error) {
+        console.error('Error marking all as read:', error);
     }
+}
 
     // --- MODALS FOR PAYMENTS ---
     function openSimpleProof(url) {
@@ -1492,13 +1534,49 @@
         } catch (error) { console.error(error); alert(error.message || 'Failed to update transaction.'); }
     }
 
-    // --- INITIALIZATION ---
-    document.addEventListener('DOMContentLoaded', async () => {
-        if (!token) { window.location.href = '/login'; return; }
+    // --- UTILITY FUNCTIONS ---
+    function sanitizeSearchAutofill() {
+        const isEmailLike = (value) => /\S+@\S+\.\S+/.test(String(value || '').trim());
+        const searchInputs = [
+            document.getElementById('memberSearch'), document.getElementById('applicantSearch'),
+            document.getElementById('transactionSearch'), document.querySelector('.topbar-search')
+        ].filter(Boolean);
+        
+        searchInputs.forEach((input, index) => {
+            input.setAttribute('autocomplete', 'off');
+            input.setAttribute('autocapitalize', 'off');
+            input.setAttribute('autocorrect', 'off');
+            input.setAttribute('spellcheck', 'false');
+            input.setAttribute('name', `search_query_${index + 1}`);
+            if (isEmailLike(input.value)) input.value = '';
+        });
+    }
 
+    // NEW: Added missing checkAuth function to prevent ReferenceErrors
+    function checkAuth(res) {
+        if (res.status === 401) { 
+            localStorage.removeItem('token'); 
+            window.location.href = '/login'; 
+            return false; 
+        }
+        return true;
+    }
+
+    // NEW: Added missing readApiResponse function to safely parse API responses
+    async function readApiResponse(response) {
+        const contentType = (response.headers.get('content-type') || '').toLowerCase();
+        if (contentType.includes('application/json')) { 
+            return { data: await response.json().catch(() => ({})), raw: '' }; 
+        }
+        return { data: {}, raw: await response.text().catch(() => '') };
+    }
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', async () => {
+        if (!token) { window.location.href = '/login'; return; }
+        
         sanitizeSearchAutofill();
         setTimeout(sanitizeSearchAutofill, 120);
-
+        
         const loadedFromApi = await loadAccountSettingsFromApi();
         if (!loadedFromApi) applyStoredAccountSettings();
         
@@ -1506,7 +1584,7 @@
         fetchMembers();
         fetchRecentPayments();
         fetchTransactions();
-        initCharts(); 
+        initCharts();
 
         const searchInputs = [
             { id: 'memberSearch', func: applyMemberFilters },

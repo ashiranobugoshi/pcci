@@ -587,10 +587,17 @@
 {{-- ======== SEARCH BAR + ADD NEW ======== --}}
 <div class="members-toolbar">
     <div class="search-box">
-        <input type="text" placeholder="Search company name . . ." id="memberSearchInput">
-        <i class="bi bi-search search-icon"></i>
+        <input type="text" id="memberSearch" placeholder="Search members by name, email, or ID..." oninput="applyFilters()">
     </div>
-    <button class="btn-add-new" type="button"><i class="bi bi-plus-lg"></i> Add New</button>
+
+    <div class="d-flex align-items-center">
+        <span class="fw-bold text-muted small me-2 text-uppercase">Status:</span>
+        <select id="memberStatusFilter" class="form-select border" style="width: 150px; border-radius: 6px; cursor: pointer;" onchange="applyFilters()">
+            <option value="all">All Members</option>
+            <option value="active" selected>Active</option>
+            <option value="expired">Expired</option>
+        </select>
+    </div>
 </div>
 
 {{-- ======== TABLE ======== --}}
@@ -739,475 +746,202 @@
 </div>
 
 <script>
-    // ==============================================
-    // MODAL UI LOGIC 
-    // ==============================================
-    document.querySelector('.btn-add-new').addEventListener('click', function() {
-        document.getElementById('addMemberModal').classList.add('active');
-    });
-
-    document.getElementById('closeModal').addEventListener('click', function() {
-        document.getElementById('addMemberModal').classList.remove('active');
-    });
-
-    document.getElementById('cancelModal').addEventListener('click', function() {
-        document.getElementById('addMemberModal').classList.remove('active');
-    });
-
-    document.getElementById('addMemberModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            this.classList.remove('active');
-        }
-    });
-
-    // ==============================================
-    // API AND DATA LOGIC
-    // ==============================================
     let allMembersData = [];
-    let approvedApplicantsForModal = [];
     let currentPage = 1;
-    let rowsPerPage = 10;
-    let currentSearchTerm = '';
-    const ADMIN_MEMBERS_AUTO_REFRESH_MS = 15000;
+    const itemsPerPage = 10;
 
     document.addEventListener('DOMContentLoaded', function() {
-        fetchMembers();
-
-        setInterval(() => {
-            if (document.visibilityState !== 'visible') return;
-            fetchMembers();
-        }, ADMIN_MEMBERS_AUTO_REFRESH_MS);
-
-        document.getElementById('rowsPerPageSelect').addEventListener('change', function() {
-            rowsPerPage = Number(this.value) || 10;
-            currentPage = 1;
-            renderMembers(currentSearchTerm);
-        });
-
-        document.getElementById('memberSearchInput').addEventListener('input', function() {
-            currentSearchTerm = this.value.trim().toLowerCase();
-            currentPage = 1;
-            renderMembers(currentSearchTerm);
-        });
-
-        document.getElementById('firstPageBtn').addEventListener('click', function() {
-            if (this.classList.contains('disabled')) return;
-            currentPage = 1;
-            renderMembers(currentSearchTerm);
-        });
-
-        document.getElementById('prevPageBtn').addEventListener('click', function() {
-            if (this.classList.contains('disabled')) return;
-            currentPage -= 1;
-            renderMembers(currentSearchTerm);
-        });
-
-        document.getElementById('nextPageBtn').addEventListener('click', function() {
-            if (this.classList.contains('disabled')) return;
-            currentPage += 1;
-            renderMembers(currentSearchTerm);
-        });
-
-        document.getElementById('lastPageBtn').addEventListener('click', function() {
-            if (this.classList.contains('disabled')) return;
-            const filtered = getFilteredMembers(currentSearchTerm);
-            currentPage = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
-            renderMembers(currentSearchTerm);
-        });
-
-        // Event listener for Dropdown Auto-Fill
-        const companySelect = document.getElementById('addMemberCompanySelect');
-        if (companySelect) {
-            companySelect.addEventListener('change', function () {
-                const selectedApplicant = approvedApplicantsForModal.find((item) => String(item.id) === String(this.value));
-                populateAddMemberReadOnlyFields(selectedApplicant || null);
-            });
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
+            return;
         }
+        fetchMembersList(token);
     });
 
-    function getApplicantBusinessAddress(profile) {
-        const loc = profile?.business_location || {};
-        const parts = [
-            loc.business_address,
-            loc.city_municipality,
-            loc.province,
-            loc.region,
-            loc.zip_code,
-        ].filter(Boolean);
-        return parts.join(', ');
-    }
-
-    function populateAddMemberReadOnlyFields(applicant) {
-        const businessAddressInput = document.getElementById('addMemberBusinessAddress');
-        const emailInput = document.getElementById('addMemberEmail');
-        const contactInput = document.getElementById('addMemberContact');
-        const membershipTypeInput = document.getElementById('addMembershipType');
-        const memberTypeInput = document.getElementById('addMemberType');
-        const statusSelect = document.getElementById('addMemberStatus');
-
-        if (!applicant) {
-            if (businessAddressInput) businessAddressInput.value = '';
-            if (emailInput) emailInput.value = '';
-            if (contactInput) contactInput.value = '';
-            if (membershipTypeInput) membershipTypeInput.value = 'Select a company first';
-            if (memberTypeInput) memberTypeInput.value = 'Member';
-            if (statusSelect) statusSelect.value = 'Active';
-            return;
-        }
-
-        const profile = applicant?.basic_profile || {};
-        const representative = applicant?.official_representative || {};
-
-        if (businessAddressInput) {
-            businessAddressInput.value = getApplicantBusinessAddress(profile) || 'N/A';
-        }
-        if (emailInput) {
-            emailInput.value = profile.email || 'N/A';
-        }
-        if (contactInput) {
-            contactInput.value = profile.telephone_no || representative.contact_no || 'N/A';
-        }
-        if (membershipTypeInput) {
-            membershipTypeInput.value = applicant.membership_type || 'Annual';
-        }
-        if (memberTypeInput) {
-            memberTypeInput.value = 'Member';
-        }
-        if (statusSelect) {
-            statusSelect.value = 'Active';
-        }
-    }
-
-    // --- FETCH ELIGIBLE APPLICANTS FOR ADD MODAL ---
-    async function fetchTreasurerApprovedApplicantsForModal() {
-        const companySelect = document.getElementById('addMemberCompanySelect');
-        const token = localStorage.getItem('token');
-        if (!companySelect) return;
-
-        companySelect.innerHTML = '<option value="">Loading eligible companies . . .</option>';
-
+    async function fetchMembersList(token) {
+        const tableBody = document.getElementById('membersTableBody');
+        
         try {
-            // Fetch fresh members list, paid applicants, and approved applicants simultaneously
-            const [membersRes, paidRes, approvedRes] = await Promise.all([
-                fetch(`${window.API_BASE_URL}/v1/members`, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
-                }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
-                }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
-                })
-            ]);
-
-            if (!membersRes.ok || !paidRes.ok || !approvedRes.ok) {
-                throw new Error('Failed to load necessary API data');
-            }
-
-            const membersData = await membersRes.json();
-            const paidData = await paidRes.json();
-            const approvedData = await approvedRes.json();
-
-            const freshMembers = Array.isArray(membersData.data) ? membersData.data : [];
-            const paidApplicants = Array.isArray(paidData.data) ? paidData.data : [];
-            const approvedApplicants = Array.isArray(approvedData.data) ? approvedData.data : [];
-            
-            // Combine both paid and approved applicants into one pool
-            const combinedApplicants = [...paidApplicants, ...approvedApplicants];
-
-            // Map exact emails and company names from the fresh members list for strict validation
-            const existingMemberEmails = new Set(
-                freshMembers
-                    .map((member) => String(member?.applicant?.basic_profile?.email || '').trim().toLowerCase())
-                    .filter(Boolean)
-            );
-
-            const existingMemberCompanyNames = new Set(
-                freshMembers
-                    .map((member) => String(member?.applicant?.basic_profile?.registered_business_name || '').trim().toLowerCase())
-                    .filter(Boolean)
-            );
-
-            // Filter out anyone who is already an existing member
-            approvedApplicantsForModal = combinedApplicants.filter((applicant) => {
-                const email = String(applicant?.basic_profile?.email || '').trim().toLowerCase();
-                const companyName = String(applicant?.basic_profile?.registered_business_name || '').trim().toLowerCase();
-
-                if (email && existingMemberEmails.has(email)) return false;
-                if (companyName && existingMemberCompanyNames.has(companyName)) return false;
-                
-                return true;
-            });
-
-            companySelect.innerHTML = '<option value="">Select eligible company . . .</option>';
-
-            approvedApplicantsForModal.forEach((applicant) => {
-                const companyName = applicant?.basic_profile?.registered_business_name || `Applicant #${applicant.id}`;
-                const statusLabel = String(applicant.status || '').toUpperCase();
-                
-                companySelect.insertAdjacentHTML(
-                    'beforeend',
-                    `<option value="${applicant.id}">${companyName} (${statusLabel})</option>`
-                );
-            });
-
-            if (approvedApplicantsForModal.length === 0) {
-                companySelect.innerHTML = '<option value="">No eligible companies available</option>';
-            }
-        } catch (error) {
-            console.error('Error loading eligible applicants for modal:', error);
-            approvedApplicantsForModal = [];
-            companySelect.innerHTML = '<option value="">No eligible companies available</option>';
-        }
-
-        populateAddMemberReadOnlyFields(null);
-    }
-
-    async function saveMemberFromModal() {
-        const companySelect = document.getElementById('addMemberCompanySelect');
-        const inductionDateInput = document.getElementById('addMemberInductionDate');
-        const saveBtn = document.getElementById('saveMemberBtn');
-        const token = localStorage.getItem('token');
-
-        const selectedApplicant = approvedApplicantsForModal.find(
-            (item) => String(item.id) === String(companySelect?.value || '')
-        );
-        const inductionDate = (inductionDateInput?.value || '').trim();
-
-        if (!selectedApplicant) {
-            alert('Please select an eligible company first.');
-            return;
-        }
-
-        if (!inductionDate) {
-            alert('Please select an induction date.');
-            inductionDateInput?.focus();
-            return;
-        }
-
-        const companyName = selectedApplicant?.basic_profile?.registered_business_name || '';
-        const email = selectedApplicant?.basic_profile?.email || '';
-
-        if (!companyName || !email) {
-            alert('Selected applicant is missing required company details.');
-            return;
-        }
-
-        try {
-            if (saveBtn) {
-                saveBtn.disabled = true;
-                saveBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
-            }
-
-            const response = await fetch(`${window.API_BASE_URL}/v1/members`, {
-                method: 'POST',
+            const baseUrl = window.API_BASE_URL || 'http://127.0.0.1:8000/api';
+            const response = await fetch(`${baseUrl}/v1/members`, {
                 headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    applicant_id: selectedApplicant.id, // <--- FIXED: Now sending the applicant ID
-                    company_name: companyName,
-                    email: email,
-                    induction_date: inductionDate,
-                }),
-            });
-
-            const payload = await response.json().catch(() => ({}));
-            if (!response.ok) {
-                throw new Error(payload.message || 'Failed to create member.');
-            }
-
-            alert(payload.message || 'Member created successfully.');
-            document.getElementById('addMemberModal').classList.remove('active');
-            if (inductionDateInput) inductionDateInput.value = '';
-            if (companySelect) companySelect.value = '';
-            populateAddMemberReadOnlyFields(null);
-
-            await fetchMembers();
-        } catch (error) {
-            console.error('Error creating member from modal:', error);
-            alert(error.message || 'Failed to create member.');
-        } finally {
-            if (saveBtn) {
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = '<i class="bi bi-check-lg"></i> Save Member';
-            }
-        }
-    }
-
-    async function fetchMembers() {
-        const tbody = document.getElementById('membersTableBody');
-        const token = localStorage.getItem('token');
-
-        try {
-            const response = await fetch(`${window.API_BASE_URL}/v1/members`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Accept': 'application/json'
                 }
             });
 
-            if (!response.ok) throw new Error("Failed to fetch members");
+            if (response.status === 401) return window.location.href = '/login';
 
-            const data = await response.json();
-
-            allMembersData = data.data || [];
-            currentPage = 1;
-            currentSearchTerm = '';
-            document.getElementById('memberSearchInput').value = '';
-            fetchTreasurerApprovedApplicantsForModal();
-            renderMembers('');
-
+            const result = await response.json();
+            
+            if (response.ok && result.data) {
+                allMembersData = result.data;
+                applyFilters(); // Apply default filters (Active) on load
+            } else {
+                tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Failed to load members.</td></tr>`;
+            }
         } catch (error) {
-            console.error("Error loading members:", error);
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: red; padding: 20px;">Failed to load members from database.</td></tr>`;
+            console.error('Fetch error:', error);
+            tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Network error.</td></tr>`;
         }
     }
 
-    function renderMembers(searchTerm) {
-        const tbody = document.getElementById('membersTableBody');
-        tbody.innerHTML = '';
-
+    function applyFilters() {
+        const searchTerm = (document.getElementById('memberSearch').value || '').toLowerCase().trim();
         const filtered = getFilteredMembers(searchTerm);
-        const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
-
-        if (currentPage > totalPages) {
-            currentPage = totalPages;
-        }
-
-        const startIndex = (currentPage - 1) * rowsPerPage;
-        const pageItems = filtered.slice(startIndex, startIndex + rowsPerPage);
-
-        updatePaginationUI(filtered.length, totalPages);
-
-        if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 20px;">No members found.</td></tr>`;
-            return;
-        }
-
-        pageItems.forEach(member => {
-            const applicant = member.applicant || {};
-            const profile = applicant.basic_profile || {};
-            const loc = profile.business_location || {};
-            const rep = applicant.official_representative || {};
-
-            const companyName = profile.registered_business_name || 'N/A';
-            const email = profile.email || 'N/A';
-            const status = member.status || 'Pending';
-            const contact = profile.telephone_no || rep.contact_no || 'N/A';
-            const memberType = member.membership_type_id === 1 ? 'Directory Member' : 'Regular Member';
-
-            let fullAddress = [];
-            if (loc.business_address) fullAddress.push(loc.business_address);
-            if (loc.city_municipality) fullAddress.push(loc.city_municipality);
-            if (loc.province) fullAddress.push(loc.province);
-            if (loc.region) fullAddress.push(loc.region);
-            if (loc.zip_code) fullAddress.push(loc.zip_code);
-
-            const address = fullAddress.length > 0 ? fullAddress.join(', ') : 'N/A';
-
-            let repName = [];
-            if (rep.first_name) repName.push(rep.first_name);
-            if (rep.mid_name) repName.push(rep.mid_name);
-            if (rep.surname) repName.push(rep.surname);
-            const registeredBy = repName.length > 0 ? repName.join(' ') : 'N/A';
-
-            const regDate = member.created_at ? new Date(member.created_at).toLocaleDateString('en-US') : 'N/A';
-
-            let statusColor = '#be1e38'; 
-            let statusBg = '#fdf2f2';
-            
-            if (status.toLowerCase() === 'active') {
-                statusColor = '#15803d'; 
-                statusBg = '#dcfce7';
-            } else if (status.toLowerCase() === 'pending') {
-                statusColor = '#b45309'; 
-                statusBg = '#fef3c7';
-            }
-
-            tbody.innerHTML += `
-                <tr>
-                    <td style="font-weight: 700; color: #1a1a1a;">${companyName}</td>
-                    <td style="text-transform: capitalize;">${memberType}</td>
-                    <td>
-                        <span style="background: ${statusBg}; color: ${statusColor}; padding: 4px 10px; border-radius: 50rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
-                            ${status}
-                        </span>
-                    </td>
-                    <td>${address}</td>
-                    <td>${email}</td>
-                    <td>${contact}</td>
-                    <td style="text-transform: capitalize;">${registeredBy}</td>
-                    <td>${regDate}</td>
-                </tr>
-            `;
-        });
+        
+        currentPage = 1; 
+        renderTablePage(filtered, currentPage);
     }
 
     function getFilteredMembers(searchTerm) {
+        const statusFilter = document.getElementById('memberStatusFilter').value;
+
         return allMembersData.filter(member => {
             const status = (member.status || '').toLowerCase();
 
-            // Block any member that is not paid, approved, or active
-            if (!['paid', 'approved', 'active'].includes(status)) {
+            // 1. Filter by Status Dropdown
+            if (statusFilter !== 'all' && status !== statusFilter) {
+                return false; 
+            }
+
+            // Ensure we never show raw pending applicants here (only paid/approved/active/expired)
+            if (!['paid', 'approved', 'active', 'expired'].includes(status)) {
                 return false;
             }
 
             if (!searchTerm) return true;
 
-            const applicant = member.applicant || {};
-            const profile = applicant.basic_profile || {};
-            const rep = applicant.official_representative || {};
-            const loc = profile.business_location || {};
-
+            // 2. Filter by Search Box
+            const profile = (member.applicant && member.applicant.basic_profile) ? member.applicant.basic_profile : {};
             const companyName = (profile.registered_business_name || '').toLowerCase();
             const email = (profile.email || '').toLowerCase();
-            const contact = (profile.telephone_no || '').toLowerCase();
-            const repName = [rep.first_name, rep.mid_name, rep.surname].filter(Boolean).join(' ').toLowerCase();
-            const address = [loc.business_address, loc.city_municipality, loc.province].filter(Boolean).join(' ').toLowerCase();
+            const idStr = `id-${String(member.id).padStart(4, '0')}`;
 
-            return companyName.includes(searchTerm) || 
-            email.includes(searchTerm) || 
-            contact.includes(searchTerm) || 
-            repName.includes(searchTerm) || 
-            address.includes(searchTerm) || 
-            status.includes(searchTerm);
+            return companyName.includes(searchTerm) || email.includes(searchTerm) || idStr.includes(searchTerm);
         });
     }
 
-    function updatePaginationUI(totalItems, totalPages) {
-        const firstBtn = document.getElementById('firstPageBtn');
-        const prevBtn = document.getElementById('prevPageBtn');
-        const nextBtn = document.getElementById('nextPageBtn');
-        const lastBtn = document.getElementById('lastPageBtn');
-        const center = document.querySelector('.pagination-center');
+    function renderTablePage(data, page) {
+        const tableBody = document.getElementById('membersTableBody');
+        tableBody.innerHTML = '';
 
-        if (center) {
-            if (totalItems === 0) {
-                center.textContent = 'Page 0 of 0';
-            } else {
-                center.textContent = `Page ${currentPage} of ${totalPages}`;
-            }
+        if (data.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-5">No members found.</td></tr>`;
+            updatePaginationUI(0, 1);
+            return;
         }
 
-        const isFirst = currentPage <= 1 || totalItems === 0;
-        const isLast = currentPage >= totalPages || totalItems === 0;
+        const totalPages = Math.ceil(data.length / itemsPerPage);
+        const startIndex = (page - 1) * itemsPerPage;
+        const pageData = data.slice(startIndex, startIndex + itemsPerPage);
 
-        [firstBtn, prevBtn].forEach(btn => {
-            if (!btn) return;
-            btn.classList.toggle('disabled', isFirst);
+        pageData.forEach(member => {
+            const profile = (member.applicant && member.applicant.basic_profile) ? member.applicant.basic_profile : {};
+            const companyName = profile.registered_business_name || member.name || 'N/A';
+            const email = profile.email || 'N/A';
+            const status = (member.status || 'Active').toLowerCase();
+            
+            // Default Status Colors (Green for Active)
+            let statusColor = '#15803d'; 
+            let statusBg = '#dcfce7';
+            
+            if (status === 'expired') {
+                statusColor = '#9a3412'; // Orange text for Expired
+                statusBg = '#ffedd5';    // Orange background for Expired
+            }
+
+            // Action Button Logic
+            let actionButton = `<a href="/member/${member.id}" class="btn btn-sm btn-light border fw-bold">View</a>`;
+            
+            if (status === 'expired') {
+                actionButton = `
+                    <button onclick="reactivateMember(${member.id})" class="btn btn-sm btn-outline-danger fw-bold rounded-pill shadow-sm">
+                        <i class="fa fa-sync-alt me-1"></i> Force Renew
+                    </button>
+                `;
+            }
+
+            const row = `
+                <tr style="vertical-align: middle;">
+                    <td class="fw-bold text-dark">${companyName}</td>
+                    <td class="text-muted small">${email}</td>
+                    <td>
+                        <span style="background-color: ${statusBg}; color: ${statusColor}; padding: 4px 12px; border-radius: 50rem; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">
+                            ${status}
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        ${actionButton}
+                    </td>
+                </tr>
+            `;
+            tableBody.insertAdjacentHTML('beforeend', row);
         });
 
-        [nextBtn, lastBtn].forEach(btn => {
-            if (!btn) return;
-            btn.classList.toggle('disabled', isLast);
-        });
+        updatePaginationUI(data.length, totalPages);
+    }
+
+    // ==========================================
+    // REACTIVATE / FORCE RENEW LOGIC
+    // ==========================================
+    async function reactivateMember(memberId) {
+        if (!confirm('Are you sure you want to force renew this member? This will set their membership as active for 1 year from today.')) {
+            return;
+        }
+        
+        const token = localStorage.getItem('token');
+        const baseUrl = window.API_BASE_URL || 'http://127.0.0.1:8000/api';
+        
+        // Setting the induction date to today automatically adds 1 year and sets status to active in your controller
+        const today = new Date().toISOString().split('T')[0];
+
+        try {
+            const response = await fetch(`${baseUrl}/v1/members/${memberId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ induction_date: today })
+            });
+
+            if (response.ok) {
+                // Refresh the table silently to show them as active again
+                fetchMembersList(token);
+            } else {
+                alert('Failed to renew member. Please check the network tab.');
+            }
+        } catch (error) {
+            console.error('Error renewing member:', error);
+            alert('A network error occurred while renewing.');
+        }
+    }
+
+    // ==========================================
+    // PAGINATION LOGIC
+    // ==========================================
+    function updatePaginationUI(totalItems, totalPages) {
+        const center = document.querySelector('.pagination-center');
+        if (center) {
+            center.textContent = totalItems === 0 ? 'Page 0 of 0' : `Page ${currentPage} of ${totalPages}`;
+        }
+    }
+
+    function changePage(direction) {
+        const searchTerm = (document.getElementById('memberSearch').value || '').toLowerCase().trim();
+        const filtered = getFilteredMembers(searchTerm);
+        const totalPages = Math.ceil(filtered.length / itemsPerPage);
+
+        if (direction === 'next' && currentPage < totalPages) {
+            currentPage++;
+            renderTablePage(filtered, currentPage);
+        } else if (direction === 'prev' && currentPage > 1) {
+            currentPage--;
+            renderTablePage(filtered, currentPage);
+        }
     }
 </script>
 @endsection

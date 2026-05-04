@@ -35,9 +35,9 @@ return [
         ],
     ],
 
-    'pcci_api' => [
-        'base_url' => env('PCCI_API_BASE_URL', 'https://pccivalph.onrender.com/api'),
-        'admin_token' => env('PCCI_API_ADMIN_TOKEN'),
-    ],
+    // 'pcci_api' => [
+    //     'base_url' => env('PCCI_API_BASE_URL', 'https://pccivalph.onrender.com/api'),
+    //     'admin_token' => env('PCCI_API_ADMIN_TOKEN'),
+    // ],
 
 ];
