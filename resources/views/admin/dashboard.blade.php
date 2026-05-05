@@ -187,7 +187,8 @@
                 items = items.filter(app => ['pending', 'approved', 'rejected', 'declined'].includes(String(app.status).toLowerCase()));
                 count = items.length;
             } else if (elementId === 'memberCount' && items.length > 0) {
-                items = items.filter(member => ['paid', 'approved', 'active'].includes(String(member.status).toLowerCase()));
+                // ADDED 'inactive' to the included statuses here
+                items = items.filter(member => ['paid', 'approved', 'active', 'inactive'].includes(String(member.status).toLowerCase()));
                 count = items.length;
             } else {
                 count = data.total !== undefined ? data.total : (data.count !== undefined ? data.count : items.length);
@@ -217,7 +218,7 @@
         const t = String(tone || '').toLowerCase();
         if (t.includes('success')) return { bg: '#d1e7dd', icon: '#0f5132', border: '#badbcc' }; // Green (Paid)
         if (t.includes('danger')) return { bg: '#f8d7da', icon: '#842029', border: '#f5c2c7' }; // Red (Rejected/Cancelled)
-        if (t.includes('warning')) return { bg: '#fff3cd', icon: '#664d03', border: '#ffecb5' }; // Yellow (Expired)
+        if (t.includes('warning')) return { bg: '#fff3cd', icon: '#664d03', border: '#ffecb5' }; // Yellow (inactive)
         if (t.includes('primary') || t.includes('info')) return { bg: '#cfe2ff', icon: '#084298', border: '#b6d4fe' }; // Blue (Approved)
         return { bg: '#f8f9fa', icon: '#6c757d', border: '#e9ecef' }; // Default Gray
     }
