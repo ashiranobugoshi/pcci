@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCCI Leadership and Committees</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,600;0,700;0,800;1,600;1,700;1,800&display=swap" rel="stylesheet">
+    <style>
+        /* --- Global Styles --- */
+        body { font-family: 'Montserrat', sans-serif; background-color: #ffffff; margin: 0; padding: 0; }
+
+        /* --- Top Header Section --- */
+        .main-header { position: relative; background-color: #a62a2f; background-image: url('images/header.png'); background-size: cover; background-position: center; color: #ffffff; text-align: center; }
+        .header-overlay { background-color: rgba(181, 47, 52, 0.85); padding: 80px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .header-title { font-size: 1.8rem; font-weight: 700; margin: 0 0 10px 0; letter-spacing: 1px; }
+        .header-subtitle { font-size: 2.6rem; font-weight: 800; margin: 0 0 15px 0; letter-spacing: 1px; }
+        .header-desc { font-size: 1.05rem; font-weight: 600; max-width: 650px; line-height: 1.5; margin: 0; }
+
+        /* --- Shared Section Title Styling --- */
+        .section-title-container { max-width: 1100px; margin: 60px auto 40px auto; padding: 0 20px; }
+        .section-title { font-size: 2.8rem; font-weight: 800; color: #000000; line-height: 1.2; margin: 0; }
+
+        /* --- The 3-Column Grid Layout (Board of Directors) --- */
+        .card-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 60px 40px; 
+            max-width: 1100px; 
+            margin: 0 auto 80px auto; 
+            padding: 0 20px; 
+        }
+
+        @media (max-width: 900px) { .card-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .card-grid { grid-template-columns: 1fr; } }
+
+        /* ==================================================== */
+        /* --- NEW: FLUID REVERSE ANIMATION CARD STYLES ------- */
+        /* ==================================================== */
+        .card-container { 
+            position: relative; 
+            width: 100%; 
+            max-width: 320px; 
+            margin: 0 auto; 
+            transition: max-width 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
+        }
+        
+        /* 1. Spanning Class instantly claims the grid space */
+        .card-container.is-spanning {
+            grid-column: span 2;
+            max-width: 100%;
+        }
+
+        .card-container::after { content: ""; position: absolute; top: -15px; right: -15px; width: 100%; height: 100%; border: 2px solid #a62a2f; border-radius: 8px; z-index: 0; }
+        
+        .card { 
+            position: relative; 
+            background-color: #ffffff; 
+            border: 2px solid #a62a2f; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            z-index: 2; 
+            height: 420px; /* Fixed default height */
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
+        }
+        
+        /* 2. Expanded Class triggers the smooth visual changes */
+        .card-container.is-expanded .card { 
+            height: 360px; /* Sleeker height when expanded side-by-side */
+            box-shadow: 0 8px 32px rgba(190,33,43,0.18);
+        }
+
+        /* Inner Content uses absolute positioning to glide seamlessly */
+        .card-image-wrapper { 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%; 
+            height: 250px; 
+            background-color: #ffffff; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-end; 
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
+            border-right: 0px solid transparent;
+        }
+        
+        .card-container.is-expanded .card-image-wrapper { 
+            width: 40%; 
+            height: 100%; 
+            border-right: 2px solid #be212b; 
+        }
+
+        .card-photo { max-width: 90%; max-height: 100%; object-fit: contain; }
+        
+        .card-info { 
+            position: absolute;
+            top: 250px; /* Starts underneath the image */
+            left: 0;
+            width: 100%; 
+            height: calc(100% - 250px);
+            background-color: #b55d5e; 
+            padding: 25px 20px; 
+            text-align: center; 
+            color: #ffffff; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            box-sizing: border-box;
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
+        }
+        
+        .card-container.is-expanded .card-info { 
+            top: 0;      /* Glides up */
+            left: 40%;   /* Glides to the right */
+            width: 60%; 
+            height: 100%;
+            background-color: #ffffff; 
+            color: #000; 
+            text-align: left; 
+            padding: 40px; 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-text-group { margin-bottom: 20px; }
+        .card-name { font-size: 1.4rem; font-weight: 800; margin: 0 0 8px 0; letter-spacing: 0.5px; transition: color 0.6s ease; }
+        .card-role { font-size: 0.9rem; font-weight: 700; font-style: italic; margin: 0; transition: color 0.6s ease; }
+
+        .card-bio {
+            display: block;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-top: 0;
+            color: #333;
+            font-weight: 500;
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .card-container.is-expanded .card-bio {
+            max-height: 500px;
+            opacity: 1;
+            margin-top: 15px;
+        }
+        .card-container.is-expanded .card-role { color: #be212b; }
+
+        .card-btn { background-color: #be212b; color: #ffffff; border: none; padding: 10px 24px; font-family: inherit; font-size: 0.9rem; font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; width: 100%; margin-top: auto; z-index: 10; position: relative;}
+        .card-btn:hover { background-color: #9e1a22; }
+        .card-container.is-expanded .card-btn { width: auto; background-color: #be212b; color: #ffffff; padding: 10px 24px; align-self: flex-start; margin-top: 20px; }
+
+        /* Mobile specific overrides to prevent horizontal gliding on small screens */
+        @media (max-width: 600px) { 
+            .card-container.is-expanded .card { height: 500px; }
+            .card-container.is-expanded .card-image-wrapper { width: 100%; height: 250px; border-right: none; border-bottom: 2px solid #be212b; }
+            .card-container.is-expanded .card-info { top: 250px; left: 0; width: 100%; height: calc(100% - 250px); padding: 25px 20px; }
+        }
+
+        /* ==================================================== */
+        /* --- List of Committees Section --------------------- */
+        /* ==================================================== */
+        .committees-section { background-color: #111111; color: white; padding: 80px 20px; overflow: hidden; }
+        .committees-section .section-title { color: white; margin-bottom: 60px; font-size: 2.2rem; max-width: 800px; margin-left: auto; margin-right: auto; text-align: left; }
+        .committee-list { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 0; }
+        .committee-row:not(:first-child) { margin-top: -50px; } 
+
+        .committee-row { display: flex; width: 90%; position: relative; z-index: 1; transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); cursor: pointer; box-sizing: border-box; align-items: stretch; backface-visibility: hidden; will-change: margin, transform; }
+        .committee-row:hover { z-index: 10; transform: translateY(-2px); }
+        .committee-row:nth-child(odd) { margin-right: auto; flex-direction: row; }
+        .committee-row:nth-child(even) { margin-left: auto; flex-direction: row-reverse; }
+
+        .committee-photo-wrapper { width: 200px; height: 200px; background-color: #e5e5e5; border-radius: 12px; padding: 6px; display: flex; justify-content: center; align-items: center; z-index: 5; flex-shrink: 0; box-shadow: 0 8px 20px rgba(0,0,0,0.6); position: relative; transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); align-self: center; backface-visibility: hidden; will-change: margin, transform; }
+        .committee-row:nth-child(odd) .committee-photo-wrapper { margin-right: -100px; } 
+        .committee-row:nth-child(even) .committee-photo-wrapper { margin-left: -100px; } 
+        .committee-photo { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+
+        .committee-text-group { display: flex; flex-direction: column; width: 100%; position: relative; z-index: 2; transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); justify-content: center; }
+        .committee-row:nth-child(odd) .committee-text-group { align-items: flex-start; text-align: left; }
+        .committee-row:nth-child(even) .committee-text-group { align-items: flex-end; text-align: right; }
+
+        .committee-tab { padding: 10px 25px 20px 25px; font-size: 1rem; font-weight: 700; width: max-content; border: 1px solid; position: relative; z-index: 3; transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); margin-bottom: -10px; backface-visibility: hidden; }
+        .committee-row:nth-child(odd) .committee-tab { border-radius: 10px 10px 0 0; margin-left: 90px; }
+        .committee-row:nth-child(even) .committee-tab { border-radius: 10px 10px 0 0; margin-right: 90px; }
+
+        .committee-box { padding: 70px 30px; font-size: 1.35rem; font-weight: 800; font-style: italic; border: 1px solid; box-shadow: 0 8px 20px rgba(0,0,0,0.5); min-height: 80px; display: flex; flex-direction: column; justify-content: center; width: 100%; box-sizing: border-box; position: relative; z-index: 4; transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); backface-visibility: hidden; will-change: margin, padding; }
+        .committee-row:nth-child(odd) .committee-box { border-radius: 0 10px 10px 10px; align-items: flex-start; padding-left: 120px; }
+        .committee-row:nth-child(even) .committee-box { border-radius: 10px 0 10px 10px; align-items: flex-end; padding-right: 120px; }
+
+        .box-title { width: 100%; transition: all 0.6s ease; }
+        .committee-description { max-height: 0; opacity: 0; overflow: hidden; font-size: 0.95rem; font-weight: 500; color: inherit; line-height: 1.6; text-transform: none; font-style: normal; transition: max-height 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.6s ease, margin-top 0.6s ease; }
+
+        .committee-row.is-expanded { z-index: 20; margin-top: 30px !important; margin-bottom: 50px !important; transform: translateY(0); }
+        .committee-row:nth-child(odd).is-expanded .committee-photo-wrapper { margin-right: 0; transform: translateY(0); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .committee-row:nth-child(even).is-expanded .committee-photo-wrapper { margin-left: 0; transform: translateY(0); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .committee-row.is-expanded .committee-tab { background-color: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; color: inherit !important; font-size: 1.6rem; font-weight: 800; margin-bottom: 10px !important; margin-left: 0 !important; margin-right: 0 !important; z-index: 10; }
+        .committee-row:nth-child(odd).is-expanded .committee-box { margin-left: -50px; padding-left: 70px; border-radius: 10px !important; min-height: 200px; }
+        .committee-row:nth-child(even).is-expanded .committee-box { margin-right: -50px; padding-right: 70px; border-radius: 10px !important; min-height: 200px; }
+        .committee-row.is-expanded .box-title { text-transform: uppercase; font-size: 1.1rem; margin-bottom: 15px; opacity: 0.9; }
+        .committee-row.is-expanded .committee-description { max-height: 500px; opacity: 1; margin-top: 10px; }
+
+        .committees-footer-container { max-width: 650px; margin: -30px auto 0 auto; position: relative; display: flex; flex-direction: column; align-items: flex-end; z-index: 15; }
+        .footer-tab { background-color: #be212b; height: 30px; width: 250px; border-radius: 12px 12px 0 0; margin-bottom: -1px; position: relative; z-index: 10; }
+        .committees-footer { background: linear-gradient(to bottom, #be212b, #701014); color: white; text-align: center; padding: 60px 40px; font-size: 1.2rem; font-weight: 700; font-style: italic; border-radius: 12px 0 12px 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); width: 100%; box-sizing: border-box; line-height: 1.6; position: relative; z-index: 5; }
+
+        /* --- Color Steps --- */
+        .committee-list > div:nth-child(1) .committee-tab, .committee-list > div:nth-child(1) .committee-box, .committee-list > div:nth-child(2) .committee-tab, .committee-list > div:nth-child(2) .committee-box { background-color: #fdf2f2; color: #000; }
+        .committee-list > div:nth-child(3) .committee-tab, .committee-list > div:nth-child(3) .committee-box, .committee-list > div:nth-child(4) .committee-tab, .committee-list > div:nth-child(4) .committee-box { background-color: #fad3d6; color: #000; }
+        .committee-list > div:nth-child(5) .committee-tab, .committee-list > div:nth-child(5) .committee-box, .committee-list > div:nth-child(6) .committee-tab, .committee-list > div:nth-child(6) .committee-box { background-color: #f3a3a9; color: #000; }
+        .committee-list > div:nth-child(7) .committee-tab, .committee-list > div:nth-child(7) .committee-box, .committee-list > div:nth-child(8) .committee-tab, .committee-list > div:nth-child(8) .committee-box { background-color: #eb6b74; color: #fff; }
+        .committee-list > div:nth-child(9) .committee-tab, .committee-list > div:nth-child(9) .committee-box, .committee-list > div:nth-child(10) .committee-tab, .committee-list > div:nth-child(10) .committee-box { background-color: #dc3541; color: #fff; }
+        .committee-list > div:nth-child(11) .committee-tab, .committee-list > div:nth-child(11) .committee-box, .committee-list > div:nth-child(12) .committee-tab, .committee-list > div:nth-child(12) .committee-box { background-color: #be212b; color: #fff; }
+        .committee-list > div:nth-child(13) .committee-tab, .committee-list > div:nth-child(13) .committee-box, .committee-list > div:nth-child(14) .committee-tab, .committee-list > div:nth-child(14) .committee-box { background-color: #a41720; color: #fff; }
+        .committee-list > div:nth-child(15) .committee-tab, .committee-list > div:nth-child(15) .committee-box, .committee-list > div:nth-child(16) .committee-tab, .committee-list > div:nth-child(16) .committee-box { background-color: #8b0e15; color: #fff; }
+        .committee-list > div:nth-child(17) .committee-tab, .committee-list > div:nth-child(17) .committee-box, .committee-list > div:nth-child(18) .committee-tab, .committee-list > div:nth-child(18) .committee-box { background-color: #70060c; color: #fff; }
+        .committee-list > div:nth-child(19) .committee-tab, .committee-list > div:nth-child(19) .committee-box, .committee-list > div:nth-child(20) .committee-tab, .committee-list > div:nth-child(20) .committee-box { background-color: #520207; color: #fff; }
+
+        /* --- CTA and Site Footer --- */
+        .cta-section { background-color: #f4f3ef; padding: 100px 20px; display: flex; justify-content: center; }
+        .cta-card { background-color: #ffffff; border-radius: 12px; padding: 60px 40px; text-align: center; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #ddd; }
+        .cta-icon { width: 50px; height: 50px; margin-bottom: 20px; }
+        .cta-title { font-size: 2.2rem; font-weight: 800; color: #000; margin: 0 0 15px 0; }
+        .cta-desc { font-size: 1.1rem; color: #333; line-height: 1.6; margin: 0 auto 30px auto; max-width: 600px; }
+        .cta-buttons { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .cta-btn { background-color: #be212b; color: #ffffff; border: none; padding: 12px 30px; font-family: inherit; font-size: 1rem; font-weight: 700; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; }
+        .cta-btn:hover { background-color: #9e1a22; }
+
+        .site-footer { background-color: #1e1e26; color: #d1d1d1; padding: 60px 20px 20px 20px; font-size: 0.9rem; }
+        .footer-container { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 40px; margin-bottom: 40px; }
+        .footer-col-left { max-width: 400px; }
+        .footer-logo-area { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .footer-logo-img { width: 50px; height: 50px; background-color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
+        .footer-logo-text h3 { color: white; margin: 0; font-size: 1.2rem; }
+        .footer-about { line-height: 1.6; margin-bottom: 20px; }
+        .footer-col-right h4 { color: white; font-size: 1.1rem; margin: 0 0 20px 0; }
+        .contact-list { list-style: none; padding: 0; margin: 0; }
+        .contact-list li { display: flex; gap: 10px; margin-bottom: 15px; line-height: 1.5; }
+        .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; text-align: center; color: #888; font-size: 0.8rem; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="header-overlay">
+            <h1 class="header-title">PCCI VALENZUELA</h1>
+            <h2 class="header-subtitle">LEADERSHIP AND COMMITTEES</h2>
+            <p class="header-desc">Meet the board members and committee volunteers driving business growth and advocacy in Valenzuela City</p>
+        </div>
+    </header>
+
+    <div class="section-title-container">
+        <h2 class="section-title">Board of Directors and<br>Officers</h2>
+    </div>
+
+    <!-- Board of Directors Section -->
+    <div class="card-grid">
+        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
+            <div class="card">
+                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Gemma" alt="Gemma Ong"></div>
+                <div class="card-info">
+                    <div class="card-text-group">
+                        <h3 class="card-name">Gemma Ong</h3>
+                        <p class="card-role">Board of Directors/Officer</p>
+                        <p class="card-bio">Gemma Ong is the President of PCCI Valenzuela (2026-2027). A Mapua-trained industrial engineer (Batch '89), she owns Food Grade Trading and founded the Blue Dragon Cooking Oil brand. She now leads the chamber in serving over 20,000 local enterprises through V-Link and advocating for business-friendly policies in Valenzuela City.</p>
+                    </div>
+                    <button class="card-btn">Show Less</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
+            <div class="card">
+                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Gimelle" alt="Gimelle Sy"></div>
+                <div class="card-info">
+                    <div class="card-text-group">
+                        <h3 class="card-name">Gimelle Sy</h3>
+                        <p class="card-role">Board of Directors/Officer</p>
+                        <p class="card-bio">Biography and details for Gimelle Sy go here. This information will appear when the card is expanded horizontally across the grid rows.</p>
+                    </div>
+                    <button class="card-btn">Show Less</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
+            <div class="card">
+                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Anna" alt="Anna Diego"></div>
+                <div class="card-info">
+                    <div class="card-text-group">
+                        <h3 class="card-name">Anna Cherry D. San Diego</h3>
+                        <p class="card-role">Board of Directors/Officer</p>
+                        <p class="card-bio">Biography and details for Anna Cherry D. San Diego go here.</p>
+                    </div>
+                    <button class="card-btn">Show Less</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
+            <div class="card">
+                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Dianne" alt="Dianne Leon"></div>
+                <div class="card-info">
+                    <div class="card-text-group">
+                        <h3 class="card-name">Dianne Phoebe Kaye L. De Leon</h3>
+                        <p class="card-role">Board of Directors/Officer</p>
+                        <p class="card-bio">Biography and details for Dianne De Leon go here.</p>
+                    </div>
+                    <button class="card-btn">Show Less</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
+            <div class="card">
+                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Ofelia" alt="Ofelia Oliveros"></div>
+                <div class="card-info">
+                    <div class="card-text-group">
+                        <h3 class="card-name">Ofelia Oliveros</h3>
+                        <p class="card-role">Board of Directors/Officer</p>
+                        <p class="card-bio">Biography and details for Ofelia Oliveros go here.</p>
+                    </div>
+                    <button class="card-btn">Show Less</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
+            <div class="card">
+                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Alicia" alt="Alicia Gavino"></div>
+                <div class="card-info">
+                    <div class="card-text-group">
+                        <h3 class="card-name">Alicia S. Gavino</h3>
+                        <p class="card-role">Officer</p>
+                        <p class="card-bio">Biography and details for Alicia S. Gavino go here.</p>
+                    </div>
+                    <button class="card-btn">Show Less</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
+            <div class="card">
+                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Officer+7" alt="Board Member 7"></div>
+                <div class="card-info">
+                    <div class="card-text-group">
+                        <h3 class="card-name">Board Member 7</h3>
+                        <p class="card-role">Board of Directors/Officer</p>
+                        <p class="card-bio">Biography and details for this board member go here.</p>
+                    </div>
+                    <button class="card-btn">Show Less</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
+            <div class="card">
+                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Officer+8" alt="Board Member 8"></div>
+                <div class="card-info">
+                    <div class="card-text-group">
+                        <h3 class="card-name">Board Member 8</h3>
+                        <p class="card-role">Board of Directors/Officer</p>
+                        <p class="card-bio">Biography and details for this board member go here.</p>
+                    </div>
+                    <button class="card-btn">Show Less</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
+            <div class="card">
+                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Officer+9" alt="Board Member 9"></div>
+                <div class="card-info">
+                    <div class="card-text-group">
+                        <h3 class="card-name">Board Member 9</h3>
+                        <p class="card-role">Board of Directors/Officer</p>
+                        <p class="card-bio">Biography and details for this board member go here.</p>
+                    </div>
+                    <button class="card-btn">Show Less</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
+            <div class="card">
+                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Officer+10" alt="Board Member 10"></div>
+                <div class="card-info">
+                    <div class="card-text-group">
+                        <h3 class="card-name">Board Member 10</h3>
+                        <p class="card-role">Board of Directors/Officer</p>
+                        <p class="card-bio">Biography and details for this board member go here.</p>
+                    </div>
+                    <button class="card-btn">Show Less</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
+            <div class="card">
+                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Officer+11" alt="Board Member 11"></div>
+                <div class="card-info">
+                    <div class="card-text-group">
+                        <h3 class="card-name">Board Member 11</h3>
+                        <p class="card-role">Board of Directors/Officer</p>
+                        <p class="card-bio">Biography and details for this board member go here.</p>
+                    </div>
+                    <button class="card-btn">Show Less</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
+            <div class="card">
+                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Officer+12" alt="Board Member 12"></div>
+                <div class="card-info">
+                    <div class="card-text-group">
+                        <h3 class="card-name">Board Member 12</h3>
+                        <p class="card-role">Board of Directors/Officer</p>
+                        <p class="card-bio">Biography and details for this board member go here.</p>
+                    </div>
+                    <button class="card-btn">Show Less</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Committees Section -->
+    <section class="committees-section">
+        <h2 class="section-title">List of Committees</h2>
+        <div class="committee-list">
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Anna+Marie" alt="Anna Marie Escober"></div><div class="committee-text-group"><div class="committee-tab">Anna Marie Escober</div><div class="committee-box"><div class="box-title">Ease of Doing Business and Documentation</div><div class="committee-description">Anna Marie leads the effort to streamline local business permits and documentation.</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Elisa" alt="Elisa Cabalquinto"></div><div class="committee-text-group"><div class="committee-tab">Elisa Cabalquinto</div><div class="committee-box"><div class="box-title">Education, Training, and Capacity Building</div><div class="committee-description">Description goes here...</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Jonalyn" alt="Jonalyn Valencia"></div><div class="committee-text-group"><div class="committee-tab">Jonalyn Domanog Valencia</div><div class="committee-box"><div class="box-title">Education, Training - Youth Entrepreneurship</div><div class="committee-description">Description goes here...</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Sonia" alt="Sonia Sy"></div><div class="committee-text-group"><div class="committee-tab">Sonia Sy</div><div class="committee-box"><div class="box-title">Micro Entrepreneurship</div><div class="committee-description">Description goes here...</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Jan+Nigel" alt="Jan Nigel Santos"></div><div class="committee-text-group"><div class="committee-tab">Jan Nigel Santos</div><div class="committee-box"><div class="box-title">Branding, Culture, and Communications</div><div class="committee-description">Description goes here...</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Jodel" alt="Jodel Valenzuela"></div><div class="committee-text-group"><div class="committee-tab">Jodel Valenzuela</div><div class="committee-box"><div class="box-title">Branding, Culture, and Communications</div><div class="committee-description">Description goes here...</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Renier" alt="Renier Espinosa"></div><div class="committee-text-group"><div class="committee-tab">Renier Espinosa</div><div class="committee-box"><div class="box-title">Technical Services and Innovation</div><div class="committee-description">Bio details go here...</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Geovey" alt="Geovey Submadito"></div><div class="committee-text-group"><div class="committee-tab">Geovey Submadito</div><div class="committee-box"><div class="box-title">Programs and Events</div><div class="committee-description">Description goes here...</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Allan" alt="Allan Ostonal"></div><div class="committee-text-group"><div class="committee-tab">Allan Ostonal</div><div class="committee-box"><div class="box-title">Programs and Events</div><div class="committee-description">Description goes here...</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Eugene" alt="Eugene Arevalazo"></div><div class="committee-text-group"><div class="committee-tab">Eugene "Jun" Arevalazo</div><div class="committee-box"><div class="box-title">Membership</div><div class="committee-description">Description goes here...</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Lynlyn" alt="Lynlyn Bato"></div><div class="committee-text-group"><div class="committee-tab">Lynlyn Bato</div><div class="committee-box"><div class="box-title">Membership</div><div class="committee-description">Description goes here...</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Lovely" alt="Lovely Cajucom"></div><div class="committee-text-group"><div class="committee-tab">Lovely Cajucom</div><div class="committee-box"><div class="box-title">Youth Entrepreneurship</div><div class="committee-description">Description goes here...</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Vincent" alt="Vincent Francisco"></div><div class="committee-text-group"><div class="committee-tab">Vincent Francisco</div><div class="committee-box"><div class="box-title">Youth Entrepreneurship</div><div class="committee-description">Description goes here...</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Pamela" alt="Pamela Salanguste"></div><div class="committee-text-group"><div class="committee-tab">Pamela Salanguste</div><div class="committee-box"><div class="box-title">Youth Entrepreneurship</div><div class="committee-description">Description goes here...</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Emil" alt="Emil Manaloto"></div><div class="committee-text-group"><div class="committee-tab">Emil Manaloto</div><div class="committee-box"><div class="box-title">Ways and Means</div><div class="committee-description">Description goes here...</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Judith" alt="Judith Gozarin"></div><div class="committee-text-group"><div class="committee-tab">Judith Gozarin</div><div class="committee-box"><div class="box-title">Ways and Means</div><div class="committee-description">Description goes here...</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Imelda" alt="Imelda Matusan"></div><div class="committee-text-group"><div class="committee-tab">Imelda "Emy" Matusan</div><div class="committee-box"><div class="box-title">Special Projects</div><div class="committee-description">Description goes here...</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Marc" alt="Marc Eason"></div><div class="committee-text-group"><div class="committee-tab">Marc Philip Eason</div><div class="committee-box"><div class="box-title">Special Projects</div><div class="committee-description">Description goes here...</div></div></div></div>
+            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Atty+Julius" alt="Atty Julius"></div><div class="committee-text-group"><div class="committee-tab">Atty. Julius Munez</div><div class="committee-box"><div class="box-title">Policy, Advocacy, and Governance</div><div class="committee-description">Description goes here...</div></div></div></div>
+        </div>
+
+        <div class="committees-footer-container">
+            <div class="footer-tab"></div>
+            <div class="committees-footer">
+                Get to know the volunteers behind each committee — working together to turn advocacy into action for Valenzuela's business community
+            </div>
+        </div>
+    </section>
+
+    <!-- LEADERSHIP CTA SECTION -->
+    <section class="cta-section">
+        <div class="cta-card">
+            <!-- Red Building Icon -->
+            <svg class="cta-icon" viewBox="0 0 24 24" fill="#be212b">
+                <path d="M7 19h10V4H7v15zm-5-2h4v2H2v-2zm15 0h4v2h-4v-2zM9 6h2v2H9V6zm4 0h2v2h-2V6zm-4 3h2v2H9V9zm4 0h2v2h-2V9zm-4 3h2v2H9v-2zm4 0h2v2h-2v-2zm-4 3h2v2H9v-2zm4 0h2v2h-2v-2z"/>
+            </svg>
+            <h2 class="cta-title">Leadership with Purpose</h2>
+            <p class="cta-desc">Our board members bring decades of business experience and unwavering commitment to advancing the interests of Valenzuela's business community.</p>
+            <div class="cta-buttons">
+                <button class="cta-btn">Join our Community</button>
+                <button class="cta-btn">Contact Leadership</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- SITE FOOTER -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <!-- Left Side: About -->
+            <div class="footer-col-left">
+                <div class="footer-logo-area">
+                    <div class="footer-logo-img">
+                        <img src="https://placehold.co/40x40/ffffff/a62a2f?text=Logo" alt="PCCI Logo" style="border-radius:50%;">
+                    </div>
+                    <div class="footer-logo-text">
+                        <h3>PCCI - Valenzuela</h3>
+                        <p>Philippine Chamber of Commerce</p>
+                    </div>
+                </div>
+                <p class="footer-about">Empowering local businesses and fostering economic growth in Valenzuela City through collaboration, networking, and advocacy. Building the future of businesses in our community.</p>
+            </div>
+
+            <!-- Right Side: Contact -->
+            <div class="footer-col-right">
+                <h4>Contact Information</h4>
+                <ul class="contact-list">
+                    <li>4th Floor, Legislative Bldg, Valenzuela City Hall, MacArthur Highway 1400 Philippines</li>
+                    <li>0960660660666666</li>
+                    <li>support@nfenexus.tech</li>
+                    <li>pcci-valenzuela.com</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            &copy; 2026 PCCI - Valenzuela. All rights reserved. | Philippine Chamber of Commerce and Industry - Valenzuela Chapter
+        </div>
+    </footer>
+
+    <script>
+        function toggleDirector(button) {
+            const container = button.closest('.card-container');
+            const isExpanded = container.classList.contains('is-expanded');
+            
+            // Close any currently open director cards
+            document.querySelectorAll('.card-grid .card-container').forEach(card => {
+                if (card !== container && card.classList.contains('is-expanded')) {
+                    // 1. Remove visual expansion
+                    card.classList.remove('is-expanded');
+                    const btn = card.querySelector('.card-btn');
+                    if (btn) btn.innerText = "Read More";
+                    
+                    // 2. Wait exactly 0.6 seconds (the CSS transition time) before dropping the grid space
+                    setTimeout(() => {
+                        if (!card.classList.contains('is-expanded')) {
+                            card.classList.remove('is-spanning');
+                        }
+                    }, 600);
+                }
+            });
+
+            if (!isExpanded) {
+                // OPENING SEQUENCE
+                // 1. Instantly reserve the wide grid space
+                container.classList.add('is-spanning');
+                
+                // 2. Give the browser 10ms to paint the space, then trigger the visual glide
+                setTimeout(() => {
+                    container.classList.add('is-expanded');
+                }, 10);
+                
+                const btn = container.querySelector('.card-btn');
+                if(btn) btn.innerText = "Show Less";
+            } else {
+                // CLOSING SEQUENCE
+                // 1. Start the visual CSS collapse glide
+                container.classList.remove('is-expanded');
+                const btn = container.querySelector('.card-btn');
+                if(btn) btn.innerText = "Read More";
+                
+                // 2. Wait exactly 0.6 seconds before removing the wide grid space so it doesn't snap!
+                setTimeout(() => {
+                    if (!container.classList.contains('is-expanded')) {
+                        container.classList.remove('is-spanning');
+                    }
+                }, 600);
+            }
+        }
+
+        // Committees expansion logic
+        function toggleExpand(element) {
+            let isAlreadyExpanded = element.classList.contains('is-expanded');
+            let allRows = document.querySelectorAll('.committee-row');
+            allRows.forEach(row => { row.classList.remove('is-expanded'); });
+            if (!isAlreadyExpanded) { element.classList.add('is-expanded'); }
+        }
+    </script>
+</body>
+</html>
