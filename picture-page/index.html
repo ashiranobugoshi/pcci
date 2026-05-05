@@ -255,7 +255,7 @@
     </div>
 
     <!-- Board of Directors Section -->
-    <div class="card-grid">
+    <div class="card-grid" id="cardGrid">
         <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
             <div class="card">
                 <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Gemma" alt="Gemma Ong"></div>
@@ -399,19 +399,6 @@
                 </div>
             </div>
         </div>
-        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
-            <div class="card">
-                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Officer+12" alt="Board Member 12"></div>
-                <div class="card-info">
-                    <div class="card-text-group">
-                        <h3 class="card-name">Board Member 12</h3>
-                        <p class="card-role">Board of Directors/Officer</p>
-                        <p class="card-bio">Biography and details for this board member go here.</p>
-                    </div>
-                    <button class="card-btn">Show Less</button>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Committees Section -->
@@ -498,6 +485,44 @@
     </footer>
 
     <script>
+        // Load directors data from JSON and populate cards
+        async function loadDirectors() {
+            try {
+                const response = await fetch('data.json');
+                const data = await response.json();
+                const cardGrid = document.getElementById('cardGrid');
+                
+                data.directors.forEach(director => {
+                    const cardContainer = document.createElement('div');
+                    cardContainer.className = 'card-container is-expanded is-spanning';
+                    cardContainer.onclick = function() { toggleDirector(this); };
+                    
+                    cardContainer.innerHTML = `
+                        <div class="card">
+                            <div class="card-image-wrapper">
+                                <img class="card-photo" src="${director.image}" alt="${director.name}">
+                            </div>
+                            <div class="card-info">
+                                <div class="card-text-group">
+                                    <h3 class="card-name">${director.name}</h3>
+                                    <p class="card-role">${director.role}</p>
+                                    <p class="card-bio">${director.bio}</p>
+                                </div>
+                                <button class="card-btn">Show Less</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    cardGrid.appendChild(cardContainer);
+                });
+            } catch (error) {
+                console.error('Error loading directors:', error);
+            }
+        }
+
+        // Load directors when page loads
+        document.addEventListener('DOMContentLoaded', loadDirectors);
+
         function toggleDirector(button) {
             const container = button.closest('.card-container');
             const isExpanded = container.classList.contains('is-expanded');
