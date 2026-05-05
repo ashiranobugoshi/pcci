@@ -181,7 +181,7 @@ main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; 
         <div class="notif-item notif-unread">
             <div class="notif-icon"><i class="fa fa-bell text-danger fs-5"></i></div>
             <div class="notif-text-content">
-                <p><strong>Mr. ABC</strong> your membership is near to <strong>expired</strong> to .........</p>
+                <p><strong>Mr. ABC</strong> your membership is near to <strong>inactive</strong> to .........</p>
                 <small>Monday, February 23, 2026</small>
             </div>
         </div>

@@ -235,10 +235,11 @@
     <div class="toolbar-group">
         <span class="toolbar-label">Status:</span>
         <select id="applicantStatusFilter" class="form-select form-select-sm text-muted fw-bold" style="height: 36px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; box-shadow: none; cursor:pointer; width: 140px; padding: 4px 10px;" onchange="applyFiltersAndSort()">
-            <option value="all">All Statuses</option>
-            <option value="pending" selected>Pending</option>
+            {{-- FIXED: Changed default selection to ALL so admin can see approved/paid instantly --}}
+            <option value="all" selected>All Statuses</option>
+            <option value="pending">Pending</option>
             <option value="approved">Approved</option>
-            {{-- Note: "Paid" option removed because paid applicants are now Members --}}
+            <option value="paid">Paid</option>
             <option value="rejected">Rejected</option>
         </select>
     </div>
@@ -258,7 +259,7 @@
 {{-- ======== DYNAMIC FETCH LOGIC ======== --}}
 <script>
     let allApplicants = [];
-    let nameSortAsc = null; // null = no sort, true = A-Z, false = Z-A
+    let nameSortAsc = null; 
 
     document.addEventListener('DOMContentLoaded', function() {
         const token = localStorage.getItem('token');
@@ -291,17 +292,7 @@
             const result = await response.json();
 
             if (response.ok && result.data) {
-                // =========================================================
-                // NEW: Filter out 'paid' applicants so they go to Members
-                // =========================================================
-                let fetchedData = result.data || [];
-                
-                // Keep only pending, approved, or rejected (exclude paid)
-                allApplicants = fetchedData.filter(app => {
-                    const status = (app.status || '').toLowerCase();
-                    return status === 'pending' || status === 'approved' || status === 'rejected' || status === 'declined';
-                });
-
+                allApplicants = result.data;
                 applyFiltersAndSort();
             } else {
                 grid.innerHTML = `<div class="grid-message" style="color: #b91c1c;">Failed to load applicants: ${result.message || 'Unknown error'}</div>`;
@@ -387,13 +378,13 @@
             let statusClass = 'status-pending';
             let iconClass = 'bi-clock';
 
-            if (statusRaw === 'approved') {
+            if (statusRaw === 'approved' || statusRaw === 'paid') {
                 statusClass = 'status-approved';
-                iconClass = 'bi-check-circle';
+                iconClass = statusRaw === 'paid' ? 'bi-cash-stack' : 'bi-check-circle';
             } else if (statusRaw === 'rejected' || statusRaw === 'declined') {
                 statusClass = 'status-rejected';
                 iconClass = 'bi-x-circle';
-            }
+            } 
 
             const displayStatus = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
             const profileUrl = `/applicant/${app.id}`;
@@ -411,6 +402,6 @@
 
             grid.insertAdjacentHTML('beforeend', cardHtml);
         });
-    }
+    }   
 </script>
 @endsection

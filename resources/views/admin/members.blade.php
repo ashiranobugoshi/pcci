@@ -12,12 +12,12 @@
     .members-header-banner {
         background-color: var(--pcci-red);
         color: #fff;
-        padding: 36px 40px;
+        padding: 30px 40px; 
         border-radius: 10px;
-        font-size: 2rem;
-        font-weight: 700;
+        font-size: 1.8rem;
+        font-weight: 800;
         text-transform: uppercase;
-        margin-bottom: 28px;
+        margin-bottom: 25px;
         letter-spacing: 1px;
     }
 
@@ -25,11 +25,11 @@
     .members-toolbar {
         display: flex;
         align-items: center;
-        gap: 20px;
-        margin-bottom: 28px;
-        padding: 14px 20px;
-        background: #fafafa;
-        border-radius: 12px;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 10px 15px;
+        background: #fdfdfd;
+        border-radius: 8px;
         border: 1px solid #eee;
     }
 
@@ -40,10 +40,9 @@
 
     .search-box input {
         width: 100%;
-        padding: 11px 4px 11px 10px;
+        padding: 11px 4px 11px 40px; 
         border: 1.5px solid #ddd;
-        border-bottom: 2.5px solid var(--pcci-red);
-        border-radius: 8px 8px 0 0;
+        border-radius: 8px;
         font-size: 0.92rem;
         color: #333;
         font-family: 'Inter', sans-serif;
@@ -60,16 +59,15 @@
 
     .search-box input:focus {
         border-color: var(--pcci-red);
-        border-bottom-color: var(--pcci-red);
-        box-shadow: 0 3px 8px rgba(190, 30, 56, 0.08);
+        box-shadow: 0 0 0 3px rgba(190, 30, 56, 0.08);
     }
 
     .search-box .search-icon {
         position: absolute;
-        right: 14px;
+        left: 14px;
         top: 50%;
         transform: translateY(-50%);
-        color: var(--pcci-red);
+        color: #999;
         font-size: 1.05rem;
         pointer-events: none;
     }
@@ -99,18 +97,20 @@
         box-shadow: 0 4px 14px rgba(190, 30, 56, 0.35);
     }
 
-    /* --- Table Container --- */
+    /* --- Table Container (UPDATED FOR HORIZONTAL SCROLLING) --- */
     .members-table-wrapper {
         border: 2px solid var(--pcci-red);
         border-radius: 12px;
-        overflow: hidden;
-        table-layout: fixed;
+        overflow-x: auto; /* Allows horizontal scrolling */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     }
 
     .members-table {
         width: 100%;
+        min-width: 1100px; /* Forces scrolling on screens smaller than 1100px */
         border-collapse: collapse;
         font-size: 0.88rem;
+        margin-bottom: 0;
     }
 
     /* --- Table Header --- */
@@ -122,10 +122,7 @@
         padding: 14px 12px;
         white-space: nowrap;
         border-right: 1px solid rgba(255,255,255,0.15);
-        position: relative;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        cursor: default;
+        text-align: center;
     }
 
     .members-table thead th:last-child {
@@ -158,10 +155,30 @@
         color: #333;
         vertical-align: middle;
         border-right: 1px solid #f0f0f0;
+        text-align: center; 
     }
 
     .members-table tbody td:last-child {
         border-right: none;
+    }
+
+    /* --- NEW UI CSS ADDITIONS --- */
+    .status-inactive {
+        background-color: #ff9800 !important;
+        color: white !important;
+        font-weight: bold;
+    }
+    
+    .icon-add {
+        font-size: 0.85rem;
+        cursor: pointer;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+        color: #0d6efd;
+    }
+    
+    .icon-add:hover {
+        opacity: 1;
     }
 
     /* --- Pagination Bar --- */
@@ -234,370 +251,40 @@
         cursor: not-allowed;
     }
 
-    /* ============================================== */
-    /* ADD NEW MEMBER MODAL                           */
-    /* ============================================== */
-
-    .modal-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(15, 15, 20, 0.55);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-        z-index: 9999;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .modal-overlay.active {
-        display: flex;
-    }
-
-    .modal-card {
-        background: #fff;
-        border-radius: 16px;
-        width: 100%;
-        max-width: 620px;
-        margin: 20px;
-        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.04);
-        position: relative;
-        animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        max-height: 90vh;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-
-    @keyframes modalPop {
-        from { opacity: 0; transform: scale(0.92) translateY(-10px); }
-        to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-
-    .modal-card::before {
-        content: '';
-        display: block;
-        height: 4px;
-        background: linear-gradient(90deg, var(--pcci-red), #e35d5d);
-        flex-shrink: 0;
-    }
-
-    .modal-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 20px 28px 16px;
-    }
-
-    .modal-header-left {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .modal-header-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        background: linear-gradient(135deg, rgba(190,30,56,0.1), rgba(190,30,56,0.05));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--pcci-red);
-        font-size: 1.1rem;
-        flex-shrink: 0;
-    }
-
-    .modal-header h3 {
-        font-size: 1.15rem;
-        font-weight: 700;
-        color: #1a1a1a;
-        margin: 0;
-    }
-
-    .modal-header h3 span {
-        display: block;
-        font-size: 0.78rem;
-        font-weight: 400;
-        color: #888;
-        margin-top: 2px;
-    }
-
-    .modal-close-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: var(--pcci-red);
-        color: #fff;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: all 0.2s;
-        box-shadow: 0 2px 8px rgba(190, 30, 56, 0.3);
-    }
-
-    .modal-close-btn:hover {
-        background: #9a0a28;
-        transform: rotate(90deg) scale(1.05);
-    }
-
-    .modal-divider {
-        height: 1px;
-        background: #eee;
-        margin: 0 28px;
-    }
-
-    .modal-body {
-        padding: 24px 32px 12px;
-        overflow-y: auto;
-        flex: 1;
-    }
-
-    .modal-body::-webkit-scrollbar { width: 5px; }
-    .modal-body::-webkit-scrollbar-track { background: transparent; }
-    .modal-body::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
-
-    .modal-section-label {
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        color: var(--pcci-red);
-        margin-bottom: 24px;
-        margin-top: 8px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .modal-section-label::after {
-        content: '';
-        flex: 1;
-        height: 1px;
-        background: #eee;
-    }
-
-    .modal-field {
-        margin-bottom: 32px;
-    }
-
-    .modal-field:last-child {
-        margin-bottom: 16px;
-    }
-
-    .modal-field label {
-        display: block;
-        font-size: 0.82rem;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 10px;
-    }
-
-    .modal-field label .required {
-        color: var(--pcci-red);
-        margin-left: 2px;
-    }
-
-    .modal-field input,
-    .modal-field select {
-        width: 100%;
-        padding: 12px 14px;
-        border: 1.5px solid #9d9d9db9;
-        border-radius: 10px;
-        font-size: 0.88rem;
-        font-family: 'Inter', sans-serif;
-        color: #333;
-        background: #fafafa;
-        outline: none;
-        transition: all 0.25s ease;
-        appearance: none;
-        -webkit-appearance: none;
-    }
-
-    .modal-field input::placeholder {
-        color: #b0b0b0;
-        font-style: italic;
-    }
-
-    .modal-field input:focus,
-    .modal-field select:focus {
-        border-color: var(--pcci-red);
-        background: #fff;
-        box-shadow: 0 0 0 3px rgba(190, 30, 56, 0.08);
-    }
-
-    .modal-input-icon-wrap {
-        position: relative;
-    }
-
-    .modal-input-icon-wrap input {
-        padding-left: 40px;
-        width: 100%;
-    }
-
-    .modal-input-icon-wrap .input-icon {
-        position: absolute;
-        left: 13px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #aaa;
-        font-size: 0.95rem;
-        pointer-events: none;
-    }
-
-    .modal-input-icon-wrap input:focus + .input-icon,
-    .modal-input-icon-wrap input:focus ~ .input-icon {
-        color: var(--pcci-red);
-    }
-
-   .modal-select-wrap {
-        position: relative;
-        width: 100%;
-    }
-
-    .modal-select-wrap select {
-        width: 100%;
-        padding: 12px 40px 12px 16px;
-        border-radius: 12px;
-        border: 1px solid #ccc;
-        appearance: none;
-        -webkit-appearance: none;
-        background: #fff;
-        font-size: 1rem;
-        cursor: pointer;
-    }
-
-    .modal-select-wrap::after {
-        content: '\F282';
-        font-family: 'bootstrap-icons';
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        pointer-events: none;
-        font-size: 0.8rem;
-        color: #d32f2f;
-    }
-
-    .modal-row {
-        display: flex;
-        gap: 16px;
-    }
-
-    .modal-row .modal-field {
-        flex: 1;
-        margin-right: 0;
-        margin-left: 0;
-    }
-
-    .modal-field input[type="date"] {
-        color: #999;
-    }
-
-    .modal-field input[type="date"]::-webkit-calendar-picker-indicator {
-        opacity: 0.4;
-        cursor: pointer;
-        transition: opacity 0.2s;
-    }
-
-    .modal-field input[type="date"]:hover::-webkit-calendar-picker-indicator {
-        opacity: 0.7;
-    }
-
-    .modal-footer {
-        display: flex;
-        justify-content: flex-end;
-        gap: 12px;
-        padding: 16px 28px 22px;
-        border-top: 1px solid #f0f0f0;
-        background: #fafafa;
-    }
-
-    .btn-modal-cancel {
-        padding: 10px 24px;
-        border: 1.5px solid #d5d5d5;
-        border-radius: 10px;
-        background: #fff;
-        color: #444;
-        font-size: 0.88rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .btn-modal-cancel:hover {
-        background: #f0f0f0;
-        border-color: #bbb;
-    }
-
-    .btn-modal-save {
-        padding: 10px 30px;
-        border: none;
-        border-radius: 10px;
-        background: var(--pcci-red);
-        color: #fff;
-        font-size: 0.88rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.25s ease;
-        box-shadow: 0 2px 8px rgba(190, 30, 56, 0.25);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .btn-modal-save:hover {
-        background: #9a0a28;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 14px rgba(190, 30, 56, 0.35);
-    }
-
-    @media (max-width: 992px) {
-        .members-header-banner { padding: 20px 24px; font-size: 1.5rem; }
-        .members-table-wrapper { overflow-x: auto; }
-        .members-table { min-width: 720px; }
-    }
-    @media (max-width: 768px) {
-        .members-table th, .members-table td { padding: 10px 8px; }
-    }
-    @media (max-width: 576px) {
-        .members-toolbar { flex-direction: column; align-items: stretch; }
-        .search-box { max-width: 100%; }
-        .btn-add-new { text-align: center; justify-content: center; }
-        .members-pagination { flex-direction: column; gap: 12px; text-align: center; }
-        .modal-card { margin: 12px; max-height: 95vh; }
-        .modal-header { padding: 16px 20px 12px; }
-        .modal-body { padding: 16px 20px 8px; }
-        .modal-footer { padding: 14px 20px 18px; }
-        .modal-row { flex-direction: column; gap: 0; }
-    }
+    /* MODAL CSS */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 15, 20, 0.55); z-index: 9999; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal-card { background: #fff; border-radius: 16px; width: 100%; max-width: 620px; margin: 20px; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; overflow: hidden; max-height: 90vh; }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 28px 16px; border-bottom: 1px solid #eee; }
+    .modal-body { padding: 24px 32px; overflow-y: auto; flex: 1; }
+    .modal-footer { padding: 16px 28px; border-top: 1px solid #f0f0f0; background: #fafafa; display: flex; justify-content: flex-end; gap: 12px; }
+    .modal-field { margin-bottom: 20px; }
+    .modal-field label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; }
+    .modal-field input, .modal-field select { width: 100%; padding: 10px 14px; border: 1.5px solid #ddd; border-radius: 8px; }
 </style>
 
 {{-- ======== RED HEADER BANNER ======== --}}
 <div class="members-header-banner">
-    Members
+    <i class="fa fa-users me-3"></i> MEMBERS
 </div>
 
-{{-- ======== SEARCH BAR + ADD NEW ======== --}}
+{{-- ======== SEARCH BAR + FILTERS + ADD NEW ======== --}}
 <div class="members-toolbar">
     <div class="search-box">
-        <input type="text" id="memberSearch" placeholder="Search members by name, email, or ID..." oninput="applyFilters()">
+        <i class="bi bi-search search-icon"></i>
+        <input type="text" placeholder="Search members by name, email, or ID . . ." id="memberSearchInput">
     </div>
 
     <div class="d-flex align-items-center">
         <span class="fw-bold text-muted small me-2 text-uppercase">Status:</span>
-        <select id="memberStatusFilter" class="form-select border" style="width: 150px; border-radius: 6px; cursor: pointer;" onchange="applyFilters()">
-            <option value="all">All Members</option>
-            <option value="active" selected>Active</option>
-            <option value="expired">Expired</option>
+        <select class="form-select border fw-bold text-dark fs-sm" id="memberStatusFilter" style="width: 140px; cursor: pointer;">
+            <option value="all" selected>All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
         </select>
     </div>
+
+    <button class="btn-add-new" type="button"><i class="bi bi-plus-lg"></i> Add New Member</button>
 </div>
 
 {{-- ======== TABLE ======== --}}
@@ -605,7 +292,7 @@
     <table class="members-table">
         <thead>
             <tr>
-                <th>Company Name <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                <th class="text-start">Company Name <i class="bi bi-arrow-down-up sort-icon"></i></th>
                 <th>Member Type</th>
                 <th>Current Status</th>
                 <th>Business Address</th>
@@ -649,298 +336,385 @@
 {{-- ======== ADD NEW MEMBER MODAL ======== --}}
 <div class="modal-overlay" id="addMemberModal">
     <div class="modal-card">
-
-        {{-- Header --}}
         <div class="modal-header">
             <div class="modal-header-left">
-                <div class="modal-header-icon">
-                    <i class="bi bi-person-plus-fill"></i>
-                </div>
-                <h3>
-                    Add New Member
-                    <span>Select an eligible company to register as a new member.</span>
-                </h3>
+                <h3 class="m-0 fw-bold"><i class="bi bi-person-plus-fill text-danger me-2"></i> Create New Member</h3>
             </div>
             <button class="modal-close-btn" id="closeModal" type="button">
                 <i class="bi bi-x-lg"></i>
             </button>
         </div>
-
-        <div class="modal-divider"></div>
-
-        {{-- Body --}}
         <div class="modal-body">
-
-            <div class="modal-section-label">Company Information</div>
-
             <div class="modal-field">
-                <label>Eligible Company <span class="required">*</span></label>
-                <div class="modal-select-wrap">
-                    <select id="addMemberCompanySelect">
-                        <option value="">Loading eligible companies . . .</option>
-                    </select>
-                </div>
+                <label>Eligible Applicant <span class="text-danger">*</span></label>
+                <select id="addMemberCompanySelect">
+                    <option value="">Loading eligible applicants . . .</option>
+                </select>
             </div>
-
-            <div class="modal-section-label">Membership Details</div>
-
-            <div class="modal-field">
-                <label>Membership Type</label>
-                <input type="text" id="addMembershipType" value="Select a company first" readonly style="background: #e9ecef;">
-            </div>
-
-            <div class="modal-row">
-                <div class="modal-field">
+            <div class="row">
+                <div class="col-md-6 modal-field">
                     <label>Member Type</label>
                     <input type="text" id="addMemberType" value="Member" readonly style="background: #e9ecef;">
                 </div>
-                <div class="modal-field">
-                    <label>Status</label>
-                    <input type="text" id="addMemberStatus" value="Active" readonly style="background: #e9ecef;">
+                <div class="col-md-6 modal-field">
+                    <label>Company Name</label>
+                    <input type="text" id="addMemberCompanyNameReadOnly" readonly style="background: #e9ecef;">
                 </div>
             </div>
-
-            <div class="modal-field">
-                <label>Business Address</label>
-                <div class="modal-input-icon-wrap">
-                    <input type="text" id="addMemberBusinessAddress" placeholder="Business address will auto-fill" readonly style="background: #e9ecef;">
-                    <i class="bi bi-geo-alt input-icon"></i>
+            <div class="row">
+                <div class="col-md-6 modal-field">
+                    <label>Email Address</label>
+                    <input type="email" id="addMemberEmail" readonly style="background: #e9ecef;">
+                </div>
+                <div class="col-md-6 modal-field">
+                    <label>Induction Date <span class="text-danger">*</span></label>
+                    <input type="date" id="addMemberInductionDate">
                 </div>
             </div>
-
-            <div class="modal-section-label">Contact Details</div>
-
-            <div class="modal-row">
-                <div class="modal-field">
-                    <label>Email</label>
-                    <div class="modal-input-icon-wrap">
-                        <input type="email" id="addMemberEmail" placeholder="Email will auto-fill" readonly style="background: #e9ecef;">
-                        <i class="bi bi-envelope input-icon"></i>
-                    </div>
-                </div>
-                <div class="modal-field">
-                    <label>Contact Number</label>
-                    <div class="modal-input-icon-wrap">
-                        <input type="text" id="addMemberContact" placeholder="Contact number will auto-fill" readonly style="background: #e9ecef;">
-                        <i class="bi bi-phone input-icon"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-field">
-                <label>Induction Date <span class="required">*</span></label>
-                <input type="date" id="addMemberInductionDate">
-            </div>
-
         </div>
-
-        {{-- Footer --}}
         <div class="modal-footer">
-            <button class="btn-modal-cancel" id="cancelModal" type="button">Cancel</button>
-            <button class="btn-modal-save" id="saveMemberBtn" type="button" onclick="saveMemberFromModal()">
-                <i class="bi bi-check-lg"></i> Save Member
+            <button class="btn btn-secondary px-4" id="cancelModal" type="button">Cancel</button>
+            <button class="btn btn-danger px-4 fw-bold" id="saveMemberBtn" type="button" onclick="saveMemberFromModal()">
+                <i class="bi bi-check-lg"></i> Add Member
             </button>
         </div>
-
     </div>
 </div>
 
 <script>
-    let allMembersData = [];
-    let currentPage = 1;
-    const itemsPerPage = 10;
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = '/login';
-            return;
-        }
-        fetchMembersList(token);
+    // ==============================================
+    // MODAL UI LOGIC 
+    // ==============================================
+    document.querySelector('.btn-add-new').addEventListener('click', function() {
+        document.getElementById('addMemberModal').classList.add('active');
     });
 
-    async function fetchMembersList(token) {
-        const tableBody = document.getElementById('membersTableBody');
-        
+    document.getElementById('closeModal').addEventListener('click', function() {
+        document.getElementById('addMemberModal').classList.remove('active');
+    });
+
+    document.getElementById('cancelModal').addEventListener('click', function() {
+        document.getElementById('addMemberModal').classList.remove('active');
+    });
+
+    document.getElementById('addMemberModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('active');
+        }
+    });
+
+    // ==============================================
+    // API AND DATA LOGIC
+    // ==============================================
+    let allMembersData = [];
+    let approvedApplicantsForModal = [];
+    let currentPage = 1;
+    let rowsPerPage = 10;
+    let currentSearchTerm = '';
+    const ADMIN_MEMBERS_AUTO_REFRESH_MS = 15000;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchMembers();
+
+        setInterval(() => {
+            if (document.visibilityState !== 'visible') return;
+            fetchMembers();
+        }, ADMIN_MEMBERS_AUTO_REFRESH_MS);
+
+        // --- Event Listeners for Filters & Pagination ---
+        document.getElementById('rowsPerPageSelect').addEventListener('change', function() {
+            rowsPerPage = Number(this.value) || 10;
+            currentPage = 1;
+            renderMembers(currentSearchTerm);
+        });
+
+        document.getElementById('memberSearchInput').addEventListener('input', function() {
+            currentSearchTerm = this.value.trim().toLowerCase();
+            currentPage = 1;
+            renderMembers(currentSearchTerm);
+        });
+
+        document.getElementById('memberStatusFilter').addEventListener('change', function() {
+            currentPage = 1;
+            renderMembers(currentSearchTerm);
+        });
+
+        document.getElementById('firstPageBtn').addEventListener('click', function() {
+            if (this.classList.contains('disabled')) return;
+            currentPage = 1;
+            renderMembers(currentSearchTerm);
+        });
+
+        document.getElementById('prevPageBtn').addEventListener('click', function() {
+            if (this.classList.contains('disabled')) return;
+            currentPage -= 1;
+            renderMembers(currentSearchTerm);
+        });
+
+        document.getElementById('nextPageBtn').addEventListener('click', function() {
+            if (this.classList.contains('disabled')) return;
+            currentPage += 1;
+            renderMembers(currentSearchTerm);
+        });
+
+        document.getElementById('lastPageBtn').addEventListener('click', function() {
+            if (this.classList.contains('disabled')) return;
+            const filtered = getFilteredMembers(currentSearchTerm);
+            currentPage = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
+            renderMembers(currentSearchTerm);
+        });
+
+        // Modal Dropdown listener
+        const companySelect = document.getElementById('addMemberCompanySelect');
+        if (companySelect) {
+            companySelect.addEventListener('change', function () {
+                const selectedApplicant = approvedApplicantsForModal.find((item) => String(item.id) === String(this.value));
+                if(selectedApplicant) {
+                    document.getElementById('addMemberCompanyNameReadOnly').value = selectedApplicant.basic_profile?.registered_business_name || '';
+                    document.getElementById('addMemberEmail').value = selectedApplicant.basic_profile?.email || '';
+                }
+            });
+        }
+    });
+
+    // --- FETCH MEMBERS CORE LOGIC ---
+    async function fetchMembers() {
+        const tbody = document.getElementById('membersTableBody');
+        const token = localStorage.getItem('token');
+
         try {
-            const baseUrl = window.API_BASE_URL || 'http://127.0.0.1:8000/api';
-            const response = await fetch(`${baseUrl}/v1/members`, {
+            const response = await fetch(`${window.API_BASE_URL}/v1/members`, {
+                method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 }
             });
 
-            if (response.status === 401) return window.location.href = '/login';
+            if (!response.ok) throw new Error("Failed to fetch members");
 
-            const result = await response.json();
+            const data = await response.json();
+
+            allMembersData = data.data || [];
             
-            if (response.ok && result.data) {
-                allMembersData = result.data;
-                applyFilters(); // Apply default filters (Active) on load
-            } else {
-                tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Failed to load members.</td></tr>`;
+            if(allMembersData.length > 0 && document.getElementById('membersTableBody').innerHTML.includes('Loading')) {
+                currentPage = 1;
+                currentSearchTerm = '';
+                document.getElementById('memberSearchInput').value = '';
             }
+
+            fetchTreasurerApprovedApplicantsForModal();
+            renderMembers(currentSearchTerm);
+
         } catch (error) {
-            console.error('Fetch error:', error);
-            tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Network error.</td></tr>`;
+            console.error("Error loading members:", error);
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: red; padding: 20px;">Failed to load members from database.</td></tr>`;
         }
     }
 
-    function applyFilters() {
-        const searchTerm = (document.getElementById('memberSearch').value || '').toLowerCase().trim();
+    // --- RENDER TABLE & INJECT NEW UI ---
+    function renderMembers(searchTerm) {
+        const tbody = document.getElementById('membersTableBody');
+        tbody.innerHTML = '';
+
         const filtered = getFilteredMembers(searchTerm);
-        
-        currentPage = 1; 
-        renderTablePage(filtered, currentPage);
+        const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
+
+        if (currentPage > totalPages) {
+            currentPage = totalPages;
+        }
+
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        const pageItems = filtered.slice(startIndex, startIndex + rowsPerPage);
+
+        updatePaginationUI(filtered.length, totalPages);
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 20px;">No members found matching your criteria.</td></tr>`;
+            return;
+        }
+
+        pageItems.forEach(member => {
+            const applicant = member.applicant || {};
+            const profile = applicant.basic_profile || {};
+            const loc = profile.business_location || {};
+            const rep = applicant.official_representative || {};
+
+            const companyName = profile.registered_business_name || 'N/A';
+            const email = profile.email || 'N/A';
+            const status = (member.status || 'Active').toUpperCase();
+            const memberType = member.membership_type_id === 1 ? 'Directory Member' : 'Regular Member';
+
+            // Missing Data Checks for Plus Icons
+            const addressRaw = [loc.business_address, loc.city_municipality, loc.province].filter(Boolean).join(', ');
+            const addressContent = addressRaw ? addressRaw : '<i class="fa fa-plus icon-add" title="Add Address"></i>';
+            
+            const contactRaw = profile.telephone_no || rep.contact_no;
+            const contactContent = contactRaw ? contactRaw : '<i class="fa fa-plus icon-add" title="Add Contact"></i>';
+            
+            const repRaw = [rep.first_name, rep.mid_name, rep.surname].filter(Boolean).join(' ');
+            const registeredMemberContent = repRaw ? repRaw : '<i class="fa fa-plus icon-add" title="Add Member"></i>';
+
+            const regDateContent = member.created_at ? new Date(member.created_at).toLocaleDateString('en-US') : '<i class="fa fa-plus icon-add" title="Add Date"></i>';
+
+            // Status Styling
+            let statusBadge = `<span class="badge bg-success text-uppercase rounded-pill shadow-sm py-1 px-3">${status}</span>`;
+            if (status === 'inactive') {
+                statusBadge = `<span class="badge text-uppercase rounded-pill shadow-sm py-1 px-3 status-inactive">${status}</span>`;
+            }
+
+            tbody.innerHTML += `
+                <tr class="align-middle">
+                    <td class="fw-bold text-start text-dark">${companyName}</td>
+                    <td class="text-secondary text-capitalize">${memberType}</td>
+                    <td>${statusBadge}</td>
+                    <td class="text-secondary">${addressContent}</td>
+                    <td class="text-primary">${email}</td>
+                    <td class="text-secondary">${contactContent}</td>
+                    <td class="text-secondary text-capitalize">${registeredMemberContent}</td>
+                    <td class="text-secondary">${regDateContent}</td>
+                </tr>
+            `;
+        });
     }
 
+    // --- FILTER LOGIC ---
     function getFilteredMembers(searchTerm) {
-        const statusFilter = document.getElementById('memberStatusFilter').value;
+        const statusFilter = document.getElementById('memberStatusFilter').value.toLowerCase();
 
         return allMembersData.filter(member => {
             const status = (member.status || '').toLowerCase();
 
-            // 1. Filter by Status Dropdown
-            if (statusFilter !== 'all' && status !== statusFilter) {
-                return false; 
+            if (!['paid', 'approved', 'active', 'inactive'].includes(status)) {
+                return false;
             }
 
-            // Ensure we never show raw pending applicants here (only paid/approved/active/expired)
-            if (!['paid', 'approved', 'active', 'expired'].includes(status)) {
+            if (statusFilter !== 'all' && status !== statusFilter) {
                 return false;
             }
 
             if (!searchTerm) return true;
 
-            // 2. Filter by Search Box
-            const profile = (member.applicant && member.applicant.basic_profile) ? member.applicant.basic_profile : {};
+            const applicant = member.applicant || {};
+            const profile = applicant.basic_profile || {};
+            const rep = applicant.official_representative || {};
+            
             const companyName = (profile.registered_business_name || '').toLowerCase();
             const email = (profile.email || '').toLowerCase();
-            const idStr = `id-${String(member.id).padStart(4, '0')}`;
+            const repName = [rep.first_name, rep.surname].filter(Boolean).join(' ').toLowerCase();
 
-            return companyName.includes(searchTerm) || email.includes(searchTerm) || idStr.includes(searchTerm);
+            return companyName.includes(searchTerm) || email.includes(searchTerm) || repName.includes(searchTerm);
         });
     }
 
-    function renderTablePage(data, page) {
-        const tableBody = document.getElementById('membersTableBody');
-        tableBody.innerHTML = '';
+    // --- PAGINATION UI CONTROLLER ---
+    function updatePaginationUI(totalItems, totalPages) {
+        const firstBtn = document.getElementById('firstPageBtn');
+        const prevBtn = document.getElementById('prevPageBtn');
+        const nextBtn = document.getElementById('nextPageBtn');
+        const lastBtn = document.getElementById('lastPageBtn');
+        const center = document.querySelector('.pagination-center');
 
-        if (data.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-5">No members found.</td></tr>`;
-            updatePaginationUI(0, 1);
-            return;
+        if (center) {
+            if (totalItems === 0) {
+                center.textContent = 'Page 0 of 0';
+            } else {
+                center.textContent = `Page ${currentPage} of ${totalPages}`;
+            }
         }
 
-        const totalPages = Math.ceil(data.length / itemsPerPage);
-        const startIndex = (page - 1) * itemsPerPage;
-        const pageData = data.slice(startIndex, startIndex + itemsPerPage);
+        const isFirst = currentPage <= 1 || totalItems === 0;
+        const isLast = currentPage >= totalPages || totalItems === 0;
 
-        pageData.forEach(member => {
-            const profile = (member.applicant && member.applicant.basic_profile) ? member.applicant.basic_profile : {};
-            const companyName = profile.registered_business_name || member.name || 'N/A';
-            const email = profile.email || 'N/A';
-            const status = (member.status || 'Active').toLowerCase();
-            
-            // Default Status Colors (Green for Active)
-            let statusColor = '#15803d'; 
-            let statusBg = '#dcfce7';
-            
-            if (status === 'expired') {
-                statusColor = '#9a3412'; // Orange text for Expired
-                statusBg = '#ffedd5';    // Orange background for Expired
-            }
-
-            // Action Button Logic
-            let actionButton = `<a href="/member/${member.id}" class="btn btn-sm btn-light border fw-bold">View</a>`;
-            
-            if (status === 'expired') {
-                actionButton = `
-                    <button onclick="reactivateMember(${member.id})" class="btn btn-sm btn-outline-danger fw-bold rounded-pill shadow-sm">
-                        <i class="fa fa-sync-alt me-1"></i> Force Renew
-                    </button>
-                `;
-            }
-
-            const row = `
-                <tr style="vertical-align: middle;">
-                    <td class="fw-bold text-dark">${companyName}</td>
-                    <td class="text-muted small">${email}</td>
-                    <td>
-                        <span style="background-color: ${statusBg}; color: ${statusColor}; padding: 4px 12px; border-radius: 50rem; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">
-                            ${status}
-                        </span>
-                    </td>
-                    <td class="text-end">
-                        ${actionButton}
-                    </td>
-                </tr>
-            `;
-            tableBody.insertAdjacentHTML('beforeend', row);
-        });
-
-        updatePaginationUI(data.length, totalPages);
+        [firstBtn, prevBtn].forEach(btn => btn?.classList.toggle('disabled', isFirst));
+        [nextBtn, lastBtn].forEach(btn => btn?.classList.toggle('disabled', isLast));
     }
 
-    // ==========================================
-    // REACTIVATE / FORCE RENEW LOGIC
-    // ==========================================
-    async function reactivateMember(memberId) {
-        if (!confirm('Are you sure you want to force renew this member? This will set their membership as active for 1 year from today.')) {
-            return;
-        }
-        
+    // --- FETCH MODAL DROPDOWN ---
+    async function fetchTreasurerApprovedApplicantsForModal() {
+        const companySelect = document.getElementById('addMemberCompanySelect');
         const token = localStorage.getItem('token');
-        const baseUrl = window.API_BASE_URL || 'http://127.0.0.1:8000/api';
-        
-        // Setting the induction date to today automatically adds 1 year and sets status to active in your controller
-        const today = new Date().toISOString().split('T')[0];
+        if (!companySelect) return;
 
         try {
-            const response = await fetch(`${baseUrl}/v1/members/${memberId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ induction_date: today })
+            const [membersRes, paidRes, approvedRes] = await Promise.all([
+                fetch(`${window.API_BASE_URL}/v1/members`, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } })
+            ]);
+
+            const membersData = await membersRes.json();
+            const paidData = await paidRes.json();
+            const approvedData = await approvedRes.json();
+
+            const freshMembers = Array.isArray(membersData.data) ? membersData.data : [];
+            const combinedApplicants = [...(paidData.data || []), ...(approvedData.data || [])];
+
+            const existingMemberEmails = new Set(freshMembers.map((m) => String(m?.applicant?.basic_profile?.email || '').trim().toLowerCase()).filter(Boolean));
+
+            approvedApplicantsForModal = combinedApplicants.filter((app) => {
+                const email = String(app?.basic_profile?.email || '').trim().toLowerCase();
+                return !(email && existingMemberEmails.has(email));
             });
 
-            if (response.ok) {
-                // Refresh the table silently to show them as active again
-                fetchMembersList(token);
-            } else {
-                alert('Failed to renew member. Please check the network tab.');
+            companySelect.innerHTML = '<option value="">Select eligible company . . .</option>';
+            approvedApplicantsForModal.forEach((app) => {
+                const name = app?.basic_profile?.registered_business_name || `Applicant #${app.id}`;
+                companySelect.insertAdjacentHTML('beforeend', `<option value="${app.id}">${name}</option>`);
+            });
+
+            if (approvedApplicantsForModal.length === 0) {
+                companySelect.innerHTML = '<option value="">No eligible companies available</option>';
             }
         } catch (error) {
-            console.error('Error renewing member:', error);
-            alert('A network error occurred while renewing.');
+            console.error('Modal fetch error:', error);
         }
     }
 
-    // ==========================================
-    // PAGINATION LOGIC
-    // ==========================================
-    function updatePaginationUI(totalItems, totalPages) {
-        const center = document.querySelector('.pagination-center');
-        if (center) {
-            center.textContent = totalItems === 0 ? 'Page 0 of 0' : `Page ${currentPage} of ${totalPages}`;
-        }
-    }
+    // --- SAVE NEW MEMBER API CALL ---
+    async function saveMemberFromModal() {
+        const companySelect = document.getElementById('addMemberCompanySelect');
+        const inductionDateInput = document.getElementById('addMemberInductionDate');
+        const saveBtn = document.getElementById('saveMemberBtn');
+        const token = localStorage.getItem('token');
 
-    function changePage(direction) {
-        const searchTerm = (document.getElementById('memberSearch').value || '').toLowerCase().trim();
-        const filtered = getFilteredMembers(searchTerm);
-        const totalPages = Math.ceil(filtered.length / itemsPerPage);
+        const selectedApplicant = approvedApplicantsForModal.find((item) => String(item.id) === String(companySelect?.value));
+        
+        if (!selectedApplicant) return alert('Please select an eligible company first.');
+        if (!inductionDateInput.value) return alert('Please select an induction date.');
 
-        if (direction === 'next' && currentPage < totalPages) {
-            currentPage++;
-            renderTablePage(filtered, currentPage);
-        } else if (direction === 'prev' && currentPage > 1) {
-            currentPage--;
-            renderTablePage(filtered, currentPage);
+        const companyName = selectedApplicant?.basic_profile?.registered_business_name || '';
+        const email = selectedApplicant?.basic_profile?.email || '';
+
+        try {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = 'Adding ...';
+
+            const response = await fetch(`${window.API_BASE_URL}/v1/members`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({
+                    applicant_id: selectedApplicant.id,
+                    company_name: companyName,
+                    email: email,
+                    induction_date: inductionDateInput.value,
+                }),
+            });
+
+            if (!response.ok) throw new Error('Failed to create member.');
+
+            alert('Member created successfully.');
+            document.getElementById('addMemberModal').classList.remove('active');
+            inductionDateInput.value = '';
+            companySelect.value = '';
+            fetchMembers();
+
+        } catch (error) {
+            console.error(error);
+            alert('Failed to create member.');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="bi bi-check-lg"></i> Add Member';
         }
     }
 </script>
