@@ -1,0 +1,88 @@
+{
+  "directors": [
+    {
+      "id": 1,
+      "name": "Gemma Ong",
+      "role": "Board of Directors/Officer",
+      "image": "images/gemma-ong.jpg",
+      "bio": "Gemma Ong is the President of PCCI Valenzuela (2026-2027). A Mapua-trained industrial engineer (Batch '89), she owns Food Grade Trading and founded the Blue Dragon Cooking Oil brand. She now leads the chamber in serving over 20,000 local enterprises through V-Link and advocating for business-friendly policies in Valenzuela City."
+    },
+    {
+      "id": 2,
+      "name": "Gimelle Sy",
+      "role": "Board of Directors/Officer",
+      "image": "images/Gimelle Sy.png",
+      "bio": "Biography and details for Gimelle Sy go here. This information will appear when the card is expanded horizontally across the grid rows."
+    },
+    {
+      "id": 3,
+      "name": "Anna Cherry D. San Diego",
+      "role": "Board of Directors/Officer",
+      "image": "images/Anna Cherry D. San Diego.png",
+      "bio": "Biography and details for Anna Cherry D. San Diego go here."
+    },
+    {
+      "id": 4,
+      "name": "Dianne Phoebe Kaye De Leon",
+      "role": "Board of Directors/Officer",
+      "image": "images/Dianne Phoebe Kaye De Leon.png",
+      "bio": "Biography and details for Dianne De Leon go here."
+    },
+    {
+      "id": 5,
+      "name": "Ofelia Oliveros",
+      "role": "Board of Directors/Officer",
+      "image": "images/Ofelia Oliveros.png",
+      "bio": "Biography and details for Ofelia Oliveros go here."
+    },
+    {
+      "id": 6,
+      "name": "Alicia S. Gavino",
+      "role": "Officer",
+      "image": "images/Alicia S. Gavino.png",
+      "bio": "Biography and details for Alicia S. Gavino go here."
+    },
+    {
+      "id": 7,
+      "name": "Allaine Chester Sy",
+      "role": "Board of Directors/Officer",
+      "image": "images/Allaine Chester Sy.png",
+      "bio": "Biography and details for Allaine Chester Sy go here."
+    },
+    {
+      "id": 8,
+      "name": "Delfin Florencio Gutierrez",
+      "role": "Board of Directors/Officer",
+      "image": "images/Delfin Florencio Gutierrez.jpg",
+      "bio": "Biography and details for Delfin Florencio Gutierrez go here."
+    },
+    {
+      "id": 9,
+      "name": "Eleanor Olegario",
+      "role": "Board of Directors/Officer",
+      "image": "images/Eleanor Olegario.png",
+      "bio": "Biography and details for Eleanor Olegario go here."
+    },
+    {
+      "id": 10,
+      "name": "Helen Lising",
+      "role": "Board of Directors/Officer",
+      "image": "images/Helen Lising.png",
+      "bio": "Biography and details for Helen Lising go here."
+    },
+    {
+      "id": 11,
+      "name": "Ma. Cristina Agbuya",
+      "role": "Board of Directors/Officer",
+      "image": "images/Ma. Cristina Agbuya.png",
+      "bio": "Biography and details for Ma. Cristina Agbuya go here."
+    },
+    {
+      "id": 12,
+      "name": "Yolly Dela Cruz",
+      "role": "Board of Directors/Officer",
+      "image": "images/Yolly Dela Cruz.png",
+      "bio": "Biography and details for Yolly Dela Cruz go here."
+    }
+  ]
+}
