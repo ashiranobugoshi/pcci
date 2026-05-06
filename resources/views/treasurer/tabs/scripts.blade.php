@@ -1,43 +1,56 @@
 <script>
     const token = localStorage.getItem('token');
     const TREASURER_MEMBERS_AUTO_REFRESH_MS = 15000;
-    
-    // Global data
+         
+    // Global Data Tables
     let allMembersData = []; 
     let filteredMembersData = []; 
     let currentMemberPage = 1;
     const membersPerPage = 10; 
-
+    
     let allApplicantsData = [];
     let filteredApplicantsData = [];
     let currentApplicantPage = 1;
     const applicantsPerPage = 10;
-
+    
     let allTransactionsData = [];
     let filteredTransactionsData = [];
     let currentTransactionPage = 1;
     const transactionsPerPage = 10;
-    
+         
+    // --- THE MISSING CHART VARIABLES ---
     let dashboardPaymentRange = 'day';
     let dashboardRevenueRange = 'month';
     let dashboardBarChartInstance = null;
     let dashboardPieChartInstance = null;
     let reportBarChartInstance = null;
     let reportPieChartInstance = null;
+    
+    // Modal & State Variables
     let editingTransactionId = null;
-
     let currentApplicantId = null;
     let currentSelectedType = 1;
     let currentPasswordOtpCode = '';
     let currentPasswordOtpEmail = '';
     let accountImageFile = null;
+    let approvedApplicantsForModal = []; 
     
-    let approvedApplicantsForModal = []; // Used for the Add Member Modal
+    // Dynamic Membership Fetch
+    let globalMembershipTypes = [];
 
-    let membershipTypes = [
-        { "id": 1, "name": "Micro", "price": "500.00", "duration_in_months": 12 },
-        { "id": 2, "name": "Small Enterprises", "price": "5000.00", "duration_in_months": 12 }
-    ];
+    async function fetchMembershipTypes() {
+        if (!token) return;
+        try {
+            const endpointBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
+            const res = await fetch(`${endpointBase}/v1/membership-types`, {
+                headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+            });
+            if (res.ok) {
+                const json = await res.json();
+                globalMembershipTypes = json.data || json || [];
+            }
+        } catch (err) { console.error('Error fetching membership types:', err); }
+    }
 
     function formatPeso(value) {
         return new Intl.NumberFormat('en-PH', {
@@ -64,12 +77,49 @@
     }
 
     function getTransactionAmount(record) {
-        const amountRaw = record.amount || record.membership_fee || (record.membership_type_id === 1 ? 500 : 5000);
-        return parseFloat(amountRaw) || 0;
+        // 1. Find the Membership Type ID
+        let typeId = record.membership_type_id || 
+                     record.member?.membership_type_id || 
+                     record.applicant?.membership_type_id;
+
+        // 2. Cross-reference if missing from transaction record
+        if (!typeId && record.member_id) {
+            const foundM = allMembersData.find(m => String(m.id) === String(record.member_id));
+            if (foundM) typeId = foundM.membership_type_id;
+        }
+
+        // 3. Match it to the dynamic backend prices we fetched
+        if (typeId && globalMembershipTypes.length > 0) {
+            const found = globalMembershipTypes.find(t => String(t.id) === String(typeId));
+            if (found) {
+                // If it's a renewal, fetch the exact renewal price
+                if (record.transaction_type === 'renewal' && found.renewal_price) {
+                    return parseFloat(found.renewal_price);
+                }
+                return parseFloat(found.price); // Else return initial price
+            }
+        }
+
+        // 4. Ultimate fallback to the saved amount
+        return parseFloat(record.amount || record.membership_fee || 0);
     }
 
     function getMembershipLabel(record) {
-        return (record.membership_type_id === 2 || getTransactionAmount(record) > 1000) ? 'Small' : 'Micro';
+        let typeId = record.membership_type_id || 
+                     record.member?.membership_type_id || 
+                     record.applicant?.membership_type_id;
+
+        if (!typeId && record.member_id) {
+            const foundM = allMembersData.find(m => String(m.id) === String(record.member_id));
+            if (foundM) typeId = foundM.membership_type_id;
+        }
+
+        if (typeId && globalMembershipTypes.length > 0) {
+            const found = globalMembershipTypes.find(t => String(t.id) === String(typeId));
+            if (found) return found.name;
+        }
+
+        return 'Unknown Type';
     }
 
     function getBusinessTypeLabel(record) {
@@ -305,37 +355,75 @@
     function renderTransactionRows(rows) {
         const tbodyTrans = document.getElementById('transactions-table-body');
         if (!tbodyTrans) return;
-
         tbodyTrans.innerHTML = '';
 
         if (rows.length > 0) {
             rows.forEach((txn, index) => {
-                const amountRaw = txn.amount || txn.membership_fee || (txn.membership_type_id === 1 ? 500 : 5000);
-                const amt = parseFloat(amountRaw) || 0;
                 const status = String(txn.status || 'pending').toLowerCase();
-                const txnDate = (txn.created_at || txn.date_approved || '').split('T')[0];
-                const transactionKey = getTransactionKey(txn, index);
-
+                const txnDate = (txn.created_at || '').split('T')[0] || 'N/A';
                 const statClass = status === 'pending' ? 'status-pending' : (status === 'failed' ? 'status-failed' : 'status-completed');
-                const statusDisplay = status === 'completed' || status === 'paid' ? 'COMPLETED' : status.toUpperCase();
-                const membershipText = amt > 1000 ? 'Small Enterprise' : 'Micro';
-                const businessName = txn.applicant?.basic_profile?.registered_business_name
-                    || txn.basic_profile?.registered_business_name
-                    || 'Unknown';
+
+                // Transaction Type Display
+                let typeDisplay = 'Unknown';
+                let typeBadgeColor = 'text-secondary';
+                if (txn.transaction_type === 'initial_registration') {
+                    typeDisplay = 'Initial Registration';
+                    typeBadgeColor = 'text-primary';
+                } else if (txn.transaction_type === 'renewal') {
+                    typeDisplay = 'Renewal';
+                    typeBadgeColor = 'text-success';
+                }
+
+                // ==========================================
+                // BULLETPROOF BUSINESS NAME EXTRACTION
+                // ==========================================
+                let businessName = txn.registered_business_name || 
+                                   txn.basic_profile?.registered_business_name || 
+                                   txn.applicant?.registered_business_name || 
+                                   txn.applicant?.basic_profile?.registered_business_name || 
+                                   txn.member?.applicant?.registered_business_name || 
+                                   txn.member?.applicant?.basic_profile?.registered_business_name;
+
+                // Fallback to globally fetched lists if relationships are missing in the transaction JSON
+                if (!businessName && txn.member_id) {
+                    const foundM = allMembersData.find(m => String(m.id) === String(txn.member_id));
+                    if (foundM) {
+                        businessName = foundM.applicant?.registered_business_name || 
+                                       foundM.applicant?.basic_profile?.registered_business_name;
+                    }
+                }
+                if (!businessName && txn.applicant_id) {
+                    const foundA = allApplicantsData.find(a => String(a.id) === String(txn.applicant_id));
+                    if (foundA) {
+                        businessName = foundA.registered_business_name || 
+                                       foundA.basic_profile?.registered_business_name;
+                    }
+                }
+
+                businessName = businessName || 'Unknown Business';
+
+                // ==========================================
+                // DYNAMIC AMOUNT AND LABELS
+                // ==========================================
+                const amt = getTransactionAmount(txn);
+                const membershipText = getMembershipLabel(txn);
+                const fmtAmt = `₱ ${amt.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                
                 const orNumber = txn.or_number || txn.official_receipt_no || '---';
+                const method = String(txn.payment_method || 'Cash').replace('_', ' ').toUpperCase();
 
                 tbodyTrans.insertAdjacentHTML('beforeend', `
-                    <tr id="transaction-row-${transactionKey}">
-                        <td class="fw-bold text-dark ps-4">${businessName}</td>
-                        <td class="text-dark">Gcash</td>
-                        <td class="text-dark">${txnDate || 'N/A'}</td>
-                        <td class="text-dark">${membershipText}</td>
-                        <td class="text-dark">${orNumber}</td>
-                        <td class="text-center"><span class="status-badge ${statClass}">${statusDisplay}</span></td>
-                        <td class="text-center">
-                            <button class="btn btn-sm btn-light border shadow-sm action-icon-btn" style="color: #3b82f6;" onclick="openTransactionEditModal('${transactionKey}')" title="Edit transaction"><i class="fa fa-edit"></i></button>
-                            <button class="btn btn-sm btn-light border shadow-sm action-icon-btn" style="color: #ef4444; margin-left: 4px;" onclick="deleteTransactionRecord('${transactionKey}')" title="Delete transaction"><i class="fa fa-trash"></i></button>
+                    <tr>
+                        <td class="fw-bold text-dark ps-4">
+                            ${businessName}
+                            <div class="text-muted fw-normal" style="font-size: 10px;">${membershipText}</div>
                         </td>
+                        <td class="fw-bold ${typeBadgeColor}">${typeDisplay}</td>
+                        <td class="fw-bold text-dark">${fmtAmt}</td>
+                        <td class="text-dark">${method}</td>
+                        <td class="text-dark fw-bold">${orNumber}</td>
+                        <td class="text-dark">${txnDate}</td>
+                        <td class="text-center"><span class="status-badge ${statClass}">${status.toUpperCase()}</span></td>
                     </tr>
                 `);
             });
@@ -414,9 +502,10 @@
             return diffDays >= 0 && diffDays <= 7;
         }).length;
 
-        const completedStatuses = ['paid', 'completed'];
+        const completedStatuses = ['paid', 'completed', 'approved'];
         const failedStatuses = ['failed', 'cancelled'];
         const currentMonthKey = getMonthKey(new Date().toISOString());
+        
         const previousMonthDate = new Date();
         previousMonthDate.setMonth(previousMonthDate.getMonth() - 1);
         const previousMonthKey = getMonthKey(previousMonthDate.toISOString());
@@ -444,7 +533,7 @@
             const membershipLabel = getMembershipLabel(record);
 
             if (dateKey && monthBuckets[dateKey]) {
-                if (membershipLabel === 'Small') {
+                if (membershipLabel.includes('Small')) {
                     monthBuckets[dateKey].small += amount;
                 } else {
                     monthBuckets[dateKey].micro += amount;
@@ -473,13 +562,16 @@
         const totalCollectionBase = collectedAmount + overdueAmount;
         const collectedPercent = totalCollectionBase > 0 ? Math.round((collectedAmount / totalCollectionBase) * 100) : 0;
         const overduePercent = totalCollectionBase > 0 ? Math.max(0, 100 - collectedPercent) : 0;
+        
         const revenueTrend = previousMonthRevenue > 0
             ? `${(((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100).toFixed(1)}%`
             : '0.0%';
+            
         const failedTrend = previousMonthFailedCount > 0
             ? `${currentMonthFailedCount - previousMonthFailedCount}`
             : `${currentMonthFailedCount}`;
 
+        // Update DOM elements
         const monthlyRevenueEl = document.getElementById('report-monthly-revenue');
         if (monthlyRevenueEl) monthlyRevenueEl.innerText = formatPeso(currentMonthRevenue);
 
@@ -528,14 +620,17 @@
             }
         }
 
+        // ==========================================
+        // FIX 2: BROWSER-SAFE GLOBAL CHART INSTANCES
+        // ==========================================
         const reportBar = document.getElementById('reportBarChart');
         if (reportBar) {
             const barLabels = monthKeys.map(getMonthLabel);
             const microData = monthKeys.map(key => monthBuckets[key].micro);
             const smallData = monthKeys.map(key => monthBuckets[key].small);
 
-            if (reportBarChartInstance) reportBarChartInstance.destroy();
-            reportBarChartInstance = new Chart(reportBar.getContext('2d'), {
+            if (window.reportBarChartInstance) window.reportBarChartInstance.destroy();
+            window.reportBarChartInstance = new Chart(reportBar.getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: barLabels,
@@ -550,8 +645,8 @@
 
         const reportPie = document.getElementById('reportPieChart');
         if (reportPie) {
-            if (reportPieChartInstance) reportPieChartInstance.destroy();
-            reportPieChartInstance = new Chart(reportPie.getContext('2d'), {
+            if (window.reportPieChartInstance) window.reportPieChartInstance.destroy();
+            window.reportPieChartInstance = new Chart(reportPie.getContext('2d'), {
                 type: 'pie',
                 data: {
                     labels: ['Collected', 'Overdue'],
@@ -565,8 +660,8 @@
         if (dashboardBar) {
             const revenueSeries = buildDashboardRevenueSeries(dashboardRevenueRange);
 
-            if (dashboardBarChartInstance) dashboardBarChartInstance.destroy();
-            dashboardBarChartInstance = new Chart(dashboardBar.getContext('2d'), {
+            if (window.dashboardBarChartInstance) window.dashboardBarChartInstance.destroy();
+            window.dashboardBarChartInstance = new Chart(dashboardBar.getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: revenueSeries.labels,
@@ -593,8 +688,8 @@
 
         const dashboardPie = document.getElementById('pieChart');
         if (dashboardPie) {
-            if (dashboardPieChartInstance) dashboardPieChartInstance.destroy();
-            dashboardPieChartInstance = new Chart(dashboardPie.getContext('2d'), {
+            if (window.dashboardPieChartInstance) window.dashboardPieChartInstance.destroy();
+            window.dashboardPieChartInstance = new Chart(dashboardPie.getContext('2d'), {
                 type: 'pie',
                 data: {
                     labels: ['Collected', 'Overdue'],
@@ -1342,10 +1437,39 @@ async function markAllNotificationsAsRead() {
         document.getElementById('toggleBtn2').className = (id == 2) ? 'type-toggle-btn active-2 flex-grow-1' : 'type-toggle-btn flex-grow-1';
     }
 
+    // ==========================================
+    // GLOBAL LOADING SCREEN HELPERS
+    // ==========================================
+    function showGlobalLoader(text = 'Processing...') {
+        let loader = document.getElementById('global-action-loader');
+        if (!loader) {
+            loader = document.createElement('div');
+            loader.id = 'global-action-loader';
+            loader.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; backdrop-filter: blur(3px);">
+                    <i class="fa fa-circle-notch fa-spin" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                    <h5 id="global-loader-text" class="fw-bold" style="font-family: 'Poppins', sans-serif;">${text}</h5>
+                </div>
+            `;
+            document.body.appendChild(loader);
+        } else {
+            document.getElementById('global-loader-text').innerText = text;
+            loader.style.display = 'flex';
+        }
+    }
+
+    function hideGlobalLoader() {
+        const loader = document.getElementById('global-action-loader');
+        if (loader) loader.style.display = 'none';
+    }
+
     // POST /v1/payments (Approve)
     async function confirmProcessing() {
-        const data = membershipTypes.find(m => m.id == currentSelectedType);
+        const data = globalMembershipTypes.find(m => String(m.id) === String(currentSelectedType));
         if (!data || !currentApplicantId) return;
+
+        // 1. Show the loading screen
+        showGlobalLoader('Approving Payment & Generating Record...');
 
         try {
             const endpointBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
@@ -1364,24 +1488,19 @@ async function markAllNotificationsAsRead() {
 
             if (response.ok || response.status === 200 || response.status === 201) {
                 hideProofModal();
-                localStorage.setItem('membersNeedsRefresh', '1');
-                localStorage.setItem('membersNeedsRefreshAt', String(Date.now()));
-
-                const amtLbl = document.getElementById(`amount-label-${currentApplicantId}`);
-                const typeLbl = document.getElementById(`type-label-${currentApplicantId}`);
-                const bge = document.getElementById(`status-badge-${currentApplicantId}`);
-                const actionBox = document.getElementById(`action-container-${currentApplicantId}`);
-
-                if(amtLbl) { amtLbl.innerText = `₱ Processed`; amtLbl.className = "fw-bold text-dark"; }
-                if(typeLbl) { typeLbl.innerText = "PAID"; typeLbl.className = "text-success fw-bold"; }
-                if(bge) { bge.innerHTML = `<i class="fa fa-check-double me-1"></i> PAID`; bge.className = "badge bg-success text-white px-2 py-1 rounded-pill fw-bold shadow-sm"; }
-                if(actionBox) { actionBox.innerHTML = `<button class="action-btn btn-gray" disabled style="width: 130px;"><i class="fa fa-check"></i> Processed</button>`; }
-
-                fetchMembers();
-                fetchTransactions();
-                fetchRecentPayments();
+                
+                // 2. Wait for all the data to refresh
+                await fetchApplicants();
+                await fetchMembers();
+                await fetchTransactions();
+                await fetchRecentPayments();
+                
+                // 3. Hide loader and show success
+                hideGlobalLoader();
                 alert("Success: Payment Processed!");
+                
             } else {
+                hideGlobalLoader(); // Hide loader on error
                 const result = await response.json().catch(() => ({}));
                 if (response.status === 401 || response.status === 403) {
                     alert("Access denied. Your account may not have permission to process payments.");
@@ -1389,7 +1508,94 @@ async function markAllNotificationsAsRead() {
                     alert(`Error: ${result.message || 'Something went wrong. Please try again.'}`);
                 }
             }
-        } catch (err) { alert("Network error: Could not reach the server."); }
+        } catch (err) { 
+            hideGlobalLoader(); // Hide loader on error
+            alert("Network error: Could not reach the server."); 
+        }
+    }
+
+    // PATCH /v1/payments/{id}/reject
+    async function rejectPaymentProcessing() {
+        if (!currentApplicantId) return;
+
+        const rejectionReason = prompt("Please enter the reason for rejection (e.g., 'Payment is Fraud!'):");
+        if (!rejectionReason || rejectionReason.trim() === '') return;
+
+        // 1. Show the loading screen
+        showGlobalLoader('Rejecting Payment...');
+
+        try {
+            const endpointBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
+            const response = await fetch(`${endpointBase}/v1/payments/${currentApplicantId}/reject`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify({ rejection_reason: rejectionReason.trim() })
+            });
+
+            if (response.ok) {
+                hideProofModal();
+                
+                // 2. Wait for all the data to refresh
+                await fetchApplicants();
+                await fetchMembers();
+                await fetchTransactions();
+                await fetchRecentPayments();
+                
+                // 3. Hide loader and show success
+                hideGlobalLoader();
+                alert("Success: Payment Rejected.");
+                
+            } else {
+                hideGlobalLoader(); // Hide loader on error
+                const result = await response.json().catch(() => ({}));
+                alert(`Error: ${result.message || 'Failed to reject payment.'}`);
+            }
+        } catch (err) {
+            hideGlobalLoader(); // Hide loader on error
+            alert("Network error: Could not reach the server.");
+        }
+    }
+
+    // PATCH /v1/payments/{id}/reject
+    async function rejectPaymentProcessing() {
+        if (!currentApplicantId) return;
+
+        const rejectionReason = prompt("Please enter the reason for rejection (e.g., 'Payment is Fraud!'):");
+        if (!rejectionReason || rejectionReason.trim() === '') return;
+
+        try {
+            const endpointBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
+            const response = await fetch(`${endpointBase}/v1/payments/${currentApplicantId}/reject`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify({ rejection_reason: rejectionReason.trim() })
+            });
+
+            if (response.ok) {
+                hideProofModal();
+                alert("Success: Payment Rejected.");
+
+                // FIX 2: Await fresh data fetches so the rejected applicant leaves the queue
+                await fetchApplicants();
+                await fetchMembers();
+                await fetchTransactions();
+                await fetchRecentPayments();
+                
+            } else {
+                const result = await response.json().catch(() => ({}));
+                alert(`Error: ${result.message || 'Failed to reject payment.'}`);
+            }
+        } catch (err) {
+            alert("Network error: Could not reach the server.");
+        }
     }
 
     // PATCH /v1/payments/{id}/reject
@@ -1572,7 +1778,7 @@ async function markAllNotificationsAsRead() {
     }
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', async () => {
-        if (!token) { window.location.href = '/login'; return; }
+if (!token) { window.location.href = '/login'; return; }
         
         sanitizeSearchAutofill();
         setTimeout(sanitizeSearchAutofill, 120);
@@ -1580,9 +1786,11 @@ async function markAllNotificationsAsRead() {
         const loadedFromApi = await loadAccountSettingsFromApi();
         if (!loadedFromApi) applyStoredAccountSettings();
         
+        // NEW: Fetch membership types before loading tables!
+        await fetchMembershipTypes();
+        
         fetchApplicants();
-        fetchMembers();
-        fetchRecentPayments();
+        fetchMembers();        fetchRecentPayments();
         fetchTransactions();
         initCharts();
 
@@ -2077,63 +2285,204 @@ async function markAllNotificationsAsRead() {
 
     async function fetchTransactions() {
         try {
-            const [paidRes, approvedRes, failedRes, cancelledRes] = await Promise.all([
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=failed`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=cancelled`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } })
-            ]);
-
-            if (!checkAuth(paidRes) || !checkAuth(approvedRes) || !checkAuth(failedRes) || !checkAuth(cancelledRes)) return;
-
-            const paidData = paidRes.ok ? await paidRes.json() : { data: [] };
-            const approvedData = approvedRes.ok ? await approvedRes.json() : { data: [] };
-            const failedData = failedRes.ok ? await failedRes.json() : { data: [] };
-            const cancelledData = cancelledRes.ok ? await cancelledRes.json() : { data: [] };
-
-            const paidRows = (paidData.data || []).map(app => ({ ...app, status: 'paid' }));
-            const pendingRows = (approvedData.data || []).map(app => ({ ...app, status: 'approved' }));
-            const failedRows = (failedData.data || []).map(app => ({ ...app, status: 'failed' }));
-            const cancelledRows = (cancelledData.data || []).map(app => ({ ...app, status: 'cancelled' }));
+            // 1. Fetch Global Financial Stats for the Cards
+            const statsRes = await fetch(`${window.API_BASE_URL}/v1/transactions/stats`, { 
+                headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } 
+            });
             
-            const rows = [...pendingRows, ...paidRows, ...failedRows, ...cancelledRows];
+            if (checkAuth(statsRes) && statsRes.ok) {
+                const stats = await statsRes.json();
+                const fmt = val => `₱ ${parseFloat(val || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                
+                document.getElementById('trans-total-amt').innerText = fmt(stats.total_revenue);
+                document.getElementById('trans-initial-amt').innerText = fmt(stats.initial_registration_total);
+                document.getElementById('trans-renewal-amt').innerText = fmt(stats.renewal_total);
+                // Calculate an estimated pending/failed total if needed, or leave at 0 if backend doesn't provide it yet
+                document.getElementById('trans-failed-amt').innerText = '₱ 0.00'; 
+            }
 
-            allTransactionsData = rows;
-            filteredTransactionsData = rows.slice();
-            currentTransactionPage = 1;
-            updateTransactionSummary(allTransactionsData);
-            displayTransactionsPage();
-            updateNotificationsPanel();
-            updateReportsDashboard();
-
+            // 2. Fetch the Master Ledger Rows
+            // Passing per_page=100 so client-side pagination and search works smoothly without additional API calls
+            const transRes = await fetch(`${window.API_BASE_URL}/v1/transactions?per_page=500`, { 
+                headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } 
+            });
+            
+            if (!checkAuth(transRes)) return;
+            
+            if (transRes.ok) {
+                const transData = await transRes.json();
+                
+                // Laravel pagination wraps the array inside the '.data' property
+                allTransactionsData = transData.data || [];
+                filteredTransactionsData = allTransactionsData.slice();
+                currentTransactionPage = 1;
+                
+                displayTransactionsPage();
+                updateReportsDashboard(); // Update other dashboard charts if tied to this
+            }
         } catch (err) {
             console.error('Error fetching transactions:', err);
             allTransactionsData = [];
             filteredTransactionsData = [];
-            currentTransactionPage = 1;
-            updateTransactionSummary([]);
             displayTransactionsPage();
+        }
+    }
+
+    function renderTransactionRows(rows) {
+        const tbodyTrans = document.getElementById('transactions-table-body');
+        if (!tbodyTrans) return;
+        tbodyTrans.innerHTML = '';
+
+        if (rows.length > 0) {
+            rows.forEach((txn, index) => {
+                const status = String(txn.status || 'pending').toLowerCase();
+                const txnDate = (txn.created_at || '').split('T')[0] || 'N/A';
+                const statClass = status === 'pending' ? 'status-pending' : (status === 'failed' ? 'status-failed' : 'status-completed');
+
+                // Differentiate Transaction Type
+                let typeDisplay = 'Unknown';
+                let typeBadgeColor = 'text-secondary';
+                if (txn.transaction_type === 'initial_registration') {
+                    typeDisplay = 'Initial Registration';
+                    typeBadgeColor = 'text-primary';
+                } else if (txn.transaction_type === 'renewal') {
+                    typeDisplay = 'Renewal';
+                    typeBadgeColor = 'text-success';
+                }
+
+                // --- FIX 1: BULLETPROOF BUSINESS NAME EXTRACTION ---
+                // Works for raw models OR API Resources
+                let businessName = 'Unknown Business';
+                const appData = txn.applicant || (txn.member ? txn.member.applicant : null);
+                if (appData) {
+                    businessName = appData.registered_business_name || 
+                                   (appData.basic_profile ? appData.basic_profile.registered_business_name : null) || 
+                                   'Unknown Business';
+                }
+
+                // --- FIX 2: DYNAMIC AMOUNT & OR NUMBER ---
+                const amt = parseFloat(txn.amount) || getTransactionAmount(txn);
+                const fmtAmt = `₱ ${amt.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                
+                // Prioritize the actual OR number from the table
+                const orNumber = txn.or_number || txn.official_receipt_no || '---';
+                const method = String(txn.payment_method || 'Cash').replace('_', ' ').toUpperCase();
+
+                tbodyTrans.insertAdjacentHTML('beforeend', `
+                    <tr>
+                        <td class="fw-bold text-dark ps-4">${businessName}</td>
+                        <td class="fw-bold ${typeBadgeColor}">${typeDisplay}</td>
+                        <td class="fw-bold text-dark">${fmtAmt}</td>
+                        <td class="text-dark">${method}</td>
+                        <td class="text-dark fw-bold">${orNumber}</td>
+                        <td class="text-dark">${txnDate}</td>
+                        <td class="text-center"><span class="status-badge ${statClass}">${status.toUpperCase()}</span></td>
+                    </tr>
+                `);
+            });
+        } else {
+            tbodyTrans.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">No transactions available.</td></tr>`;
         }
     }
 
     function initCharts() { updateReportsDashboard(); }
 
-    function refreshTabData(tabName) {
+    async function refreshTabData(tabName) {
         if (!token) return;
-
+        
+        // FIX: Add "await" to everything so data loads in the exact right order.
+        // We must load Applicants and Members BEFORE Transactions so the fallback arrays are populated!
         if (tabName === 'dashboard') {
-            fetchApplicants(); fetchMembers(); fetchRecentPayments(); fetchTransactions(); initCharts();
+            await fetchApplicants(); await fetchMembers(); await fetchRecentPayments(); await fetchTransactions(); initCharts();
         } else if (tabName === 'members') {
-            fetchMembers();
-            fetchTreasurerApprovedApplicantsForModal(); 
+            await fetchMembers();
+            await fetchTreasurerApprovedApplicantsForModal(); 
         } else if (tabName === 'applicants') {
-            fetchApplicants(); fetchRecentPayments();
+            await fetchApplicants(); await fetchRecentPayments();
         } else if (tabName === 'transactions') {
-            fetchTransactions();
+            await fetchApplicants(); await fetchMembers(); await fetchTransactions();
         } else if (tabName === 'reports') {
-            fetchApplicants(); fetchMembers(); fetchTransactions(); initCharts();
+            await fetchApplicants(); await fetchMembers(); await fetchTransactions(); initCharts();
         }
     }
+
+    // --- INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', async () => {
+        if (!token) { window.location.href = '/login'; return; }
+        
+        sanitizeSearchAutofill();
+        setTimeout(sanitizeSearchAutofill, 120);
+        
+        const loadedFromApi = await loadAccountSettingsFromApi();
+        if (!loadedFromApi) applyStoredAccountSettings();
+        
+        // Fetch membership types first
+        await fetchMembershipTypes();
+        
+        // FIX: Await these so they finish downloading before moving to the next step
+        await fetchApplicants();
+        await fetchMembers();        
+        await fetchRecentPayments();
+        await fetchTransactions();
+        
+        initCharts();
+
+        const searchInputs = [
+            { id: 'memberSearch', func: applyMemberFilters },
+            { id: 'memberSort', func: applyMemberFilters },
+            { id: 'applicantSearch', func: applyApplicantFilters },
+            { id: 'applicantSort', func: applyApplicantFilters },
+            { id: 'applicantStatusFilter', func: applyApplicantFilters }
+        ];
+        
+        searchInputs.forEach(input => {
+            const el = document.getElementById(input.id);
+            if (el) {
+                el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', input.func);
+            }
+        });
+
+        // Event listener for Add Member Dropdown
+        const companySelect = document.getElementById('addMemberCompanySelect');
+        if (companySelect) {
+            companySelect.addEventListener('change', function() {
+                const selectedId = this.value;
+                if (!selectedId) {
+                    populateAddMemberReadOnlyFields(null);
+                    return;
+                }
+                const selectedApplicant = approvedApplicantsForModal.find(app => String(app.id) === String(selectedId));
+                populateAddMemberReadOnlyFields(selectedApplicant);
+            });
+        }
+
+        const dashboardPaymentRangeEl = document.getElementById('dashboardPaymentRange');
+        if (dashboardPaymentRangeEl) {
+            dashboardPaymentRange = dashboardPaymentRangeEl.value || 'day';
+            dashboardPaymentRangeEl.addEventListener('change', (event) => {
+                dashboardPaymentRange = event.target.value;
+                updateDashboardPaymentSummary(allTransactionsData);
+            });
+        }
+
+        const dashboardRevenueRangeEl = document.getElementById('dashboardRevenueRange');
+        if (dashboardRevenueRangeEl) {
+            dashboardRevenueRange = dashboardRevenueRangeEl.value || 'month';
+            dashboardRevenueRangeEl.addEventListener('change', (event) => {
+                dashboardRevenueRange = event.target.value;
+                updateReportsDashboard();
+            });
+        }
+
+        const savedTab = localStorage.getItem('activeTab') || 'dashboard';
+        switchTab(savedTab, false);
+
+        setInterval(() => {
+            if (document.visibilityState !== 'visible') return;
+            if (!['members', 'dashboard', 'reports'].includes(currentActiveTab)) return;
+            fetchMembers();
+        }, TREASURER_MEMBERS_AUTO_REFRESH_MS);
+    });
 
     // Mobile Sidebar Toggle
     function toggleSidebar() {
