@@ -1,6 +1,44 @@
 {{-- ========================================== --}}
 {{-- SETTINGS TAB                               --}}
 {{-- ========================================== --}}
+<style>
+    /* Table Styling for Member Dashboard */
+    .table-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 0;
+    }
+    .custom-table thead th {
+        background: #f8f9fb;
+        color: #6b7280;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 15px;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+    }
+    .custom-table tbody td {
+        padding: 15px;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 13px;
+        vertical-align: middle;
+    }
+    .custom-table tbody tr:hover {
+        background-color: #f9fafb;
+    }
+    .custom-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+</style>
+
 <div id="section-settings" class="content-section" style="display: none;">
     <div class="titleBox"><i class="fa fa-gear"></i> Settings</div>
 
@@ -174,6 +212,18 @@
             </div>
         </div>
         <div style="padding: 18px 24px 24px;">
+            
+            <div id="renewal-banner" class="alert alert-danger d-none align-items-center justify-content-between mb-4 shadow-sm" style="border-radius: 12px; border-left: 5px solid #dc3545;">
+                <div class="d-flex align-items-center">
+                    <i class="fa fa-exclamation-triangle fs-3 me-3 text-danger"></i>
+                    <div>
+                        <h5 class="fw-bold mb-1 text-danger" style="font-family: 'Poppins', sans-serif;">Membership Inactive</h5>
+                        <p class="mb-0 text-dark" style="font-size: 13px;">Your PCCI membership has expired or is pending. Please submit your renewal payment to restore your active status.</p>
+                    </div>
+                </div>
+                <button class="btn btn-danger fw-bold rounded-pill px-4 shadow-sm" onclick="openRenewalModal()">Renew Now</button>
+            </div>
+
             <div class="custom-card mb-4" style="border-radius: 14px; padding: 18px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
                 <h6 class="fw-bold mb-3 text-dark">Membership Details</h6>
                 <div class="row g-3 align-items-center">
@@ -191,11 +241,11 @@
                     </div>
                     <div class="col-md-5">
                         <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Expires Date</span>
+                            <span class="text-muted">Inactive Date:</span>
                             <span class="text-dark" id="billingExpiryDate">Loading...</span>
                         </div>
                         <div class="d-flex justify-content-between">
-                            <span class="text-muted">Membership Type</span>
+                            <span class="text-muted">Membership Type:</span>
                             <span class="text-dark" id="billingPlanLabel">Loading...</span>
                         </div>
                     </div>
@@ -203,21 +253,21 @@
             </div>
 
             <div class="custom-card mb-0" style="border-radius: 14px; padding: 18px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-                <h6 class="fw-bold mb-3 text-dark">Sessions</h6>
+                <h6 class="fw-bold mb-3 text-dark">Billing & Transaction History</h6>
                 <div class="table-responsive">
                     <table class="custom-table mb-0">
                         <thead>
                             <tr>
-                                <th>OR Reg. No.</th>
-                                <th>Location</th>
                                 <th>Date</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>OR Number</th>
                                 <th>Status</th>
-                                <th></th>
                             </tr>
                         </thead>
                         <tbody id="billingSessionsTable">
                             <tr>
-                                <td colspan="5" class="text-center text-muted">No billing sessions available yet.</td>
+                                <td colspan="5" class="text-center text-muted">Loading history...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -226,7 +276,6 @@
 
             <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
                 <button class="btn btn-light fw-bold" onclick="closeSettingsModal('billing')">Close</button>
-                <button class="btn btn-danger fw-bold" onclick="switchTab('membership'); closeSettingsModal('billing');">Open Membership Plans</button>
             </div>
         </div>
     </div>
@@ -441,7 +490,345 @@
 
 <input type="file" id="photoFileInput" accept="image/*" style="display: none;" onchange="handlePhotoSelect(event)">
 
+{{-- ========================================== --}}
+{{-- RENEWAL PAYMENT MODAL                      --}}
+{{-- ========================================== --}}
+<div class="modal-overlay" id="renewalModal" onclick="if(event.target.id === 'renewalModal') closeRenewalModal()" style="display: none; background: rgba(0, 0, 0, 0.6); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2090; justify-content: center; align-items: center;">
+    <div class="modal-content-box" style="max-width: 500px; width: 100%; padding: 0; border-radius: 18px; background: #fff; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);" onclick="event.stopPropagation()">
+        
+        <div style="padding: 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e5e7eb;">
+            <h5 class="fw-bold mb-0 text-dark" style="font-size: 18px;">
+                <i class="fa fa-file-invoice-dollar me-2 text-danger"></i> Submit Renewal Payment
+            </h5>
+            <button class="btn btn-link p-0 text-dark" style="font-size: 18px; text-decoration: none;" onclick="closeRenewalModal()">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+        
+        <form id="renewalForm" onsubmit="submitRenewalPayment(event)" style="padding: 24px;">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="fw-bold text-dark mb-2" style="font-size: 13px;">Payment Method <span class="text-danger">*</span></label>
+                    <select id="renewalPaymentMethod" class="form-control" style="border-radius: 8px; border: 1px solid #d1d5db; padding: 10px;" required>
+                        <option value="">Select...</option>
+                        <option value="gcash">GCash</option>
+                        <option value="transfer">Bank Transfer</option>
+                        <option value="cash">Cash (Walk-in)</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="fw-bold text-dark mb-2" style="font-size: 13px;">Amount Due (₱) <span class="text-danger">*</span></label>
+                    <input type="number" id="renewalAmount" class="form-control" style="border-radius: 8px; border: 1px solid #d1d5db; padding: 10px; background-color: #f3f4f6; font-weight: bold;" readonly required>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="fw-bold text-dark mb-2" style="font-size: 13px;">Reference / Trace Number <span class="text-danger">*</span></label>
+                <input type="text" id="renewalReference" class="form-control" placeholder="Enter transaction reference number" style="border-radius: 8px; border: 1px solid #d1d5db; padding: 10px;" required>
+            </div>
+
+            <div class="mb-4">
+                <label class="fw-bold text-dark mb-2" style="font-size: 13px;">Proof of Payment (Screenshot) <span class="text-danger">*</span></label>
+                <input type="file" id="renewalProofFile" accept="image/*" class="form-control" style="border-radius: 8px; border: 1px solid #d1d5db; padding: 10px;" required>
+                <small class="text-muted mt-1 d-block">Please upload a clear screenshot of your transaction (Max: 10MB).</small>
+            </div>
+            <div style="display: flex; gap: 12px; margin-top: 10px;">
+                <button type="button" class="btn btn-light fw-bold" style="flex: 1; border: 1px solid #d1d5db;" onclick="closeRenewalModal()">Cancel</button>
+                <button type="submit" class="btn btn-danger fw-bold" id="renewalSubmitBtn" style="flex: 1;">Submit Payment</button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
 <script>
+
+async function openRenewalModal() {
+    document.getElementById('renewalModal').style.display = 'flex';
+    const amountInput = document.getElementById('renewalAmount');
+    amountInput.value = '';
+    amountInput.placeholder = 'Calculating...';
+    
+    try {
+        const response = await fetch(`${window.API_BASE_URL}/v1/member/renewal-status`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Accept': 'application/json' }
+        });
+        const data = await response.json();
+        
+        if (data.amount_due) {
+            amountInput.value = data.amount_due; 
+        } else {
+            const profile = window.currentProfileData || {};
+            const typeId = String(profile.membership_type_id || profile.applicant?.membership_type_id || profile.member?.membership_type_id || '');
+            
+            // CHANGED TO 5000 AS REQUESTED
+            amountInput.value = (typeId === '2' || profile.membershipType?.name === 'Small Enterprise') ? 5000 : 500;
+        }
+    } catch (error) {
+        amountInput.value = 500;
+    }
+}
+
+function closeRenewalModal() {
+    document.getElementById('renewalModal').style.display = 'none';
+    document.getElementById('renewalForm').reset();
+}
+
+async function submitRenewalPayment(event) {
+    event.preventDefault();
+    const method = document.getElementById('renewalPaymentMethod').value;
+    const amount = document.getElementById('renewalAmount').value;
+    const reference = document.getElementById('renewalReference').value;
+    const file = document.getElementById('renewalProofFile').files[0];
+    const btn = document.getElementById('renewalSubmitBtn');
+    const token = localStorage.getItem('token');
+
+    if (!method || !amount || !reference || !file) { alert('Please fill out all fields and upload your receipt.'); return; }
+    if (file.size > 10 * 1024 * 1024) { alert('File size exceeds 10MB.'); return; }
+
+    const formData = new FormData();
+    formData.append('payment_method', method);
+    formData.append('amount', amount);
+    formData.append('reference_number', reference);
+    formData.append('proof_of_payment', file); // Matches Laravel exact requirement!
+
+    try {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i> Submitting...';
+        const endpointBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
+        
+        const response = await fetch(`${endpointBase}/v1/member/request-payment`, {
+            method: 'POST',
+            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+
+        const result = await readMemberApiResponse(response); 
+        if (!response.ok) throw new Error(result.data?.message || result.raw || 'Failed to submit renewal payment.');
+
+        alert('Success: Your payment request has been submitted to the Treasurer for review!');
+        closeRenewalModal();
+        fetchMyBillingHistory(); 
+    } catch (error) {
+        alert(error.message || 'An error occurred while submitting your payment.');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Submit Payment';
+    }
+}
+
+// ==========================================
+// 1. FETCH BILLING HISTORY & SMART BANNER
+// ==========================================
+async function fetchMyBillingHistory() {
+    try {
+        const [profileRes, transRes] = await Promise.all([
+            fetch(`${window.API_BASE_URL}/v1/member/profile`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Accept': 'application/json' } }),
+            fetch(`${window.API_BASE_URL}/v1/member/payments`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Accept': 'application/json' } })
+        ]);
+        
+        let profile = null;
+        let transactions = [];
+
+        if (transRes.ok) {
+            const transData = await transRes.json();
+            transactions = transData?.data || transData || [];
+        }
+
+        if (profileRes.ok) {
+            const profileData = await profileRes.json();
+            profile = profileData?.data || profileData;
+            window.currentProfileData = profile; 
+            
+            renderBillingOverview(profile, transactions);
+
+            const status = String(profile?.membership_status || profile?.member?.status || profile?.status || 'active').toLowerCase();
+            const banner = document.getElementById('renewal-banner');
+            
+            if(banner) {
+                if (status === 'active' || status === 'approved') {
+                    banner.classList.remove('d-flex');
+                    banner.classList.add('d-none');
+                } else {
+                    banner.classList.remove('d-none');
+                    banner.classList.add('d-flex');
+
+                    // Smart Banner Logic
+                    const sortedTxns = [...transactions].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    const latestTxn = sortedTxns.length > 0 ? sortedTxns[0] : null;
+                    const latestTxnStatus = latestTxn ? String(latestTxn.status).toLowerCase() : '';
+
+                    if (latestTxnStatus === 'pending' || latestTxnStatus === 'pending_review') {
+                        banner.className = 'alert alert-warning d-flex align-items-center justify-content-between mb-4 shadow-sm';
+                        banner.style.borderLeft = '5px solid #ffc107';
+                        banner.innerHTML = `
+                            <div class="d-flex align-items-center">
+                                <i class="fa fa-clock fs-3 me-3 text-warning"></i>
+                                <div>
+                                    <h5 class="fw-bold mb-1 text-dark">Payment Under Review</h5>
+                                    <p class="mb-0 text-dark" style="font-size: 13px;">Your payment is currently being reviewed by the Treasurer. Please wait for approval.</p>
+                                </div>
+                            </div>
+                        `;
+                    } else if (latestTxnStatus === 'rejected' || latestTxnStatus === 'failed') {
+                        banner.className = 'alert alert-danger d-flex align-items-center justify-content-between mb-4 shadow-sm';
+                        banner.style.borderLeft = '5px solid #dc3545';
+                        banner.innerHTML = `
+                            <div class="d-flex align-items-center">
+                                <i class="fa fa-times-circle fs-3 me-3 text-danger"></i>
+                                <div>
+                                    <h5 class="fw-bold mb-1 text-danger">Payment Rejected</h5>
+                                    <p class="mb-0 text-dark" style="font-size: 13px;">Your previous payment was rejected. Please review your details and re-submit your receipt.</p>
+                                </div>
+                            </div>
+                            <button class="btn btn-danger fw-bold rounded-pill px-4 shadow-sm" onclick="openRenewalModal()">Re-submit Payment</button>
+                        `;
+                    } else {
+                        banner.className = 'alert alert-danger d-flex align-items-center justify-content-between mb-4 shadow-sm';
+                        banner.style.borderLeft = '5px solid #dc3545';
+                        banner.innerHTML = `
+                            <div class="d-flex align-items-center">
+                                <i class="fa fa-exclamation-triangle fs-3 me-3 text-danger"></i>
+                                <div>
+                                    <h5 class="fw-bold mb-1 text-danger">Membership Inactive</h5>
+                                    <p class="mb-0 text-dark" style="font-size: 13px;">Your PCCI membership has expired or is pending. Please submit your renewal payment.</p>
+                                </div>
+                            </div>
+                            <button class="btn btn-danger fw-bold rounded-pill px-4 shadow-sm" onclick="openRenewalModal()">Renew Now</button>
+                        `;
+                    }
+                }
+            }
+        }
+
+        const tbody = document.getElementById('billingSessionsTable');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        if (transactions.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4 fw-bold">No billing history found.</td></tr>`;
+            return;
+        }
+
+        transactions.forEach(txn => {
+            const date = (txn.created_at || '').split('T')[0] || 'N/A';
+            const type = txn.transaction_type === 'initial_registration' ? 'Registration' : 'Renewal';
+            const amount = `₱ ${parseFloat(txn.amount || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            const orNum = txn.or_number || '---';
+            const rawStatus = String(txn.status || 'pending').toLowerCase();
+            
+            let statBadge = '';
+            if(rawStatus === 'pending' || rawStatus === 'pending_review') statBadge = '<span style="color: #b45309; background: #fef3c7; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">PENDING</span>';
+            else if(rawStatus === 'approved' || rawStatus === 'paid' || rawStatus === 'completed') statBadge = '<span style="color: #15803d; background: #dcfce7; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">APPROVED</span>';
+            else statBadge = '<span style="color: #b91c1c; background: #fee2e2; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">FAILED</span>';
+
+            tbody.insertAdjacentHTML('beforeend', `
+                <tr>
+                    <td class="text-dark">${date}</td>
+                    <td class="text-dark fw-bold">${type}</td>
+                    <td class="text-dark fw-bold">${amount}</td>
+                    <td class="text-dark fw-bold">${orNum}</td>
+                    <td>${statBadge}</td>
+                </tr>
+            `);
+        });
+    } catch (error) {
+        console.error("Error fetching billing history:", error);
+    }
+}
+// ==========================================
+// 2. RENDER OVERVIEW CARD
+// ==========================================
+function renderBillingOverview(profileData, transactions = []) {
+    if (!profileData || Object.keys(profileData).length === 0) return;
+    const member = profileData.member || profileData.data?.member || profileData;
+    const basic = member.applicant?.basic_profile || member.basic_profile || {};
+    const org = member.applicant?.organization_membership || member.organization_membership || {};
+    
+    const companyName = basic.registered_business_name || 'Unknown Business';
+    const industry = org.type_of_company || 'Not Specified';
+    const status = String(member.status || profileData.membership_status || 'pending').toLowerCase();
+
+    let typeName = 'N/A';
+    if (member.membershipType && member.membershipType.name) typeName = member.membershipType.name;
+    else if (member.membership_type && member.membership_type.name) typeName = member.membership_type.name;
+
+    let dateLabel = 'Expires Date';
+    let dateValue = 'N/A';
+    const baseDate = member.induction_date || member.applicant?.induction_date || member.created_at;
+    let calculatedExpiry = 'N/A';
+    if (baseDate) {
+        const d = new Date(baseDate);
+        if (!Number.isNaN(d.getTime())) {
+            d.setFullYear(d.getFullYear() + 1); 
+            calculatedExpiry = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+    }
+
+    const memTxns = transactions.filter(t => t.transaction_type === 'renewal' || t.transaction_type === 'initial_registration');
+    memTxns.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const latestTxn = memTxns.length > 0 ? memTxns[0] : null;
+
+    if (status === 'inactive' || status === 'expired') {
+        dateLabel = 'Inactive Date';
+        dateValue = calculatedExpiry;
+    } else if (status === 'pending') {
+        dateLabel = 'Transaction Date';
+        dateValue = latestTxn ? new Date(latestTxn.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+    } else {
+        dateLabel = 'Expires Date';
+        dateValue = calculatedExpiry;
+    }
+
+    document.getElementById('billingCompanyName').innerText = companyName;
+    document.getElementById('billingIndustryLabel').innerText = industry;
+    document.getElementById('billingPlanLabel').innerText = typeName;
+    
+    const expiryEl = document.getElementById('billingExpiryDate');
+    if (expiryEl) {
+        expiryEl.innerText = dateValue;
+        if (expiryEl.previousElementSibling) expiryEl.previousElementSibling.innerText = dateLabel;
+    }
+    
+    const badgeEl = document.getElementById('billingStatusBadge');
+    if (badgeEl) {
+        badgeEl.innerText = status.toUpperCase();
+        const ok = ['approved', 'active', 'paid'].includes(status);
+        badgeEl.style.background = ok ? '#dcfce7' : '#fee2e2';
+        badgeEl.style.color = ok ? '#15803d' : '#b91c1c';
+    }
+}
+
+function openSettingsModal(sector) {
+    const modal = document.getElementById(`settingsModal${sector.charAt(0).toUpperCase() + sector.slice(1)}`);
+    if (!modal) return;
+    modal.style.display = 'flex';
+
+    if (sector === 'account') {
+        populateSettingsAccountForm(window.currentProfileData || {});
+    }
+
+    if (sector === 'billing') {
+        // We removed the immediate render here. 
+        // The fetchMyBillingHistory function will now grab both Profile AND Transactions
+        // at the same time to accurately calculate the Membership Type and Expiry.
+        fetchMyBillingHistory(); 
+    }
+
+    if (sector === 'preferences') {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        const themeLabel = document.getElementById('themeLabel');
+        if (themeLabel) themeLabel.innerText = savedTheme === 'dark' ? 'Dark' : 'Light';
+    }
+
+    if (sector === 'security') {
+        renderSettingsLoginActivity(window.currentProfileData || {});
+    }
+}
+
+// Run this when the page loads
+document.addEventListener('DOMContentLoaded', fetchMyBillingHistory);
+
 function formatMemberDateTime(value) {
     if (!value) return 'N/A';
     const d = new Date(value);
@@ -456,17 +843,34 @@ function formatMemberDateTime(value) {
     });
 }
 
-function renderSettingsLoginActivity(profile) {
+function renderSettingsLoginActivity() {
     const tbody = document.getElementById('settingsLoginActivityTable');
     if (!tbody) return;
 
-    const recentDate = profile?.updated_at || profile?.date_approved || profile?.created_at;
+    const userAgent = navigator.userAgent;
+    let browser = "Web Browser";
+    if (userAgent.includes("Edg")) browser = "Microsoft Edge";
+    else if (userAgent.includes("Chrome")) browser = "Google Chrome";
+    else if (userAgent.includes("Firefox")) browser = "Mozilla Firefox";
+    else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) browser = "Apple Safari";
+
+    let os = "Unknown Device";
+    if (userAgent.includes("Win")) os = "Windows PC";
+    else if (userAgent.includes("Mac")) os = "Mac OS";
+    else if (userAgent.includes("Android")) os = "Android Device";
+    else if (userAgent.includes("iPhone") || userAgent.includes("iPad")) os = "iOS Device";
+
+    const now = new Date().toLocaleString('en-US', { 
+        year: 'numeric', month: 'short', day: 'numeric', 
+        hour: '2-digit', minute: '2-digit' 
+    });
+
     tbody.innerHTML = `
         <tr>
-            <td>${navigator.platform || 'Current Device'} - ${navigator.userAgent.includes('Chrome') ? 'Chrome' : 'Browser'}</td>
-            <td>${profile?.basic_profile?.business_location?.city_municipality || 'Unknown location'}</td>
-            <td>${formatMemberDateTime(recentDate)}</td>
-            <td><span style="color:#22c55e;">Successful</span></td>
+            <td class="fw-bold text-dark"><i class="fa fa-laptop text-muted me-2"></i> ${os} - ${browser}</td>
+            <td class="text-dark">Current Active Session</td>
+            <td class="text-dark">${now}</td>
+            <td><span style="color: #15803d; background: #dcfce7; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">Online Now</span></td>
         </tr>
     `;
 }
@@ -490,24 +894,62 @@ function renderBillingSessions(profile) {
     `;
 }
 
-function renderBillingOverview(profile) {
-    if (!profile) return;
+function renderBillingOverview(profileData, transactions = []) {
+    if (!profileData || Object.keys(profileData).length === 0) return;
 
-    const basic = profile.basic_profile || {};
-    const org = profile.organization_membership || {};
-    const companyName = basic.registered_business_name || 'N/A';
-    const industry = org.type_of_company || 'N/A';
-    const status = (profile.status || 'Pending').toString();
+    // 1. Safely extract the member object from the new backend response
+    const member = profileData.member || profileData.data?.member || profileData;
+    
+    // 2. Extract Business details directly from the newly loaded applicant data
+    const basic = member.applicant?.basic_profile || member.basic_profile || {};
+    const org = member.applicant?.organization_membership || member.organization_membership || {};
+    
+    const companyName = basic.registered_business_name || 'Unknown Business';
+    const industry = org.type_of_company || 'Not Specified';
+    
+    // 3. Status
+    const status = String(member.status || profileData.membership_status || 'pending').toLowerCase();
 
-    let expiry = 'Pending Approval';
-    if (profile.date_approved) {
-        const approved = new Date(profile.date_approved);
-        if (!Number.isNaN(approved.getTime())) {
-            approved.setFullYear(approved.getFullYear() + 1);
-            expiry = approved.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    // 4. MEMBERSHIP TYPE (Directly from the Database!)
+    let typeName = 'N/A';
+    if (member.membershipType && member.membershipType.name) {
+        typeName = member.membershipType.name;
+    } else if (member.membership_type && member.membership_type.name) {
+        typeName = member.membership_type.name;
+    }
+
+    // 5. INDUCTION DATE + 1 YEAR CALCULATION
+    let dateLabel = 'Inactive Date:';
+    let dateValue = 'N/A';
+    
+    const baseDate = member.induction_date || member.applicant?.induction_date || member.created_at;
+    
+    let calculatedExpiry = 'N/A';
+    if (baseDate) {
+        const d = new Date(baseDate);
+        if (!Number.isNaN(d.getTime())) {
+            d.setFullYear(d.getFullYear() + 1); 
+            calculatedExpiry = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
         }
     }
 
+    // Filter transactions to find the transaction date if pending
+    const memTxns = transactions.filter(t => t.transaction_type === 'renewal' || t.transaction_type === 'initial_registration');
+    memTxns.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const latestTxn = memTxns.length > 0 ? memTxns[0] : null;
+
+    if (status === 'inactive' || status === 'expired') {
+        dateLabel = 'Inactive Date';
+        dateValue = calculatedExpiry;
+    } else if (status === 'pending') {
+        dateLabel = 'Transaction Date';
+        dateValue = latestTxn ? new Date(latestTxn.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+    } else {
+        dateLabel = 'Expires Date';
+        dateValue = calculatedExpiry;
+    }
+
+    // 6. INJECT INTO HTML
     const companyEl = document.getElementById('billingCompanyName');
     const industryEl = document.getElementById('billingIndustryLabel');
     const expiryEl = document.getElementById('billingExpiryDate');
@@ -516,13 +958,18 @@ function renderBillingOverview(profile) {
 
     if (companyEl) companyEl.innerText = companyName;
     if (industryEl) industryEl.innerText = industry;
-    if (expiryEl) expiryEl.innerText = expiry;
-    if (planEl) planEl.innerText = profile.membership_type || 'N/A';
+    if (planEl) planEl.innerText = typeName;
+    
+    if (expiryEl) {
+        expiryEl.innerText = dateValue;
+        if (expiryEl.previousElementSibling) expiryEl.previousElementSibling.innerText = dateLabel;
+    }
+    
     if (badgeEl) {
         badgeEl.innerText = status.toUpperCase();
-        const ok = ['approved', 'active'].includes(status.toLowerCase());
-        badgeEl.style.background = ok ? '#dcfce7' : '#fef3c7';
-        badgeEl.style.color = ok ? '#15803d' : '#b45309';
+        const ok = ['approved', 'active', 'paid'].includes(status);
+        badgeEl.style.background = ok ? '#dcfce7' : '#fee2e2';
+        badgeEl.style.color = ok ? '#15803d' : '#b91c1c';
     }
 }
 
@@ -555,22 +1002,14 @@ function openSettingsModal(sector) {
 
     if (sector === 'account') {
         populateSettingsAccountForm(window.currentProfileData || {});
-    }
-
-    if (sector === 'billing') {
-        const profile = window.currentProfileData || {};
-        renderBillingOverview(profile);
-        renderBillingSessions(profile);
-    }
-
-    if (sector === 'preferences') {
+    } else if (sector === 'billing') {
+        fetchMyBillingHistory(); // Fetch fresh data, no overrides!
+    } else if (sector === 'preferences') {
         const savedTheme = localStorage.getItem('theme') || 'light';
         const themeLabel = document.getElementById('themeLabel');
         if (themeLabel) themeLabel.innerText = savedTheme === 'dark' ? 'Dark' : 'Light';
-    }
-
-    if (sector === 'security') {
-        renderSettingsLoginActivity(window.currentProfileData || {});
+    } else if (sector === 'security') {
+        renderSettingsLoginActivity(); // Uses the secure live-session reader
     }
 }
 
@@ -657,6 +1096,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (themeLabel) themeLabel.innerText = savedTheme === 'dark' ? 'Dark' : 'Light';
     const profile = window.currentProfileData || null;
     if (profile) syncSettingsFromProfile(profile);
+
+    // Fetch the billing and profile history globally exactly ONCE
+    fetchMyBillingHistory();
 });
 
 // ========================================

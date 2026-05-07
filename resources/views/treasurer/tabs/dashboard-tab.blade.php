@@ -1,7 +1,7 @@
 {{-- DASHBOARD OVERVIEW TAB --}}
 <div id="section-dashboard" class="content-section" style="display: block;">
     <div class="mb-4 pb-2">
-        <h3 class="fw-bold text-dark mb-1" style="font-family: 'Poppins', sans-serif;">Welcome, <span id="dashWelcomeName">Jesus</span>!</h3>
+        <h3 class="fw-bold text-dark mb-1" style="font-family: 'Poppins', sans-serif;">Welcome, <span id="dashWelcomeName">User</span>!</h3>
         <p class="text-muted mb-0" style="font-size: 14px;">Here is your financial overview for today.</p>
     </div>
 
@@ -10,21 +10,21 @@
         <div class="col-md-4">
             <div class="summary-card dash-card bg-red">
                 <div class="label">Total Revenue</div>
-                <div class="value">PHP 205,500</div>
+                <div class="value" id="dash-total-revenue-val">PHP 0.00</div>
                 <i class="fa fa-wallet bg-icon"></i>
             </div>
         </div>
         <div class="col-md-4">
             <div class="summary-card dash-card bg-green">
                 <div class="label">Paid Members</div>
-                <div class="value">Php. 205,500</div>
+                <div class="value" id="dash-paid-members-val">0</div>
                 <i class="fa fa-users bg-icon"></i>
             </div>
         </div>
         <div class="col-md-4">
             <div class="summary-card dash-card bg-orange">
-                <div class="label">Active Account</div>
-                <div class="value">20</div>
+                <div class="label">Active Accounts</div>
+                <div class="value" id="dash-active-accounts-val">0</div>
                 <i class="fa fa-user-check bg-icon"></i>
             </div>
         </div>

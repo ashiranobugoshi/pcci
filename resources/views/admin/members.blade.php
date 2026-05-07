@@ -542,7 +542,11 @@
 
             const companyName = profile.registered_business_name || 'N/A';
             const email = profile.email || 'N/A';
-            const status = (member.status || 'Active').toUpperCase();
+            
+            // Grab raw status and uppercase it for display
+            const rawStatus = String(member.status || 'Active').toLowerCase();
+            const statusDisplay = rawStatus.toUpperCase();
+            
             const memberType = member.membership_type_id === 1 ? 'Directory Member' : 'Regular Member';
 
             // Missing Data Checks for Plus Icons
@@ -557,10 +561,13 @@
 
             const regDateContent = member.created_at ? new Date(member.created_at).toLocaleDateString('en-US') : '<i class="fa fa-plus icon-add" title="Add Date"></i>';
 
-            // Status Styling
-            let statusBadge = `<span class="badge bg-success text-uppercase rounded-pill shadow-sm py-1 px-3">${status}</span>`;
-            if (status === 'inactive') {
-                statusBadge = `<span class="badge text-uppercase rounded-pill shadow-sm py-1 px-3 status-inactive">${status}</span>`;
+            // FIX: Check against the raw lowercase status for the color coding
+            let statusBadge = `<span class="badge bg-success text-uppercase rounded-pill shadow-sm py-1 px-3">${statusDisplay}</span>`;
+            
+            if (rawStatus === 'inactive' || rawStatus === 'expired') {
+                statusBadge = `<span class="badge text-uppercase rounded-pill shadow-sm py-1 px-3 status-inactive">${statusDisplay}</span>`;
+            } else if (rawStatus === 'pending') {
+                statusBadge = `<span class="badge bg-warning text-dark text-uppercase rounded-pill shadow-sm py-1 px-3">${statusDisplay}</span>`;
             }
 
             tbody.innerHTML += `

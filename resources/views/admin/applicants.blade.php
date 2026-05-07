@@ -236,10 +236,8 @@
         <span class="toolbar-label">Status:</span>
         <select id="applicantStatusFilter" class="form-select form-select-sm text-muted fw-bold" style="height: 36px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; box-shadow: none; cursor:pointer; width: 140px; padding: 4px 10px;" onchange="applyFiltersAndSort()">
             {{-- FIXED: Changed default selection to ALL so admin can see approved/paid instantly --}}
-            <option value="all" selected>All Statuses</option>
-            <option value="pending">Pending</option>
+            <option value="pending" selected>Pending</option>
             <option value="approved">Approved</option>
-            <option value="paid">Paid</option>
             <option value="rejected">Rejected</option>
         </select>
     </div>

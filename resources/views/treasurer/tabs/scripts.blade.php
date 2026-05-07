@@ -38,6 +38,161 @@
     // Dynamic Membership Fetch
     let globalMembershipTypes = [];
 
+// Global variables to track chart instances
+let dashPieChartInstance = null;
+let dashBarChartInstance = null;
+
+// ==========================================
+// 1. DATA & CHART CALCULATIONS
+// ==========================================
+function renderRealDashboardCharts() {
+    if (!allTransactionsData || allTransactionsData.length === 0) return;
+
+    // A. Pie Chart Logic (Approved vs Pending vs Rejected)
+    let approved = 0, pending = 0, rejected = 0;
+    allTransactionsData.forEach(t => {
+        const stat = String(t.status || '').toLowerCase();
+        if (['approved', 'paid', 'completed'].includes(stat)) approved++;
+        else if (['pending', 'pending_review'].includes(stat)) pending++;
+        else rejected++;
+    });
+
+    const pieCanvas = document.getElementById('pieChart');
+    if (pieCanvas) {
+        if (dashPieChartInstance) dashPieChartInstance.destroy(); // Fix: Destroy old chart
+        dashPieChartInstance = new Chart(pieCanvas, {
+            type: 'doughnut',
+            data: {
+                labels: ['Approved', 'Pending', 'Rejected'],
+                datasets: [{
+                    data: [approved, pending, rejected],
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    // B. Bar Chart Logic (Revenue by Month)
+    const currentYear = new Date().getFullYear();
+    const monthlyRev = { 'Jan':0,'Feb':0,'Mar':0,'Apr':0,'May':0,'Jun':0,'Jul':0,'Aug':0,'Sep':0,'Oct':0,'Nov':0,'Dec':0 };
+    const monthNames = Object.keys(monthlyRev);
+
+    allTransactionsData.forEach(t => {
+        const stat = String(t.status || '').toLowerCase();
+        if (['paid', 'completed', 'approved'].includes(stat)) {
+            const d = new Date(t.created_at);
+            if (d.getFullYear() === currentYear) {
+                const amt = typeof getTransactionAmount === 'function' ? getTransactionAmount(t) : parseFloat(t.amount || 0);
+                monthlyRev[monthNames[d.getMonth()]] += amt;
+            }
+        }
+    });
+
+    const barCanvas = document.getElementById('barChart');
+    if (barCanvas) {
+        if (dashBarChartInstance) dashBarChartInstance.destroy(); // Fix: Destroy old chart
+        dashBarChartInstance = new Chart(barCanvas, {
+            type: 'bar',
+            data: {
+                labels: monthNames,
+                datasets: [{
+                    label: 'Revenue ₱',
+                    data: Object.values(monthlyRev),
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 4
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+}
+
+function populateMainDashboard() {
+    let totalRevenue = 0;
+    allTransactionsData.forEach(txn => {
+        const stat = String(txn.status || '').toLowerCase();
+        if (['paid', 'completed', 'approved'].includes(stat)) {
+            totalRevenue += (typeof getTransactionAmount === 'function' ? getTransactionAmount(txn) : parseFloat(txn.amount || 0));
+        }
+    });
+
+    // Update the Cards using IDs from dashboard-tab.blade.php 
+    const revEl = document.getElementById('dash-total-revenue-val');
+    const paidEl = document.getElementById('dash-paid-members-val');
+    const activeEl = document.getElementById('dash-active-accounts-val');
+
+    if (revEl) revEl.innerText = `PHP ${totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+    if (paidEl) paidEl.innerText = allMembersData.length;
+    if (activeEl) activeEl.innerText = allMembersData.length;
+}
+
+// ==========================================
+// 2. RECENT PAYMENTS (Today & Yesterday Only)
+// ==========================================
+function renderRecentPayments() {
+    const tbody = document.getElementById('recent-payments-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    const recentTxns = allTransactionsData.filter(txn => {
+        const txnDate = (txn.created_at || '').split('T')[0];
+        return txnDate === todayStr || txnDate === yesterdayStr;
+    });
+
+    if (recentTxns.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted fw-bold">No payments received today or yesterday.</td></tr>`;
+        return;
+    }
+
+    recentTxns.forEach(txn => {
+        const status = String(txn.status || 'pending').toLowerCase();
+        const amt = typeof getTransactionAmount === 'function' ? getTransactionAmount(txn) : parseFloat(txn.amount || 0);
+        let bName = txn.registered_business_name || txn.member?.applicant?.registered_business_name || 'Business';
+
+        tbody.insertAdjacentHTML('beforeend', `
+            <tr class="align-middle">
+                <td class="fw-bold text-dark ps-4">${bName}</td>
+                <td>${txn.transaction_type === 'initial_registration' ? 'Registration' : 'Renewal'}</td>
+                <td class="fw-bold">₱ ${amt.toLocaleString()}</td>
+                <td>${txn.or_number || '---'}</td>
+                <td>${(txn.created_at || '').split('T')[0]}</td>
+                <td><button class="btn btn-sm btn-light border" onclick="openSimpleProof('${encodeURIComponent(txn.receipt_image_url || '')}')">View</button></td>
+                <td class="text-center">${status === 'pending' ? '<span class="badge bg-warning">Review Needed</span>' : '<span class="badge bg-success">Approved</span>'}</td>
+            </tr>
+        `);
+    });
+}
+
+// ==========================================
+// 3. MASTER INITIALIZATION
+// ==========================================
+function initCharts() { 
+    populateMainDashboard();
+    renderRealDashboardCharts();
+    renderRecentPayments(); 
+}
+
+async function fetchWelcomeName() {
+    try {
+        const res = await fetch(`${window.API_BASE_URL}/v1/user`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const welcomeEl = document.getElementById('dashWelcomeName');
+            if (welcomeEl) welcomeEl.innerText = data.first_name || data.name || 'Treasurer';
+        }
+    } catch (e) { console.error(e); }
+}
+
     async function fetchMembershipTypes() {
         if (!token) return;
         try {
@@ -76,33 +231,27 @@
         return new Date(Number(year), Number(month) - 1, 1).toLocaleString('en-US', { month: 'short' });
     }
 
-    function getTransactionAmount(record) {
-        // 1. Find the Membership Type ID
-        let typeId = record.membership_type_id || 
-                     record.member?.membership_type_id || 
-                     record.applicant?.membership_type_id;
-
-        // 2. Cross-reference if missing from transaction record
-        if (!typeId && record.member_id) {
-            const foundM = allMembersData.find(m => String(m.id) === String(record.member_id));
-            if (foundM) typeId = foundM.membership_type_id;
-        }
-
-        // 3. Match it to the dynamic backend prices we fetched
-        if (typeId && globalMembershipTypes.length > 0) {
-            const found = globalMembershipTypes.find(t => String(t.id) === String(typeId));
-            if (found) {
-                // If it's a renewal, fetch the exact renewal price
-                if (record.transaction_type === 'renewal' && found.renewal_price) {
-                    return parseFloat(found.renewal_price);
-                }
-                return parseFloat(found.price); // Else return initial price
-            }
-        }
-
-        // 4. Ultimate fallback to the saved amount
-        return parseFloat(record.amount || record.membership_fee || 0);
+    // ==========================================
+// 1. EXACT AMOUNT CALCULATOR
+// ==========================================
+function getTransactionAmount(record) {
+    if (record.amount !== null && record.amount !== undefined && parseFloat(record.amount) > 0) {
+        return parseFloat(record.amount);
     }
+    let typeId = record.membership_type_id || record.member?.membership_type_id || record.applicant?.membership_type_id;
+    if (!typeId && record.member_id) {
+        const foundM = allMembersData.find(m => String(m.id) === String(record.member_id));
+        if (foundM) typeId = foundM.membership_type_id;
+    }
+    if (typeId && globalMembershipTypes.length > 0) {
+        const found = globalMembershipTypes.find(t => String(t.id) === String(typeId));
+        if (found) {
+            if (record.transaction_type === 'renewal' && found.renewal_price) return parseFloat(found.renewal_price);
+            return parseFloat(found.price); 
+        }
+    }
+    return parseFloat(record.membership_fee || 0);
+}
 
     function getMembershipLabel(record) {
         let typeId = record.membership_type_id || 
@@ -352,85 +501,150 @@
         updateTransactionPagination(totalPages);
     }
 
-    function renderTransactionRows(rows) {
-        const tbodyTrans = document.getElementById('transactions-table-body');
-        if (!tbodyTrans) return;
-        tbodyTrans.innerHTML = '';
+// ==========================================
+// RENDER TABLE WITH BOTH BUTTONS
+// ==========================================
+function renderTransactionRows(rows) {
+    const tbodyTrans = document.getElementById('transactions-table-body');
+    if (!tbodyTrans) return;
+    tbodyTrans.innerHTML = '';
 
-        if (rows.length > 0) {
-            rows.forEach((txn, index) => {
-                const status = String(txn.status || 'pending').toLowerCase();
-                const txnDate = (txn.created_at || '').split('T')[0] || 'N/A';
-                const statClass = status === 'pending' ? 'status-pending' : (status === 'failed' ? 'status-failed' : 'status-completed');
+    if (rows.length > 0) {
+        rows.forEach((txn) => {
+            const status = String(txn.status || 'pending').toLowerCase();
+            const txnDate = (txn.created_at || '').split('T')[0] || 'N/A';
 
-                // Transaction Type Display
-                let typeDisplay = 'Unknown';
-                let typeBadgeColor = 'text-secondary';
-                if (txn.transaction_type === 'initial_registration') {
-                    typeDisplay = 'Initial Registration';
-                    typeBadgeColor = 'text-primary';
-                } else if (txn.transaction_type === 'renewal') {
-                    typeDisplay = 'Renewal';
-                    typeBadgeColor = 'text-success';
-                }
+            let typeDisplay = 'Unknown';
+            let typeBadgeColor = 'text-secondary';
+            if (txn.transaction_type === 'initial_registration') { typeDisplay = 'Registration'; typeBadgeColor = 'text-primary'; } 
+            else if (txn.transaction_type === 'renewal') { typeDisplay = 'Renewal'; typeBadgeColor = 'text-success'; }
 
-                // ==========================================
-                // BULLETPROOF BUSINESS NAME EXTRACTION
-                // ==========================================
-                let businessName = txn.registered_business_name || 
-                                   txn.basic_profile?.registered_business_name || 
-                                   txn.applicant?.registered_business_name || 
-                                   txn.applicant?.basic_profile?.registered_business_name || 
-                                   txn.member?.applicant?.registered_business_name || 
-                                   txn.member?.applicant?.basic_profile?.registered_business_name;
+            let businessName = txn.registered_business_name || txn.basic_profile?.registered_business_name || txn.applicant?.registered_business_name || txn.applicant?.basic_profile?.registered_business_name || txn.member?.applicant?.registered_business_name || txn.member?.applicant?.basic_profile?.registered_business_name || 'Unknown Business';
 
-                // Fallback to globally fetched lists if relationships are missing in the transaction JSON
-                if (!businessName && txn.member_id) {
-                    const foundM = allMembersData.find(m => String(m.id) === String(txn.member_id));
-                    if (foundM) {
-                        businessName = foundM.applicant?.registered_business_name || 
-                                       foundM.applicant?.basic_profile?.registered_business_name;
-                    }
-                }
-                if (!businessName && txn.applicant_id) {
-                    const foundA = allApplicantsData.find(a => String(a.id) === String(txn.applicant_id));
-                    if (foundA) {
-                        businessName = foundA.registered_business_name || 
-                                       foundA.basic_profile?.registered_business_name;
-                    }
-                }
+            const amt = getTransactionAmount(txn);
+            const membershipText = typeof getMembershipLabel === 'function' ? getMembershipLabel(txn) : '';
+            const fmtAmt = `₱ ${amt.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            const orNumber = txn.or_number || txn.official_receipt_no || '---';
+            const method = String(txn.payment_method || 'Cash').replace('_', ' ').toUpperCase();
+            const safeImgUrl = encodeURIComponent(txn.receipt_image_url || txn.proof_of_payment_path || txn.proof_of_payment_url || '');
 
-                businessName = businessName || 'Unknown Business';
+            let statBadge = '';
+            let actionBtn = `<button class="btn btn-sm btn-light border text-muted fw-bold" disabled>Processed</button>`;
+            
+            if(status === 'pending' || status === 'pending_review') {
+                statBadge = '<span class="badge bg-warning text-dark px-3 py-1 rounded-pill">PENDING</span>';
+                // THIS INJECTS BOTH BUTTONS!
+                actionBtn = `
+                    <div class="d-flex gap-1 justify-content-center">
+                        <button class="btn btn-sm btn-success fw-bold px-2 shadow-sm" onclick="approveTreasurerPayment(${txn.id}, event)">Approve</button>
+                        <button class="btn btn-sm btn-danger fw-bold px-2 shadow-sm" onclick="rejectTreasurerPayment(${txn.id}, event)">Reject</button>
+                    </div>
+                `;
+            } else if(status === 'approved' || status === 'paid' || status === 'completed') {
+                statBadge = '<span class="badge bg-success text-white px-3 py-1 rounded-pill">APPROVED</span>';
+            } else {
+                statBadge = '<span class="badge bg-danger text-white px-3 py-1 rounded-pill">REJECTED</span>';
+            }
 
-                // ==========================================
-                // DYNAMIC AMOUNT AND LABELS
-                // ==========================================
-                const amt = getTransactionAmount(txn);
-                const membershipText = getMembershipLabel(txn);
-                const fmtAmt = `₱ ${amt.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-                
-                const orNumber = txn.or_number || txn.official_receipt_no || '---';
-                const method = String(txn.payment_method || 'Cash').replace('_', ' ').toUpperCase();
+            tbodyTrans.insertAdjacentHTML('beforeend', `
+                <tr class="align-middle">
+                    <td class="fw-bold text-dark ps-4">${businessName}<div class="text-muted fw-normal" style="font-size: 10px;">${membershipText}</div></td>
+                    <td class="fw-bold ${typeBadgeColor}">${typeDisplay}</td>
+                    <td class="fw-bold text-dark">${fmtAmt}</td>
+                    <td class="text-dark">${method}</td>
+                    <td class="text-dark fw-bold">${orNumber}</td>
+                    <td class="text-dark">${txnDate}</td>
+                    <td class="text-center">${statBadge}</td>
+                    <td>
+                        <div class="d-flex align-items-center justify-content-center">
+                            <button class="btn btn-sm btn-light border text-primary me-2" onclick="openSimpleProof('${safeImgUrl}')" title="View Receipt">
+                                <i class="fa fa-file-image"></i>
+                            </button>
+                            ${actionBtn}
+                        </div>
+                    </td>
+                </tr>
+            `);
+        });
+    } else {
+        tbodyTrans.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted">No transactions available.</td></tr>`;
+    }
+}
 
-                tbodyTrans.insertAdjacentHTML('beforeend', `
-                    <tr>
-                        <td class="fw-bold text-dark ps-4">
-                            ${businessName}
-                            <div class="text-muted fw-normal" style="font-size: 10px;">${membershipText}</div>
-                        </td>
-                        <td class="fw-bold ${typeBadgeColor}">${typeDisplay}</td>
-                        <td class="fw-bold text-dark">${fmtAmt}</td>
-                        <td class="text-dark">${method}</td>
-                        <td class="text-dark fw-bold">${orNumber}</td>
-                        <td class="text-dark">${txnDate}</td>
-                        <td class="text-center"><span class="status-badge ${statClass}">${status.toUpperCase()}</span></td>
-                    </tr>
-                `);
+    // THE APPROVE ACTION
+    async function approveTreasurerPayment(paymentId, event) {
+        if (!confirm("Approve this payment and reactivate the member?")) return;
+        const btn = event.target;
+        
+        try {
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+
+            const response = await fetch(`${window.API_BASE_URL}/v1/members/approve-renewal-payment/${paymentId}`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
             });
-        } else {
-            tbodyTrans.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">No transactions available.</td></tr>`;
+
+            const data = await response.json();
+            if (response.ok) {
+                alert("Success! Payment approved and member reactivated.");
+                if (typeof fetchTransactions === 'function') fetchTransactions();
+                if (typeof fetchMembers === 'function') fetchMembers(); 
+            } else {
+                alert("Approval Failed: " + (data.message || "Unknown error."));
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        } catch (error) {
+            alert("Network error.");
+            btn.disabled = false;
+            btn.innerHTML = 'Approve';
         }
     }
+
+    // ==========================================
+// REJECT ACTION SCRIPT (Make sure this is at the bottom of the file!)
+// ==========================================
+async function rejectTreasurerPayment(paymentId, event) {
+    const reason = prompt("Please enter the reason for rejecting this payment (e.g., 'Image is blurry'):");
+    if (!reason || reason.trim() === '') return; 
+    
+    const token = localStorage.getItem('token');
+    const btn = event.target;
+    
+    try {
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+
+        const response = await fetch(`${window.API_BASE_URL}/v1/members/reject-renewal-payment/${paymentId}`, {
+            method: 'POST',
+            headers: { 
+                'Accept': 'application/json', 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ rejection_reason: reason.trim() })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert("Success: " + (data.message || "Payment rejected."));
+            if (typeof fetchTransactions === 'function') fetchTransactions();
+            if (typeof fetchMembers === 'function') fetchMembers(); 
+        } else {
+            alert("Rejection Failed: " + (data.message || "Unknown error occurred."));
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    } catch (error) {
+        alert("A network error occurred while trying to reject the payment.");
+        btn.disabled = false;
+        btn.innerHTML = 'Reject';
+    }
+}
 
     function openTransactionEditModal(transactionKey) {
         const record = getTransactionRecordByKey(transactionKey);
@@ -1404,13 +1618,41 @@ async function markAllNotificationsAsRead() {
     }
 }
 
-    // --- MODALS FOR PAYMENTS ---
-    function openSimpleProof(url) {
-        if (!url || url === '#' || url === 'null') { alert("No proof found."); return; }
+    // ==========================================
+    // IMAGE VIEWER (SPINNER FIX)
+    // ==========================================
+    function openSimpleProof(encodedUrl) {
+        const url = decodeURIComponent(encodedUrl);
+        if (!url || url === '#' || url === 'null' || url === 'undefined' || url.trim() === '') { 
+            alert("No receipt image was found for this transaction."); return; 
+        }
+        
         const img = document.getElementById('simpleModalImage');
-        document.getElementById('simpleModalSpinner').style.display = 'flex';
+        const spinner = document.getElementById('simpleModalSpinner');
+        
+        // Show spinner, hide image initially
+        if(spinner) spinner.style.display = 'flex';
         img.style.display = 'none';
-        img.src = url.startsWith('http') ? url : `${window.API_BASE_URL || ''}/${url.replace(/^\/+/, '')}`;
+        
+        let finalUrl = url;
+        if (!url.startsWith('http')) {
+            const base = (window.API_BASE_URL || '').replace('/api', '');
+            finalUrl = `${base}/${url.replace(/^\/+/, '')}`;
+        }
+        
+        // THE FIX: When the image finishes loading, hide the spinner and show the image!
+        img.onload = function() {
+            if(spinner) spinner.style.display = 'none';
+            img.style.display = 'block';
+        };
+
+        // Failsafe: If the S3 link expired, show an error
+        img.onerror = function() {
+            if(spinner) spinner.style.display = 'none';
+            alert("Failed to load image. The secure link may have expired or is broken.");
+        };
+        
+        img.src = finalUrl;
         document.getElementById('simpleProofModal').style.display = 'flex';
     }
     function onSimpleImageLoad() { document.getElementById('simpleModalImage').style.display = 'block'; document.getElementById('simpleModalSpinner').style.display = 'none'; }
@@ -1493,7 +1735,7 @@ async function markAllNotificationsAsRead() {
                 await fetchApplicants();
                 await fetchMembers();
                 await fetchTransactions();
-                await fetchRecentPayments();
+                await renderRecentPayments();
                 
                 // 3. Hide loader and show success
                 hideGlobalLoader();
@@ -1543,7 +1785,7 @@ async function markAllNotificationsAsRead() {
                 await fetchApplicants();
                 await fetchMembers();
                 await fetchTransactions();
-                await fetchRecentPayments();
+                await renderRecentPayments();
                 
                 // 3. Hide loader and show success
                 hideGlobalLoader();
@@ -1587,7 +1829,7 @@ async function markAllNotificationsAsRead() {
                 await fetchApplicants();
                 await fetchMembers();
                 await fetchTransactions();
-                await fetchRecentPayments();
+                await renderRecentPayments();
                 
             } else {
                 const result = await response.json().catch(() => ({}));
@@ -1631,7 +1873,7 @@ async function markAllNotificationsAsRead() {
 
                 fetchMembers();
                 fetchTransactions();
-                fetchRecentPayments();
+                renderRecentPayments();
                 alert("Success: Payment Rejected.");
             } else {
                 const result = await response.json().catch(() => ({}));
@@ -1778,78 +2020,78 @@ async function markAllNotificationsAsRead() {
     }
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', async () => {
-if (!token) { window.location.href = '/login'; return; }
-        
-        sanitizeSearchAutofill();
-        setTimeout(sanitizeSearchAutofill, 120);
-        
-        const loadedFromApi = await loadAccountSettingsFromApi();
-        if (!loadedFromApi) applyStoredAccountSettings();
-        
-        // NEW: Fetch membership types before loading tables!
-        await fetchMembershipTypes();
-        
-        fetchApplicants();
-        fetchMembers();        fetchRecentPayments();
-        fetchTransactions();
-        initCharts();
+        if (!token) { window.location.href = '/login'; return; }
+                
+                sanitizeSearchAutofill();
+                setTimeout(sanitizeSearchAutofill, 120);
+                
+                const loadedFromApi = await loadAccountSettingsFromApi();
+                if (!loadedFromApi) applyStoredAccountSettings();
+                
+                // NEW: Fetch membership types before loading tables!
+                await fetchMembershipTypes();
+                
+                fetchApplicants();
+                fetchMembers();        
+                renderRecentPayments();
+                fetchTransactions();
 
-        const searchInputs = [
-            { id: 'memberSearch', func: applyMemberFilters },
-            { id: 'memberSort', func: applyMemberFilters },
-            { id: 'applicantSearch', func: applyApplicantFilters },
-            { id: 'applicantSort', func: applyApplicantFilters },
-            { id: 'applicantStatusFilter', func: applyApplicantFilters } // Strict Treasurer Dropdown
-        ];
-        
-        searchInputs.forEach(input => {
-            const el = document.getElementById(input.id);
-            if (el) {
-                el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', input.func);
-            }
-        });
+                const searchInputs = [
+                    { id: 'memberSearch', func: applyMemberFilters },
+                    { id: 'memberSort', func: applyMemberFilters },
+                    { id: 'applicantSearch', func: applyApplicantFilters },
+                    { id: 'applicantSort', func: applyApplicantFilters },
+                    { id: 'applicantStatusFilter', func: applyApplicantFilters } // Strict Treasurer Dropdown
+                ];
+                
+                searchInputs.forEach(input => {
+                    const el = document.getElementById(input.id);
+                    if (el) {
+                        el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', input.func);
+                    }
+                });
 
-        // Event listener for Add Member Dropdown
-        const companySelect = document.getElementById('addMemberCompanySelect');
-        if (companySelect) {
-            companySelect.addEventListener('change', function() {
-                const selectedId = this.value;
-                if (!selectedId) {
-                    populateAddMemberReadOnlyFields(null);
-                    return;
+                // Event listener for Add Member Dropdown
+                const companySelect = document.getElementById('addMemberCompanySelect');
+                if (companySelect) {
+                    companySelect.addEventListener('change', function() {
+                        const selectedId = this.value;
+                        if (!selectedId) {
+                            populateAddMemberReadOnlyFields(null);
+                            return;
+                        }
+                        const selectedApplicant = approvedApplicantsForModal.find(app => String(app.id) === String(selectedId));
+                        populateAddMemberReadOnlyFields(selectedApplicant);
+                    });
                 }
-                const selectedApplicant = approvedApplicantsForModal.find(app => String(app.id) === String(selectedId));
-                populateAddMemberReadOnlyFields(selectedApplicant);
+
+                const dashboardPaymentRangeEl = document.getElementById('dashboardPaymentRange');
+                if (dashboardPaymentRangeEl) {
+                    dashboardPaymentRange = dashboardPaymentRangeEl.value || 'day';
+                    dashboardPaymentRangeEl.addEventListener('change', (event) => {
+                        dashboardPaymentRange = event.target.value;
+                        updateDashboardPaymentSummary(allTransactionsData);
+                    });
+                }
+
+                const dashboardRevenueRangeEl = document.getElementById('dashboardRevenueRange');
+                if (dashboardRevenueRangeEl) {
+                    dashboardRevenueRange = dashboardRevenueRangeEl.value || 'month';
+                    dashboardRevenueRangeEl.addEventListener('change', (event) => {
+                        dashboardRevenueRange = event.target.value;
+                        updateReportsDashboard();
+                    });
+                }
+
+                const savedTab = localStorage.getItem('activeTab') || 'dashboard';
+                switchTab(savedTab, false);
+
+                setInterval(() => {
+                    if (document.visibilityState !== 'visible') return;
+                    if (!['members', 'dashboard', 'reports'].includes(currentActiveTab)) return;
+                    fetchMembers();
+                }, TREASURER_MEMBERS_AUTO_REFRESH_MS);
             });
-        }
-
-        const dashboardPaymentRangeEl = document.getElementById('dashboardPaymentRange');
-        if (dashboardPaymentRangeEl) {
-            dashboardPaymentRange = dashboardPaymentRangeEl.value || 'day';
-            dashboardPaymentRangeEl.addEventListener('change', (event) => {
-                dashboardPaymentRange = event.target.value;
-                updateDashboardPaymentSummary(allTransactionsData);
-            });
-        }
-
-        const dashboardRevenueRangeEl = document.getElementById('dashboardRevenueRange');
-        if (dashboardRevenueRangeEl) {
-            dashboardRevenueRange = dashboardRevenueRangeEl.value || 'month';
-            dashboardRevenueRangeEl.addEventListener('change', (event) => {
-                dashboardRevenueRange = event.target.value;
-                updateReportsDashboard();
-            });
-        }
-
-        const savedTab = localStorage.getItem('activeTab') || 'dashboard';
-        switchTab(savedTab, false);
-
-        setInterval(() => {
-            if (document.visibilityState !== 'visible') return;
-            if (!['members', 'dashboard', 'reports'].includes(currentActiveTab)) return;
-            fetchMembers();
-        }, TREASURER_MEMBERS_AUTO_REFRESH_MS);
-    });
 
     // --- MEMBER FILTER/SORT ---
     function applyMemberFilters() {
@@ -2250,39 +2492,6 @@ if (!token) { window.location.href = '/login'; return; }
         if (tbody && tbody.children.length === 0) tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No recent payments available.</td></tr>`;
     }
 
-    async function fetchRecentPayments() {
-        try {
-            const response = await fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, { headers: { 'Authorization': `Bearer ${token}` } });
-            if (!checkAuth(response)) return;
-            const data = await response.json();
-            if (response.ok && data.data) {
-                const tbody = document.getElementById('recent-payments-table-body');
-                if(!tbody) return;
-                tbody.innerHTML = ''; 
-                data.data.forEach(app => {
-                    tbody.insertAdjacentHTML('beforeend', `
-                        <tr id="recent-payment-row-${app.id}">
-                            <td class="fw-bold text-dark">${app.basic_profile?.registered_business_name || 'N/A'}</td>
-                            <td>Annual</td>
-                            <td class="fw-bold text-dark">₱5,000</td>
-                            <td class="text-dark">Pending</td>
-                            <td class="text-dark">${app.date_approved || 'N/A'}</td>
-                            <td><button class="btn btn-sm btn-link p-0 fw-bold" onclick="openSimpleProof('${app.proof_of_payment_url}')">View File</button></td>
-                            <td>
-                                <div class="d-flex justify-content-center align-items-center gap-1 flex-wrap">
-                                    <button class="btn btn-success btn-sm fw-semibold" style="min-width: 74px;" onclick="verifyRecentPayment('${app.proof_of_payment_url}', ${app.id})">Verify</button>
-                                    <button class="btn btn-danger btn-sm fw-semibold" style="min-width: 74px;" onclick="rejectRecentPayment(${app.id})">Reject</button>
-                                    <button class="btn btn-sm fw-semibold text-white" style="background:#b61b2a; min-width: 118px;" onclick="printRecentReceipt(${app.id})"><i class="fa fa-print me-1"></i> Print Receipt</button>
-                                </div>
-                            </td>
-                        </tr>
-                    `);
-                });
-                if ((data.data || []).length === 0) tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No recent payments available.</td></tr>`;
-            }
-        } catch (err) {}
-    }
-
     async function fetchTransactions() {
         try {
             // 1. Fetch Global Financial Stats for the Cards
@@ -2328,63 +2537,6 @@ if (!token) { window.location.href = '/login'; return; }
         }
     }
 
-    function renderTransactionRows(rows) {
-        const tbodyTrans = document.getElementById('transactions-table-body');
-        if (!tbodyTrans) return;
-        tbodyTrans.innerHTML = '';
-
-        if (rows.length > 0) {
-            rows.forEach((txn, index) => {
-                const status = String(txn.status || 'pending').toLowerCase();
-                const txnDate = (txn.created_at || '').split('T')[0] || 'N/A';
-                const statClass = status === 'pending' ? 'status-pending' : (status === 'failed' ? 'status-failed' : 'status-completed');
-
-                // Differentiate Transaction Type
-                let typeDisplay = 'Unknown';
-                let typeBadgeColor = 'text-secondary';
-                if (txn.transaction_type === 'initial_registration') {
-                    typeDisplay = 'Initial Registration';
-                    typeBadgeColor = 'text-primary';
-                } else if (txn.transaction_type === 'renewal') {
-                    typeDisplay = 'Renewal';
-                    typeBadgeColor = 'text-success';
-                }
-
-                // --- FIX 1: BULLETPROOF BUSINESS NAME EXTRACTION ---
-                // Works for raw models OR API Resources
-                let businessName = 'Unknown Business';
-                const appData = txn.applicant || (txn.member ? txn.member.applicant : null);
-                if (appData) {
-                    businessName = appData.registered_business_name || 
-                                   (appData.basic_profile ? appData.basic_profile.registered_business_name : null) || 
-                                   'Unknown Business';
-                }
-
-                // --- FIX 2: DYNAMIC AMOUNT & OR NUMBER ---
-                const amt = parseFloat(txn.amount) || getTransactionAmount(txn);
-                const fmtAmt = `₱ ${amt.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-                
-                // Prioritize the actual OR number from the table
-                const orNumber = txn.or_number || txn.official_receipt_no || '---';
-                const method = String(txn.payment_method || 'Cash').replace('_', ' ').toUpperCase();
-
-                tbodyTrans.insertAdjacentHTML('beforeend', `
-                    <tr>
-                        <td class="fw-bold text-dark ps-4">${businessName}</td>
-                        <td class="fw-bold ${typeBadgeColor}">${typeDisplay}</td>
-                        <td class="fw-bold text-dark">${fmtAmt}</td>
-                        <td class="text-dark">${method}</td>
-                        <td class="text-dark fw-bold">${orNumber}</td>
-                        <td class="text-dark">${txnDate}</td>
-                        <td class="text-center"><span class="status-badge ${statClass}">${status.toUpperCase()}</span></td>
-                    </tr>
-                `);
-            });
-        } else {
-            tbodyTrans.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">No transactions available.</td></tr>`;
-        }
-    }
-
     function initCharts() { updateReportsDashboard(); }
 
     async function refreshTabData(tabName) {
@@ -2393,12 +2545,12 @@ if (!token) { window.location.href = '/login'; return; }
         // FIX: Add "await" to everything so data loads in the exact right order.
         // We must load Applicants and Members BEFORE Transactions so the fallback arrays are populated!
         if (tabName === 'dashboard') {
-            await fetchApplicants(); await fetchMembers(); await fetchRecentPayments(); await fetchTransactions(); initCharts();
+            await fetchApplicants(); await fetchMembers(); await renderRecentPayments(); await fetchTransactions(); initCharts();
         } else if (tabName === 'members') {
             await fetchMembers();
             await fetchTreasurerApprovedApplicantsForModal(); 
         } else if (tabName === 'applicants') {
-            await fetchApplicants(); await fetchRecentPayments();
+            await fetchApplicants(); await renderRecentPayments();
         } else if (tabName === 'transactions') {
             await fetchApplicants(); await fetchMembers(); await fetchTransactions();
         } else if (tabName === 'reports') {
@@ -2419,13 +2571,16 @@ if (!token) { window.location.href = '/login'; return; }
         // Fetch membership types first
         await fetchMembershipTypes();
         
-        // FIX: Await these so they finish downloading before moving to the next step
+        // 1. Fetch data
+        await fetchMembershipTypes();
         await fetchApplicants();
-        await fetchMembers();        
-        await fetchRecentPayments();
-        await fetchTransactions();
+        await fetchMembers();
+        await fetchTransactions(); // Inside fetchTransactions, ensure you call initCharts() at the end
         
+        // 2. Initial UI setup
+        fetchWelcomeName(); 
         initCharts();
+
 
         const searchInputs = [
             { id: 'memberSearch', func: applyMemberFilters },
@@ -2532,4 +2687,42 @@ if (!token) { window.location.href = '/login'; return; }
     function toggleNotificationPanel(e) { e.stopPropagation(); const p = document.getElementById('notificationPanel'); p.style.display = p.style.display === 'flex' ? 'none' : 'flex'; }
     function clearNotifications(e) { e.stopPropagation(); document.getElementById('notificationPanel').style.display = 'none'; }
     function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
+
+// ==========================================
+// 4. TREASURER APPROVAL FUNCTION
+// ==========================================
+async function approveTreasurerPayment(paymentId, event) {
+    if (!confirm("Are you sure you want to approve this payment? This will permanently reactivate the member for another year.")) return;
+    
+    const token = localStorage.getItem('token');
+    const btn = event.target;
+    
+    try {
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+
+        const response = await fetch(`${window.API_BASE_URL}/v1/members/approve-renewal-payment/${paymentId}`, {
+            method: 'POST',
+            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert("Success! The payment has been approved and the member's active status has been restored.");
+            if (typeof fetchTransactions === 'function') fetchTransactions();
+            if (typeof fetchMembers === 'function') fetchMembers(); 
+        } else {
+            alert("Approval Failed: " + (data.message || "Unknown error occurred."));
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    } catch (error) {
+        alert("A network error occurred while trying to approve the payment.");
+        btn.disabled = false;
+        btn.innerHTML = 'Approve';
+    }
+}
+
 </script>
