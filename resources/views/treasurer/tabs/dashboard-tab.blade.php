@@ -99,7 +99,9 @@
                     </tr>
                 </thead>
                 <tbody id="recent-payments-table-body">
-                    <tr><td colspan="7" class="text-center py-4">Loading records...</td></tr>
+                    <tr>
+                        <td colspan="7" class="text-center py-4">Loading records...</td>
+                    </tr>
                 </tbody>
             </table>
         </div>

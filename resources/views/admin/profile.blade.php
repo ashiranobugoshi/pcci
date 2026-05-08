@@ -8,9 +8,12 @@
 <div class="dashboard-header">MY PROFILE</div>
 
 <style>
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
         box-sizing: border-box;
     }
+
     .profile-card {
         background: #fff;
         border: 1px solid #e0e0e0;
@@ -19,6 +22,7 @@
         margin-bottom: 24px;
         max-width: 800px;
     }
+
     .profile-card h5 {
         font-weight: 700;
         color: #be1e38;
@@ -27,9 +31,11 @@
         text-transform: uppercase;
         letter-spacing: 0.03em;
     }
+
     .form-group {
         margin-bottom: 16px;
     }
+
     .form-group label {
         display: block;
         font-size: 0.8rem;
@@ -39,6 +45,7 @@
         letter-spacing: 0.04em;
         margin-bottom: 6px;
     }
+
     .form-group input,
     .form-group input[type="text"],
     .form-group input[type="email"],
@@ -55,16 +62,19 @@
         transition: border 0.2s;
         display: block;
     }
+
     .form-group input:focus {
         outline: none;
         border-color: #be1e38;
         box-shadow: 0 0 0 3px rgba(190, 30, 56, 0.1);
     }
+
     .form-group input:disabled {
         background: #f5f5f5;
         color: #999;
         cursor: not-allowed;
     }
+
     .btn-save {
         background: #be1e38;
         color: #fff;
@@ -76,8 +86,16 @@
         cursor: pointer;
         transition: background 0.2s;
     }
-    .btn-save:hover { background: #a01a30; }
-    .btn-save:disabled { background: #ccc; cursor: not-allowed; }
+
+    .btn-save:hover {
+        background: #a01a30;
+    }
+
+    .btn-save:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+
     .alert-box {
         display: none;
         padding: 12px 16px;
@@ -86,22 +104,38 @@
         font-weight: 600;
         margin-bottom: 16px;
     }
-    .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-    .alert-error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+    .alert-success {
+        background: #dcfce7;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+    }
+
+    .alert-error {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+    }
+
     .profile-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 16px;
     }
+
     @media (max-width: 768px) {
-        .profile-row { grid-template-columns: 1fr; }
+        .profile-row {
+            grid-template-columns: 1fr;
+        }
     }
+
     .avatar-section {
         display: flex;
         align-items: center;
         gap: 24px;
         margin-bottom: 24px;
     }
+
     .avatar-preview {
         width: 100px;
         height: 100px;
@@ -115,21 +149,25 @@
         overflow: hidden;
         flex-shrink: 0;
     }
+
     .avatar-preview img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
+
     .avatar-preview .initials {
         font-size: 2rem;
         font-weight: 700;
         color: #be1e38;
     }
+
     .avatar-actions {
         display: flex;
         flex-direction: column;
         gap: 8px;
     }
+
     .btn-upload {
         background: #be1e38;
         color: #fff;
@@ -141,7 +179,11 @@
         cursor: pointer;
         transition: background 0.2s;
     }
-    .btn-upload:hover { background: #a01a30; }
+
+    .btn-upload:hover {
+        background: #a01a30;
+    }
+
     .btn-remove {
         background: none;
         color: #888;
@@ -153,7 +195,11 @@
         cursor: pointer;
         transition: all 0.2s;
     }
-    .btn-remove:hover { border-color: #be1e38; color: #be1e38; }
+
+    .btn-remove:hover {
+        border-color: #be1e38;
+        color: #be1e38;
+    }
 
     @media (max-width: 768px) {
         .profile-card {
@@ -266,7 +312,7 @@
 </div>
 
 <script>
-    const token = localStorage.getItem('token');
+    var token = localStorage.getItem('token');
     let avatarChanged = false;
 
     if (!token) {
@@ -331,7 +377,15 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', loadProfile);
+    function initProfilePage() {
+        loadProfile();
+    }
+
+    if (document.readyState !== 'loading') {
+        initProfilePage();
+    } else {
+        document.addEventListener('DOMContentLoaded', initProfilePage);
+    }
 
     async function loadProfile() {
         const storedName = localStorage.getItem('userName') || '';
@@ -343,7 +397,10 @@
         // Fetch user data from API
         try {
             const response = await fetch(`${window.API_BASE_URL}/v1/user`, {
-                headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
             });
 
             if (response.ok) {
@@ -352,9 +409,13 @@
                 document.getElementById('profileName').value = user.name || storedName;
                 document.getElementById('profileEmail').value = user.email || '';
                 document.getElementById('profileRole').value = (user.roles || []).join(', ') || 'Admin';
-                document.getElementById('profileJoined').value = user.created_at
-                    ? new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-                    : 'N/A';
+                document.getElementById('profileJoined').value = user.created_at ?
+                    new Date(user.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    }) :
+                    'N/A';
 
                 // Load avatar from API if available
                 if (user.avatar || user.photo_url) {
@@ -383,7 +444,10 @@
         const email = document.getElementById('profileEmail').value.trim();
         const avatarFile = document.getElementById('avatarInput').files[0];
 
-        if (!name) { showAlert(alertBox, 'Name is required.', 'error'); return; }
+        if (!name) {
+            showAlert(alertBox, 'Name is required.', 'error');
+            return;
+        }
 
         btn.disabled = true;
         btn.textContent = 'Saving...';

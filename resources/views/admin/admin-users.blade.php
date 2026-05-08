@@ -41,6 +41,7 @@
         flex: 1;
         max-width: 360px;
     }
+
     .search-box input {
         width: 100%;
         padding: 10px 14px 10px 40px;
@@ -50,7 +51,12 @@
         font-family: 'Inter', sans-serif;
         box-sizing: border-box;
     }
-    .search-box input:focus { outline: none; border-color: #be1e38; }
+
+    .search-box input:focus {
+        outline: none;
+        border-color: #be1e38;
+    }
+
     .search-box .icon {
         position: absolute;
         left: 14px;
@@ -71,7 +77,10 @@
         transition: background 0.2s;
         white-space: nowrap;
     }
-    .btn-register:hover { background: #a01a30; }
+
+    .btn-register:hover {
+        background: #a01a30;
+    }
 
     /* Users Table */
     .users-table-wrapper {
@@ -79,15 +88,18 @@
         border: 1px solid #e0e0e0;
         border-radius: 10px;
     }
+
     .users-table {
         width: 100%;
         border-collapse: collapse;
         font-size: 0.9rem;
         table-layout: fixed;
     }
+
     .users-table thead {
         background: #f8f8f8;
     }
+
     .users-table th {
         padding: 12px 14px;
         text-align: left;
@@ -98,6 +110,7 @@
         color: #555;
         border-bottom: 2px solid #e0e0e0;
     }
+
     .users-table td {
         padding: 12px 14px;
         border-bottom: 1px solid #f0f0f0;
@@ -106,7 +119,10 @@
         text-overflow: ellipsis;
         white-space: nowrap;
     }
-    .users-table tr:hover { background: #fdf2f4; }
+
+    .users-table tr:hover {
+        background: #fdf2f4;
+    }
 
     .role-badge {
         display: inline-block;
@@ -116,40 +132,67 @@
         font-weight: 700;
         text-transform: uppercase;
     }
-    .role-admin { background: #fef2f2; color: #be1e38; }
-    .role-treasurer { background: #eff6ff; color: #2563eb; }
-    .role-member { background: #f0fdf4; color: #15803d; }
-    .role-default { background: #f5f5f5; color: #666; }
+
+    .role-admin {
+        background: #fef2f2;
+        color: #be1e38;
+    }
+
+    .role-treasurer {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .role-member {
+        background: #f0fdf4;
+        color: #15803d;
+    }
+
+    .role-default {
+        background: #f5f5f5;
+        color: #666;
+    }
 
     /* Modals */
     .modal-overlay {
         display: none;
         position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5);
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
         z-index: 1000;
         justify-content: center;
         align-items: center;
     }
+
     .modal-box {
         background: #fff;
         padding: 30px;
         border-radius: 12px;
         width: 100%;
         max-width: 440px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
     }
+
     .modal-box h3 {
         margin: 0 0 6px;
         font-weight: 700;
         color: #be1e38;
         font-size: 1.2rem;
     }
-    .modal-box p { color: #777; font-size: 0.9rem; margin-bottom: 20px; }
+
+    .modal-box p {
+        color: #777;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+    }
+
     .modal-form-group {
         margin-bottom: 14px;
     }
+
     .modal-form-group label {
         display: block;
         font-size: 0.8rem;
@@ -159,6 +202,7 @@
         letter-spacing: 0.03em;
         margin-bottom: 6px;
     }
+
     .modal-form-group input,
     .modal-form-group select {
         width: 100%;
@@ -169,13 +213,19 @@
         font-family: 'Inter', sans-serif;
         box-sizing: border-box;
     }
+
     .modal-form-group input:focus,
-    .modal-form-group select:focus { outline: none; border-color: #be1e38; }
+    .modal-form-group select:focus {
+        outline: none;
+        border-color: #be1e38;
+    }
+
     .modal-btn-row {
         display: flex;
         gap: 10px;
         margin-top: 20px;
     }
+
     .modal-btn-row button {
         flex: 1;
         padding: 10px;
@@ -186,10 +236,26 @@
         border: none;
         transition: 0.2s;
     }
-    .btn-confirm { background: #be1e38; color: #fff; }
-    .btn-confirm:hover { background: #a01a30; }
-    .btn-cancel { background: #f5f5f5; color: #555; border: 1px solid #ddd; }
-    .btn-cancel:hover { background: #eee; }
+
+    .btn-confirm {
+        background: #be1e38;
+        color: #fff;
+    }
+
+    .btn-confirm:hover {
+        background: #a01a30;
+    }
+
+    .btn-cancel {
+        background: #f5f5f5;
+        color: #555;
+        border: 1px solid #ddd;
+    }
+
+    .btn-cancel:hover {
+        background: #eee;
+    }
+
     .alert-msg {
         display: none;
         padding: 10px 14px;
@@ -198,9 +264,25 @@
         font-weight: 600;
         margin-bottom: 14px;
     }
-    .alert-error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-    .alert-success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-    .alert-warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+
+    .alert-error {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+    }
+
+    .alert-success {
+        background: #f0fdf4;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+    }
+
+    .alert-warning {
+        background: #fffbeb;
+        color: #92400e;
+        border: 1px solid #fde68a;
+    }
+
     .password-box {
         background: #f8f8f8;
         border: 2px dashed #ddd;
@@ -213,12 +295,19 @@
         letter-spacing: 1px;
         color: #333;
     }
+
     .empty-state {
         text-align: center;
         padding: 60px 20px;
         color: #999;
     }
-    .empty-state i { font-size: 3rem; margin-bottom: 12px; display: block; color: #ddd; }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 12px;
+        display: block;
+        color: #ddd;
+    }
 
     @media (max-width: 992px) {
         .page-header {
@@ -294,10 +383,12 @@
             </tr>
         </thead>
         <tbody id="usersTableBody">
-            <tr><td colspan="4" style="text-align: center; padding: 40px; color: #999;">
-                <i class="bi bi-arrow-repeat" style="display: inline-block; animation: spin 1s linear infinite; font-size: 1.5rem;"></i>
-                <br>Loading users...
-            </td></tr>
+            <tr>
+                <td colspan="4" style="text-align: center; padding: 40px; color: #999;">
+                    <i class="bi bi-arrow-repeat" style="display: inline-block; animation: spin 1s linear infinite; font-size: 1.5rem;"></i>
+                    <br>Loading users...
+                </td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -351,25 +442,40 @@
 </div>
 
 <script>
-    const token = localStorage.getItem('token');
+    var token = localStorage.getItem('token');
     let allUsers = [];
 
-    if (!token) { window.location.href = '/login'; }
+    if (!token) {
+        window.location.href = '/login';
+    }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    function initAdminUsersPage() {
         fetchUsers();
         document.getElementById('userSearchInput').addEventListener('input', function() {
             renderUsers(this.value.trim().toLowerCase());
         });
-    });
+    }
+
+    if (document.readyState !== 'loading') {
+        initAdminUsersPage();
+    } else {
+        document.addEventListener('DOMContentLoaded', initAdminUsersPage);
+    }
 
     async function fetchUsers() {
         try {
             const response = await fetch(`${window.API_BASE_URL}/v1/users`, {
-                headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
             });
 
-            if (response.status === 401) { localStorage.removeItem('token'); window.location.href = '/login'; return; }
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+                return;
+            }
 
             const data = await response.json();
 
@@ -417,9 +523,17 @@
             }).join(' ') || '<span class="role-badge role-default">user</span>';
 
             const rawDate = user.created_at || user.date_created || user.registered_at || user.joined_at || null;
-            const created = rawDate
-                ? new Date(rawDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-                : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            const created = rawDate ?
+                new Date(rawDate).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                }) :
+                new Date().toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
 
             return `
                 <tr>
@@ -436,6 +550,7 @@
         document.getElementById('registerModal').style.display = 'flex';
         document.getElementById('registerError').style.display = 'none';
     }
+
     function closeRegisterModal() {
         document.getElementById('registerModal').style.display = 'none';
         document.getElementById('registerForm').reset();
@@ -452,7 +567,11 @@
         try {
             const response = await fetch(`${window.API_BASE_URL}/register`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({
                     name: document.getElementById('regName').value,
                     email: document.getElementById('regEmail').value,
@@ -488,10 +607,12 @@
         document.getElementById('successModal').style.display = 'flex';
         document.getElementById('copyBtn').innerHTML = '<i class="bi bi-clipboard"></i> Copy Password';
     }
+
     function closeSuccessModal() {
         document.getElementById('successModal').style.display = 'none';
         document.getElementById('generatedPassword').innerText = '';
     }
+
     function copyPassword() {
         navigator.clipboard.writeText(document.getElementById('generatedPassword').innerText).then(() => {
             document.getElementById('copyBtn').innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
@@ -499,6 +620,12 @@
     }
 </script>
 
-<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+<style>
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
 
 @endsection

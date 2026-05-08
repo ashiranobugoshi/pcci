@@ -24,7 +24,7 @@
         color: var(--text-main, #333);
         padding: 30px;
         border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         margin-bottom: 24px;
         border: 1px solid var(--border-color, #e0e0e0);
         transition: background 0.3s, color 0.3s, border-color 0.3s;
@@ -41,10 +41,12 @@
         transition: background 0.2s;
     }
 
-    .btn-save:hover { background: #a01a30; }
+    .btn-save:hover {
+        background: #a01a30;
+    }
 
     .form-control:read-only {
-        background-color: rgba(0,0,0,0.04) !important;
+        background-color: rgba(0, 0, 0, 0.04) !important;
         cursor: not-allowed;
     }
 </style>
@@ -67,10 +69,10 @@
 <div class="settings-card">
     <h4 style="color: var(--pcci-red, #be1e38); margin-bottom: 20px;"><i class="bi bi-bank"></i> PCCI Bank Account</h4>
     <p class="text-muted" style="opacity: 0.8;">Manage the official PCCI receiving bank account. These details are displayed to applicants during Step 6 of Registration.</p>
-    
+
     <form id="bankDetailsForm" onsubmit="saveBankDetails(event)">
         <input type="hidden" id="channelId">
-        
+
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold">Bank Name</label>
@@ -103,13 +105,19 @@
 </div>
 
 <script>
-    const token = localStorage.getItem('token');
-    let defaultChannelData = null; 
+    var token = localStorage.getItem('token');
+    let defaultChannelData = null;
 
-    document.addEventListener('DOMContentLoaded', () => {
+    function initSettingsPage() {
         // Just fetch the channels, the layout handles the initial theme load now!
         fetchPaymentChannels();
-    });
+    }
+
+    if (document.readyState !== 'loading') {
+        initSettingsPage();
+    } else {
+        document.addEventListener('DOMContentLoaded', initSettingsPage);
+    }
 
     // --- NEW GLOBAL THEME TOGGLE --- //
     function setTheme(mode) {
@@ -135,7 +143,7 @@
             if (!response.ok) throw new Error('Failed to fetch data');
 
             const result = await response.json();
-            const channels = result.data || result || []; 
+            const channels = result.data || result || [];
 
             if (channels.length > 0) {
                 defaultChannelData = channels[0];
@@ -151,7 +159,7 @@
                 document.getElementById('accountNumber').value = '';
             }
 
-            cancelEditMode(); 
+            cancelEditMode();
         } catch (error) {
             console.error('Error fetching payment channels:', error);
             showAlert('danger', 'Failed to load bank accounts. Check network connection.');
@@ -176,8 +184,8 @@
         document.getElementById('editBtn').style.display = 'inline-block';
         document.getElementById('saveBtn').style.display = 'none';
         document.getElementById('cancelBtn').style.display = 'none';
-        
-        if(defaultChannelData) {
+
+        if (defaultChannelData) {
             document.getElementById('bankName').value = defaultChannelData.payment_method || '';
             document.getElementById('accountName').value = defaultChannelData.account_name || '';
             document.getElementById('accountNumber').value = defaultChannelData.account_no || '';
@@ -189,8 +197,8 @@
     }
 
     async function saveBankDetails(event) {
-        event.preventDefault(); 
-        
+        event.preventDefault();
+
         const id = document.getElementById('channelId').value;
         const saveBtn = document.getElementById('saveBtn');
 
@@ -199,7 +207,7 @@
 
         const bankNameValue = document.getElementById('bankName').value;
 
-        const updatedData = {                    
+        const updatedData = {
             payment_method: bankNameValue,
             account_name: document.getElementById('accountName').value,
             account_no: document.getElementById('accountNumber').value,
@@ -221,10 +229,10 @@
 
             if (response.ok) {
                 showAlert('success', '<i class="bi bi-check-circle-fill"></i> Bank details saved successfully!');
-                await fetchPaymentChannels(); 
+                await fetchPaymentChannels();
             } else {
                 const errData = await response.json();
-                
+
                 let errorHtml = '<b>Save failed! The backend requires these fields:</b><ul style="margin-bottom:0;">';
                 if (errData.errors) {
                     for (const [field, messages] of Object.entries(errData.errors)) {
@@ -234,7 +242,7 @@
                 } else {
                     errorHtml = `<i class="bi bi-exclamation-triangle-fill"></i> Save failed: ${errData.message || 'Unknown error'}`;
                 }
-                
+
                 showAlert('danger', errorHtml);
             }
         } catch (error) {
@@ -251,15 +259,25 @@
         alertBox.className = `alert alert-${type} mt-3`;
         alertBox.innerHTML = htmlMessage;
         alertBox.style.display = 'block';
-        
-        if(type === 'success') {
-            setTimeout(() => { alertBox.style.display = 'none'; }, 5000);
+
+        if (type === 'success') {
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 5000);
         }
     }
 </script>
 
 <style>
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-    .spin { display: inline-block; animation: spin 1s linear infinite; }
+    @keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .spin {
+        display: inline-block;
+        animation: spin 1s linear infinite;
+    }
 </style>
 @endsection

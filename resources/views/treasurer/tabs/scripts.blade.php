@@ -1,23 +1,23 @@
 <script>
     const token = localStorage.getItem('token');
     const TREASURER_MEMBERS_AUTO_REFRESH_MS = 15000;
-         
+
     // Global Data Tables
-    let allMembersData = []; 
-    let filteredMembersData = []; 
+    let allMembersData = [];
+    let filteredMembersData = [];
     let currentMemberPage = 1;
-    const membersPerPage = 10; 
-    
+    const membersPerPage = 10;
+
     let allApplicantsData = [];
     let filteredApplicantsData = [];
     let currentApplicantPage = 1;
     const applicantsPerPage = 10;
-    
+
     let allTransactionsData = [];
     let filteredTransactionsData = [];
     let currentTransactionPage = 1;
     const transactionsPerPage = 10;
-         
+
     // --- THE MISSING CHART VARIABLES ---
     let dashboardPaymentRange = 'day';
     let dashboardRevenueRange = 'month';
@@ -25,7 +25,7 @@
     let dashboardPieChartInstance = null;
     let reportBarChartInstance = null;
     let reportPieChartInstance = null;
-    
+
     // Modal & State Variables
     let editingTransactionId = null;
     let currentApplicantId = null;
@@ -33,131 +33,152 @@
     let currentPasswordOtpCode = '';
     let currentPasswordOtpEmail = '';
     let accountImageFile = null;
-    let approvedApplicantsForModal = []; 
-    
+    let approvedApplicantsForModal = [];
+
     // Dynamic Membership Fetch
     let globalMembershipTypes = [];
 
-// Global variables to track chart instances
-let dashPieChartInstance = null;
-let dashBarChartInstance = null;
+    // Global variables to track chart instances
+    let dashPieChartInstance = null;
+    let dashBarChartInstance = null;
 
-// ==========================================
-// 1. DATA & CHART CALCULATIONS
-// ==========================================
-function renderRealDashboardCharts() {
-    if (!allTransactionsData || allTransactionsData.length === 0) return;
+    // ==========================================
+    // 1. DATA & CHART CALCULATIONS
+    // ==========================================
+    function renderRealDashboardCharts() {
+        if (!allTransactionsData || allTransactionsData.length === 0) return;
 
-    // A. Pie Chart Logic (Approved vs Pending vs Rejected)
-    let approved = 0, pending = 0, rejected = 0;
-    allTransactionsData.forEach(t => {
-        const stat = String(t.status || '').toLowerCase();
-        if (['approved', 'paid', 'completed'].includes(stat)) approved++;
-        else if (['pending', 'pending_review'].includes(stat)) pending++;
-        else rejected++;
-    });
-
-    const pieCanvas = document.getElementById('pieChart');
-    if (pieCanvas) {
-        if (dashPieChartInstance) dashPieChartInstance.destroy(); // Fix: Destroy old chart
-        dashPieChartInstance = new Chart(pieCanvas, {
-            type: 'doughnut',
-            data: {
-                labels: ['Approved', 'Pending', 'Rejected'],
-                datasets: [{
-                    data: [approved, pending, rejected],
-                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
-                    borderWidth: 0
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
+        // A. Pie Chart Logic (Approved vs Pending vs Rejected)
+        let approved = 0,
+            pending = 0,
+            rejected = 0;
+        allTransactionsData.forEach(t => {
+            const stat = String(t.status || '').toLowerCase();
+            if (['approved', 'paid', 'completed'].includes(stat)) approved++;
+            else if (['pending', 'pending_review'].includes(stat)) pending++;
+            else rejected++;
         });
-    }
 
-    // B. Bar Chart Logic (Revenue by Month)
-    const currentYear = new Date().getFullYear();
-    const monthlyRev = { 'Jan':0,'Feb':0,'Mar':0,'Apr':0,'May':0,'Jun':0,'Jul':0,'Aug':0,'Sep':0,'Oct':0,'Nov':0,'Dec':0 };
-    const monthNames = Object.keys(monthlyRev);
+        const pieCanvas = document.getElementById('pieChart');
+        if (pieCanvas) {
+            if (dashPieChartInstance) dashPieChartInstance.destroy(); // Fix: Destroy old chart
+            dashPieChartInstance = new Chart(pieCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Approved', 'Pending', 'Rejected'],
+                    datasets: [{
+                        data: [approved, pending, rejected],
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
 
-    allTransactionsData.forEach(t => {
-        const stat = String(t.status || '').toLowerCase();
-        if (['paid', 'completed', 'approved'].includes(stat)) {
-            const d = new Date(t.created_at);
-            if (d.getFullYear() === currentYear) {
-                const amt = typeof getTransactionAmount === 'function' ? getTransactionAmount(t) : parseFloat(t.amount || 0);
-                monthlyRev[monthNames[d.getMonth()]] += amt;
+        // B. Bar Chart Logic (Revenue by Month)
+        const currentYear = new Date().getFullYear();
+        const monthlyRev = {
+            'Jan': 0,
+            'Feb': 0,
+            'Mar': 0,
+            'Apr': 0,
+            'May': 0,
+            'Jun': 0,
+            'Jul': 0,
+            'Aug': 0,
+            'Sep': 0,
+            'Oct': 0,
+            'Nov': 0,
+            'Dec': 0
+        };
+        const monthNames = Object.keys(monthlyRev);
+
+        allTransactionsData.forEach(t => {
+            const stat = String(t.status || '').toLowerCase();
+            if (['paid', 'completed', 'approved'].includes(stat)) {
+                const d = new Date(t.created_at);
+                if (d.getFullYear() === currentYear) {
+                    const amt = typeof getTransactionAmount === 'function' ? getTransactionAmount(t) : parseFloat(t.amount || 0);
+                    monthlyRev[monthNames[d.getMonth()]] += amt;
+                }
             }
-        }
-    });
-
-    const barCanvas = document.getElementById('barChart');
-    if (barCanvas) {
-        if (dashBarChartInstance) dashBarChartInstance.destroy(); // Fix: Destroy old chart
-        dashBarChartInstance = new Chart(barCanvas, {
-            type: 'bar',
-            data: {
-                labels: monthNames,
-                datasets: [{
-                    label: 'Revenue ₱',
-                    data: Object.values(monthlyRev),
-                    backgroundColor: '#3b82f6',
-                    borderRadius: 4
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
         });
-    }
-}
 
-function populateMainDashboard() {
-    let totalRevenue = 0;
-    allTransactionsData.forEach(txn => {
-        const stat = String(txn.status || '').toLowerCase();
-        if (['paid', 'completed', 'approved'].includes(stat)) {
-            totalRevenue += (typeof getTransactionAmount === 'function' ? getTransactionAmount(txn) : parseFloat(txn.amount || 0));
+        const barCanvas = document.getElementById('barChart');
+        if (barCanvas) {
+            if (dashBarChartInstance) dashBarChartInstance.destroy(); // Fix: Destroy old chart
+            dashBarChartInstance = new Chart(barCanvas, {
+                type: 'bar',
+                data: {
+                    labels: monthNames,
+                    datasets: [{
+                        label: 'Revenue ₱',
+                        data: Object.values(monthlyRev),
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
         }
-    });
-
-    // Update the Cards using IDs from dashboard-tab.blade.php 
-    const revEl = document.getElementById('dash-total-revenue-val');
-    const paidEl = document.getElementById('dash-paid-members-val');
-    const activeEl = document.getElementById('dash-active-accounts-val');
-
-    if (revEl) revEl.innerText = `PHP ${totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-    if (paidEl) paidEl.innerText = allMembersData.length;
-    if (activeEl) activeEl.innerText = allMembersData.length;
-}
-
-// ==========================================
-// 2. RECENT PAYMENTS (Today & Yesterday Only)
-// ==========================================
-function renderRecentPayments() {
-    const tbody = document.getElementById('recent-payments-table-body');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
-    const yesterday = new Date(now);
-    yesterday.setDate(now.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-    const recentTxns = allTransactionsData.filter(txn => {
-        const txnDate = (txn.created_at || '').split('T')[0];
-        return txnDate === todayStr || txnDate === yesterdayStr;
-    });
-
-    if (recentTxns.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted fw-bold">No payments received today or yesterday.</td></tr>`;
-        return;
     }
 
-    recentTxns.forEach(txn => {
-        const status = String(txn.status || 'pending').toLowerCase();
-        const amt = typeof getTransactionAmount === 'function' ? getTransactionAmount(txn) : parseFloat(txn.amount || 0);
-        let bName = txn.registered_business_name || txn.member?.applicant?.registered_business_name || 'Business';
+    function populateMainDashboard() {
+        let totalRevenue = 0;
+        allTransactionsData.forEach(txn => {
+            const stat = String(txn.status || '').toLowerCase();
+            if (['paid', 'completed', 'approved'].includes(stat)) {
+                totalRevenue += (typeof getTransactionAmount === 'function' ? getTransactionAmount(txn) : parseFloat(txn.amount || 0));
+            }
+        });
 
-        tbody.insertAdjacentHTML('beforeend', `
+        // Update the Cards using IDs from dashboard-tab.blade.php 
+        const revEl = document.getElementById('dash-total-revenue-val');
+        const paidEl = document.getElementById('dash-paid-members-val');
+        const activeEl = document.getElementById('dash-active-accounts-val');
+
+        if (revEl) revEl.innerText = `PHP ${totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        if (paidEl) paidEl.innerText = allMembersData.length;
+        if (activeEl) activeEl.innerText = allMembersData.length;
+    }
+
+    // ==========================================
+    // 2. RECENT PAYMENTS (Today & Yesterday Only)
+    // ==========================================
+    function renderRecentPayments() {
+        const tbody = document.getElementById('recent-payments-table-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+        const yesterday = new Date(now);
+        yesterday.setDate(now.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+        const recentTxns = allTransactionsData.filter(txn => {
+            const txnDate = (txn.created_at || '').split('T')[0];
+            return txnDate === todayStr || txnDate === yesterdayStr;
+        });
+
+        if (recentTxns.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted fw-bold">No payments received today or yesterday.</td></tr>`;
+            return;
+        }
+
+        recentTxns.forEach(txn => {
+            const status = String(txn.status || 'pending').toLowerCase();
+            const amt = typeof getTransactionAmount === 'function' ? getTransactionAmount(txn) : parseFloat(txn.amount || 0);
+            let bName = txn.registered_business_name || txn.member?.applicant?.registered_business_name || 'Business';
+
+            tbody.insertAdjacentHTML('beforeend', `
             <tr class="align-middle">
                 <td class="fw-bold text-dark ps-4">${bName}</td>
                 <td>${txn.transaction_type === 'initial_registration' ? 'Registration' : 'Renewal'}</td>
@@ -168,43 +189,52 @@ function renderRecentPayments() {
                 <td class="text-center">${status === 'pending' ? '<span class="badge bg-warning">Review Needed</span>' : '<span class="badge bg-success">Approved</span>'}</td>
             </tr>
         `);
-    });
-}
-
-// ==========================================
-// 3. MASTER INITIALIZATION
-// ==========================================
-function initCharts() { 
-    populateMainDashboard();
-    renderRealDashboardCharts();
-    renderRecentPayments(); 
-}
-
-async function fetchWelcomeName() {
-    try {
-        const res = await fetch(`${window.API_BASE_URL}/v1/user`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
-        if (res.ok) {
-            const data = await res.json();
-            const welcomeEl = document.getElementById('dashWelcomeName');
-            if (welcomeEl) welcomeEl.innerText = data.first_name || data.name || 'Treasurer';
+    }
+
+    // ==========================================
+    // 3. MASTER INITIALIZATION
+    // ==========================================
+    function initCharts() {
+        populateMainDashboard();
+        renderRealDashboardCharts();
+        renderRecentPayments();
+    }
+
+    async function fetchWelcomeName() {
+        try {
+            const res = await fetch(`${window.API_BASE_URL}/v1/user`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const welcomeEl = document.getElementById('dashWelcomeName');
+                if (welcomeEl) welcomeEl.innerText = data.first_name || data.name || 'Treasurer';
+            }
+        } catch (e) {
+            console.error(e);
         }
-    } catch (e) { console.error(e); }
-}
+    }
 
     async function fetchMembershipTypes() {
         if (!token) return;
         try {
             const endpointBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
             const res = await fetch(`${endpointBase}/v1/membership-types`, {
-                headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
             });
             if (res.ok) {
                 const json = await res.json();
                 globalMembershipTypes = json.data || json || [];
             }
-        } catch (err) { console.error('Error fetching membership types:', err); }
+        } catch (err) {
+            console.error('Error fetching membership types:', err);
+        }
     }
 
     function formatPeso(value) {
@@ -228,35 +258,37 @@ async function fetchWelcomeName() {
 
     function getMonthLabel(key) {
         const [year, month] = key.split('-');
-        return new Date(Number(year), Number(month) - 1, 1).toLocaleString('en-US', { month: 'short' });
+        return new Date(Number(year), Number(month) - 1, 1).toLocaleString('en-US', {
+            month: 'short'
+        });
     }
 
     // ==========================================
-// 1. EXACT AMOUNT CALCULATOR
-// ==========================================
-function getTransactionAmount(record) {
-    if (record.amount !== null && record.amount !== undefined && parseFloat(record.amount) > 0) {
-        return parseFloat(record.amount);
-    }
-    let typeId = record.membership_type_id || record.member?.membership_type_id || record.applicant?.membership_type_id;
-    if (!typeId && record.member_id) {
-        const foundM = allMembersData.find(m => String(m.id) === String(record.member_id));
-        if (foundM) typeId = foundM.membership_type_id;
-    }
-    if (typeId && globalMembershipTypes.length > 0) {
-        const found = globalMembershipTypes.find(t => String(t.id) === String(typeId));
-        if (found) {
-            if (record.transaction_type === 'renewal' && found.renewal_price) return parseFloat(found.renewal_price);
-            return parseFloat(found.price); 
+    // 1. EXACT AMOUNT CALCULATOR
+    // ==========================================
+    function getTransactionAmount(record) {
+        if (record.amount !== null && record.amount !== undefined && parseFloat(record.amount) > 0) {
+            return parseFloat(record.amount);
         }
+        let typeId = record.membership_type_id || record.member?.membership_type_id || record.applicant?.membership_type_id;
+        if (!typeId && record.member_id) {
+            const foundM = allMembersData.find(m => String(m.id) === String(record.member_id));
+            if (foundM) typeId = foundM.membership_type_id;
+        }
+        if (typeId && globalMembershipTypes.length > 0) {
+            const found = globalMembershipTypes.find(t => String(t.id) === String(typeId));
+            if (found) {
+                if (record.transaction_type === 'renewal' && found.renewal_price) return parseFloat(found.renewal_price);
+                return parseFloat(found.price);
+            }
+        }
+        return parseFloat(record.membership_fee || 0);
     }
-    return parseFloat(record.membership_fee || 0);
-}
 
     function getMembershipLabel(record) {
-        let typeId = record.membership_type_id || 
-                     record.member?.membership_type_id || 
-                     record.applicant?.membership_type_id;
+        let typeId = record.membership_type_id ||
+            record.member?.membership_type_id ||
+            record.applicant?.membership_type_id;
 
         if (!typeId && record.member_id) {
             const foundM = allMembersData.find(m => String(m.id) === String(record.member_id));
@@ -328,7 +360,14 @@ function getTransactionAmount(record) {
             const weekEnd = addDays(weekStart, 6);
             const prevWeekEnd = addDays(weekStart, -1);
             const prevWeekStart = addDays(prevWeekEnd, -6);
-            return { currentStart: weekStart, currentEnd: weekEnd, prevStart: prevWeekStart, prevEnd: prevWeekEnd, currentLabel: "This Week's Payments:", previousLabel: 'Last week payment:' };
+            return {
+                currentStart: weekStart,
+                currentEnd: weekEnd,
+                prevStart: prevWeekStart,
+                prevEnd: prevWeekEnd,
+                currentLabel: "This Week's Payments:",
+                previousLabel: 'Last week payment:'
+            };
         }
 
         if (rangeKey === 'month') {
@@ -336,7 +375,14 @@ function getTransactionAmount(record) {
             const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
             const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
             const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
-            return { currentStart: monthStart, currentEnd: monthEnd, prevStart: prevMonthStart, prevEnd: prevMonthEnd, currentLabel: "This Month's Payments:", previousLabel: 'Last month payment:' };
+            return {
+                currentStart: monthStart,
+                currentEnd: monthEnd,
+                prevStart: prevMonthStart,
+                prevEnd: prevMonthEnd,
+                currentLabel: "This Month's Payments:",
+                previousLabel: 'Last month payment:'
+            };
         }
 
         if (rangeKey === 'year') {
@@ -344,11 +390,25 @@ function getTransactionAmount(record) {
             const yearEnd = new Date(now.getFullYear(), 11, 31);
             const prevYearStart = new Date(now.getFullYear() - 1, 0, 1);
             const prevYearEnd = new Date(now.getFullYear() - 1, 11, 31);
-            return { currentStart: yearStart, currentEnd: yearEnd, prevStart: prevYearStart, prevEnd: prevYearEnd, currentLabel: "This Year's Payments:", previousLabel: 'Last year payment:' };
+            return {
+                currentStart: yearStart,
+                currentEnd: yearEnd,
+                prevStart: prevYearStart,
+                prevEnd: prevYearEnd,
+                currentLabel: "This Year's Payments:",
+                previousLabel: 'Last year payment:'
+            };
         }
 
         const yesterdayStart = addDays(todayStart, -1);
-        return { currentStart: todayStart, currentEnd: todayStart, prevStart: yesterdayStart, prevEnd: yesterdayStart, currentLabel: "Today's Payments:", previousLabel: 'Yesterday payment:' };
+        return {
+            currentStart: todayStart,
+            currentEnd: todayStart,
+            prevStart: yesterdayStart,
+            prevEnd: yesterdayStart,
+            currentLabel: "Today's Payments:",
+            previousLabel: 'Yesterday payment:'
+        };
     }
 
     function isDateBetween(dateObj, startDate, endDate) {
@@ -403,7 +463,10 @@ function getTransactionAmount(record) {
                 if (!completedStatuses.includes(status) || txnDateKey !== todayKey) return sum;
                 return sum + getTransactionAmount(txn);
             }, 0);
-            return { labels: ['Today'], data: [todayTotal] };
+            return {
+                labels: ['Today'],
+                data: [todayTotal]
+            };
         }
 
         if (rangeKey === 'week') {
@@ -419,7 +482,10 @@ function getTransactionAmount(record) {
                 }, 0);
                 data.push(dayTotal);
             }
-            return { labels, data };
+            return {
+                labels,
+                data
+            };
         }
 
         if (rangeKey === 'year') {
@@ -437,7 +503,10 @@ function getTransactionAmount(record) {
                 }, 0);
                 data.push(monthTotal);
             }
-            return { labels, data };
+            return {
+                labels,
+                data
+            };
         }
 
         const monthKeys = getLastSixMonthKeys();
@@ -451,11 +520,17 @@ function getTransactionAmount(record) {
                 return sum + getTransactionAmount(txn);
             }, 0);
         });
-        return { labels: monthLabels, data: monthData };
+        return {
+            labels: monthLabels,
+            data: monthData
+        };
     }
 
     function updateTransactionSummary(rows) {
-        let total = 0, pending = 0, complete = 0, failed = 0;
+        let total = 0,
+            pending = 0,
+            complete = 0,
+            failed = 0;
 
         rows.forEach(txn => {
             const amountRaw = txn.amount || txn.membership_fee || (txn.membership_type_id === 1 ? 500 : 5000);
@@ -501,52 +576,57 @@ function getTransactionAmount(record) {
         updateTransactionPagination(totalPages);
     }
 
-// ==========================================
-// RENDER TABLE WITH BOTH BUTTONS
-// ==========================================
-function renderTransactionRows(rows) {
-    const tbodyTrans = document.getElementById('transactions-table-body');
-    if (!tbodyTrans) return;
-    tbodyTrans.innerHTML = '';
+    // ==========================================
+    // RENDER TABLE WITH BOTH BUTTONS
+    // ==========================================
+    function renderTransactionRows(rows) {
+        const tbodyTrans = document.getElementById('transactions-table-body');
+        if (!tbodyTrans) return;
+        tbodyTrans.innerHTML = '';
 
-    if (rows.length > 0) {
-        rows.forEach((txn) => {
-            const status = String(txn.status || 'pending').toLowerCase();
-            const txnDate = (txn.created_at || '').split('T')[0] || 'N/A';
+        if (rows.length > 0) {
+            rows.forEach((txn) => {
+                const status = String(txn.status || 'pending').toLowerCase();
+                const txnDate = (txn.created_at || '').split('T')[0] || 'N/A';
 
-            let typeDisplay = 'Unknown';
-            let typeBadgeColor = 'text-secondary';
-            if (txn.transaction_type === 'initial_registration') { typeDisplay = 'Registration'; typeBadgeColor = 'text-primary'; } 
-            else if (txn.transaction_type === 'renewal') { typeDisplay = 'Renewal'; typeBadgeColor = 'text-success'; }
+                let typeDisplay = 'Unknown';
+                let typeBadgeColor = 'text-secondary';
+                if (txn.transaction_type === 'initial_registration') {
+                    typeDisplay = 'Registration';
+                    typeBadgeColor = 'text-primary';
+                } else if (txn.transaction_type === 'renewal') {
+                    typeDisplay = 'Renewal';
+                    typeBadgeColor = 'text-success';
+                }
 
-            let businessName = txn.registered_business_name || txn.basic_profile?.registered_business_name || txn.applicant?.registered_business_name || txn.applicant?.basic_profile?.registered_business_name || txn.member?.applicant?.registered_business_name || txn.member?.applicant?.basic_profile?.registered_business_name || 'Unknown Business';
+                let businessName = txn.registered_business_name || txn.basic_profile?.registered_business_name || txn.applicant?.registered_business_name || txn.applicant?.basic_profile?.registered_business_name || txn.member?.applicant?.registered_business_name || txn.member?.applicant?.basic_profile?.registered_business_name || 'Unknown Business';
 
-            const amt = getTransactionAmount(txn);
-            const membershipText = typeof getMembershipLabel === 'function' ? getMembershipLabel(txn) : '';
-            const fmtAmt = `₱ ${amt.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            const orNumber = txn.or_number || txn.official_receipt_no || '---';
-            const method = String(txn.payment_method || 'Cash').replace('_', ' ').toUpperCase();
-            const safeImgUrl = encodeURIComponent(txn.receipt_image_url || txn.proof_of_payment_path || txn.proof_of_payment_url || '');
+                const amt = getTransactionAmount(txn);
+                const membershipText = typeof getMembershipLabel === 'function' ? getMembershipLabel(txn) : '';
+                const fmtAmt = `₱ ${amt.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                const orNumber = txn.or_number || txn.official_receipt_no || '---';
+                const method = String(txn.payment_method || 'Cash').replace('_', ' ').toUpperCase();
+                const safeImgUrl = encodeURIComponent(txn.receipt_image_url || txn.proof_of_payment_path || txn.proof_of_payment_url || '');
 
-            let statBadge = '';
-            let actionBtn = `<button class="btn btn-sm btn-light border text-muted fw-bold" disabled>Processed</button>`;
-            
-            if(status === 'pending' || status === 'pending_review') {
-                statBadge = '<span class="badge bg-warning text-dark px-3 py-1 rounded-pill">PENDING</span>';
-                // THIS INJECTS BOTH BUTTONS!
-                actionBtn = `
+                let statBadge = '';
+                let actionBtn = `<button class="btn btn-sm btn-light border text-muted fw-bold" disabled>Processed</button>`;
+
+                if (status === 'pending' || status === 'pending_review') {
+                    statBadge = '<span class="badge bg-warning text-dark px-3 py-1 rounded-pill">PENDING</span>';
+                    // THIS INJECTS BOTH BUTTONS!
+                    actionBtn = `
                     <div class="d-flex gap-1 justify-content-center">
                         <button class="btn btn-sm btn-success fw-bold px-2 shadow-sm" onclick="approveTreasurerPayment(${txn.id}, event)">Approve</button>
                         <button class="btn btn-sm btn-danger fw-bold px-2 shadow-sm" onclick="rejectTreasurerPayment(${txn.id}, event)">Reject</button>
                     </div>
                 `;
-            } else if(status === 'approved' || status === 'paid' || status === 'completed') {
-                statBadge = '<span class="badge bg-success text-white px-3 py-1 rounded-pill">APPROVED</span>';
-            } else {
-                statBadge = '<span class="badge bg-danger text-white px-3 py-1 rounded-pill">REJECTED</span>';
-            }
+                } else if (status === 'approved' || status === 'paid' || status === 'completed') {
+                    statBadge = '<span class="badge bg-success text-white px-3 py-1 rounded-pill">APPROVED</span>';
+                } else {
+                    statBadge = '<span class="badge bg-danger text-white px-3 py-1 rounded-pill">REJECTED</span>';
+                }
 
-            tbodyTrans.insertAdjacentHTML('beforeend', `
+                tbodyTrans.insertAdjacentHTML('beforeend', `
                 <tr class="align-middle">
                     <td class="fw-bold text-dark ps-4">${businessName}<div class="text-muted fw-normal" style="font-size: 10px;">${membershipText}</div></td>
                     <td class="fw-bold ${typeBadgeColor}">${typeDisplay}</td>
@@ -565,17 +645,17 @@ function renderTransactionRows(rows) {
                     </td>
                 </tr>
             `);
-        });
-    } else {
-        tbodyTrans.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted">No transactions available.</td></tr>`;
+            });
+        } else {
+            tbodyTrans.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted">No transactions available.</td></tr>`;
+        }
     }
-}
 
     // THE APPROVE ACTION
     async function approveTreasurerPayment(paymentId, event) {
         if (!confirm("Approve this payment and reactivate the member?")) return;
         const btn = event.target;
-        
+
         try {
             const originalText = btn.innerHTML;
             btn.disabled = true;
@@ -583,14 +663,17 @@ function renderTransactionRows(rows) {
 
             const response = await fetch(`${window.API_BASE_URL}/v1/members/approve-renewal-payment/${paymentId}`, {
                 method: 'POST',
-                headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
             });
 
             const data = await response.json();
             if (response.ok) {
                 alert("Success! Payment approved and member reactivated.");
                 if (typeof fetchTransactions === 'function') fetchTransactions();
-                if (typeof fetchMembers === 'function') fetchMembers(); 
+                if (typeof fetchMembers === 'function') fetchMembers();
             } else {
                 alert("Approval Failed: " + (data.message || "Unknown error."));
                 btn.disabled = false;
@@ -604,47 +687,49 @@ function renderTransactionRows(rows) {
     }
 
     // ==========================================
-// REJECT ACTION SCRIPT (Make sure this is at the bottom of the file!)
-// ==========================================
-async function rejectTreasurerPayment(paymentId, event) {
-    const reason = prompt("Please enter the reason for rejecting this payment (e.g., 'Image is blurry'):");
-    if (!reason || reason.trim() === '') return; 
-    
-    const token = localStorage.getItem('token');
-    const btn = event.target;
-    
-    try {
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+    // REJECT ACTION SCRIPT (Make sure this is at the bottom of the file!)
+    // ==========================================
+    async function rejectTreasurerPayment(paymentId, event) {
+        const reason = prompt("Please enter the reason for rejecting this payment (e.g., 'Image is blurry'):");
+        if (!reason || reason.trim() === '') return;
 
-        const response = await fetch(`${window.API_BASE_URL}/v1/members/reject-renewal-payment/${paymentId}`, {
-            method: 'POST',
-            headers: { 
-                'Accept': 'application/json', 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` 
-            },
-            body: JSON.stringify({ rejection_reason: reason.trim() })
-        });
+        const token = localStorage.getItem('token');
+        const btn = event.target;
 
-        const data = await response.json();
+        try {
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
 
-        if (response.ok) {
-            alert("Success: " + (data.message || "Payment rejected."));
-            if (typeof fetchTransactions === 'function') fetchTransactions();
-            if (typeof fetchMembers === 'function') fetchMembers(); 
-        } else {
-            alert("Rejection Failed: " + (data.message || "Unknown error occurred."));
+            const response = await fetch(`${window.API_BASE_URL}/v1/members/reject-renewal-payment/${paymentId}`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    rejection_reason: reason.trim()
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert("Success: " + (data.message || "Payment rejected."));
+                if (typeof fetchTransactions === 'function') fetchTransactions();
+                if (typeof fetchMembers === 'function') fetchMembers();
+            } else {
+                alert("Rejection Failed: " + (data.message || "Unknown error occurred."));
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        } catch (error) {
+            alert("A network error occurred while trying to reject the payment.");
             btn.disabled = false;
-            btn.innerHTML = originalText;
+            btn.innerHTML = 'Reject';
         }
-    } catch (error) {
-        alert("A network error occurred while trying to reject the payment.");
-        btn.disabled = false;
-        btn.innerHTML = 'Reject';
     }
-}
 
     function openTransactionEditModal(transactionKey) {
         const record = getTransactionRecordByKey(transactionKey);
@@ -719,7 +804,7 @@ async function rejectTreasurerPayment(paymentId, event) {
         const completedStatuses = ['paid', 'completed', 'approved'];
         const failedStatuses = ['failed', 'cancelled'];
         const currentMonthKey = getMonthKey(new Date().toISOString());
-        
+
         const previousMonthDate = new Date();
         previousMonthDate.setMonth(previousMonthDate.getMonth() - 1);
         const previousMonthKey = getMonthKey(previousMonthDate.toISOString());
@@ -737,7 +822,10 @@ async function rejectTreasurerPayment(paymentId, event) {
         const monthBuckets = {};
 
         monthKeys.forEach(key => {
-            monthBuckets[key] = { micro: 0, small: 0 };
+            monthBuckets[key] = {
+                micro: 0,
+                small: 0
+            };
         });
 
         allTransactionsData.forEach(record => {
@@ -776,14 +864,14 @@ async function rejectTreasurerPayment(paymentId, event) {
         const totalCollectionBase = collectedAmount + overdueAmount;
         const collectedPercent = totalCollectionBase > 0 ? Math.round((collectedAmount / totalCollectionBase) * 100) : 0;
         const overduePercent = totalCollectionBase > 0 ? Math.max(0, 100 - collectedPercent) : 0;
-        
-        const revenueTrend = previousMonthRevenue > 0
-            ? `${(((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100).toFixed(1)}%`
-            : '0.0%';
-            
-        const failedTrend = previousMonthFailedCount > 0
-            ? `${currentMonthFailedCount - previousMonthFailedCount}`
-            : `${currentMonthFailedCount}`;
+
+        const revenueTrend = previousMonthRevenue > 0 ?
+            `${(((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100).toFixed(1)}%` :
+            '0.0%';
+
+        const failedTrend = previousMonthFailedCount > 0 ?
+            `${currentMonthFailedCount - previousMonthFailedCount}` :
+            `${currentMonthFailedCount}`;
 
         // Update DOM elements
         const monthlyRevenueEl = document.getElementById('report-monthly-revenue');
@@ -848,12 +936,69 @@ async function rejectTreasurerPayment(paymentId, event) {
                 type: 'bar',
                 data: {
                     labels: barLabels,
-                    datasets: [
-                        { label: 'Micro', data: microData, backgroundColor: '#3b82f6', barPercentage: 0.6, categoryPercentage: 0.8 },
-                        { label: 'Small', data: smallData, backgroundColor: '#ef4444', barPercentage: 0.6, categoryPercentage: 0.8 }
+                    datasets: [{
+                            label: 'Micro',
+                            data: microData,
+                            backgroundColor: '#3b82f6',
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8
+                        },
+                        {
+                            label: 'Small',
+                            data: smallData,
+                            backgroundColor: '#ef4444',
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8
+                        }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: {size: 11} } } }, scales: { y: { grid: { color: '#eee', borderDash: [5, 5] }, ticks: { color: '#aaa', font: {size: 11} }, border: {display: false} }, x: { grid: { display: false }, ticks: { color: '#aaa', font: {size: 11} }, border: {display: false} } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 8,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: {
+                                color: '#eee',
+                                borderDash: [5, 5]
+                            },
+                            ticks: {
+                                color: '#aaa',
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            border: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#aaa',
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            border: {
+                                display: false
+                            }
+                        }
+                    }
+                }
             });
         }
 
@@ -864,9 +1009,28 @@ async function rejectTreasurerPayment(paymentId, event) {
                 type: 'pie',
                 data: {
                     labels: ['Collected', 'Overdue'],
-                    datasets: [{ data: [collectedPercent, overduePercent], backgroundColor: ['#22c55e', '#ef4444'], borderWidth: 0 }]
+                    datasets: [{
+                        data: [collectedPercent, overduePercent],
+                        backgroundColor: ['#22c55e', '#ef4444'],
+                        borderWidth: 0
+                    }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true, font: {size: 11} } } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    }
+                }
             });
         }
 
@@ -891,10 +1055,41 @@ async function rejectTreasurerPayment(paymentId, event) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
                     scales: {
-                        y: { grid: { color: '#eee', borderDash: [5, 5] }, ticks: { color: '#aaa', font: { size: 11 } }, border: { display: false } },
-                        x: { grid: { display: false }, ticks: { color: '#aaa', font: { size: 11 } }, border: { display: false } }
+                        y: {
+                            grid: {
+                                color: '#eee',
+                                borderDash: [5, 5]
+                            },
+                            ticks: {
+                                color: '#aaa',
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            border: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#aaa',
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            border: {
+                                display: false
+                            }
+                        }
                     }
                 }
             });
@@ -917,7 +1112,16 @@ async function rejectTreasurerPayment(paymentId, event) {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true, font: { size: 11 } } }
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
                     }
                 }
             });
@@ -933,10 +1137,12 @@ async function rejectTreasurerPayment(paymentId, event) {
         const modal = document.getElementById('otpFeedbackModal');
         if (modal) modal.style.display = 'flex';
     }
+
     function hideOtpFeedbackModal() {
         const modal = document.getElementById('otpFeedbackModal');
         if (modal) modal.style.display = 'none';
     }
+
     function closeOtpFeedbackOverlay(e) {
         if (e.target && e.target.id === 'otpFeedbackModal') hideOtpFeedbackModal();
     }
@@ -947,9 +1153,9 @@ async function rejectTreasurerPayment(paymentId, event) {
         const endpoint = `${otpApiBase}/user/confirm-password-change`;
         currentPasswordOtpCode = '';
         const candidateEmail = (
-            document.getElementById('settingsEmailInput')?.value
-            || localStorage.getItem('userEmail')
-            || ''
+            document.getElementById('settingsEmailInput')?.value ||
+            localStorage.getItem('userEmail') ||
+            ''
         ).trim();
 
         if (btn) {
@@ -964,12 +1170,19 @@ async function rejectTreasurerPayment(paymentId, event) {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    ...(token ? {
+                        'Authorization': `Bearer ${token}`
+                    } : {})
                 },
-                body: JSON.stringify({ email: candidateEmail || null })
+                body: JSON.stringify({
+                    email: candidateEmail || null
+                })
             });
 
-            const { data: result, raw } = await readApiResponse(response);
+            const {
+                data: result,
+                raw
+            } = await readApiResponse(response);
             if (!response.ok) throw new Error(result.message || raw || 'Failed to request OTP. Please try again.');
 
             const otpPayload = result?.data || {};
@@ -994,13 +1207,19 @@ async function rejectTreasurerPayment(paymentId, event) {
         }
     }
 
-    function openOtpModal() { document.getElementById('otpModal').style.display = 'flex'; }
+    function openOtpModal() {
+        document.getElementById('otpModal').style.display = 'flex';
+    }
+
     function hideOtpModal() {
         document.getElementById('otpModal').style.display = 'none';
         document.querySelectorAll('.otp-box').forEach(box => box.value = '');
     }
-    function closeOtpOverlay(e) { if (e.target.id === 'otpModal') hideOtpModal(); }
-    
+
+    function closeOtpOverlay(e) {
+        if (e.target.id === 'otpModal') hideOtpModal();
+    }
+
     function moveToNext(input, event) {
         input.value = String(input.value || '').replace(/\D/g, '').slice(-1);
         if (input.value.length === 1) {
@@ -1022,10 +1241,16 @@ async function rejectTreasurerPayment(paymentId, event) {
         const boxes = Array.from(document.querySelectorAll('.otp-box'));
         const digits = pasted.slice(0, boxes.length).split('');
 
-        boxes.forEach((box, index) => { box.value = digits[index] || ''; });
+        boxes.forEach((box, index) => {
+            box.value = digits[index] || '';
+        });
         currentPasswordOtpCode = boxes.map(box => box.value).join('');
         const firstEmpty = boxes.find(box => !box.value);
-        if (firstEmpty) { firstEmpty.focus(); } else { verifyEnteredOtpAndProceed(); }
+        if (firstEmpty) {
+            firstEmpty.focus();
+        } else {
+            verifyEnteredOtpAndProceed();
+        }
     }
 
     async function verifyEnteredOtpAndProceed() {
@@ -1036,7 +1261,7 @@ async function rejectTreasurerPayment(paymentId, event) {
         hideOtpModal();
         openResetPasswordModal();
     }
-    
+
     document.querySelectorAll('.otp-box').forEach(box => {
         box.addEventListener('keydown', function(e) {
             if (e.key === 'Backspace' && !this.value) {
@@ -1048,18 +1273,26 @@ async function rejectTreasurerPayment(paymentId, event) {
     });
 
     // --- RESET PASSWORD MODAL FUNCTIONS ---
-    function openResetPasswordModal() { document.getElementById('resetPasswordModal').style.display = 'flex'; }
+    function openResetPasswordModal() {
+        document.getElementById('resetPasswordModal').style.display = 'flex';
+    }
+
     function hideResetPasswordModal() {
         document.getElementById('resetPasswordModal').style.display = 'none';
         document.getElementById('newPasswordInput').value = '';
         document.getElementById('rePasswordInput').value = '';
         validatePassword();
     }
-    function closeResetPasswordOverlay(e) { if (e.target.id === 'resetPasswordModal') hideResetPasswordModal(); }
+
+    function closeResetPasswordOverlay(e) {
+        if (e.target.id === 'resetPasswordModal') hideResetPasswordModal();
+    }
+
     function togglePasswordView(inputId) {
         const input = document.getElementById(inputId);
         input.type = input.type === "password" ? "text" : "password";
     }
+
     function validatePassword() {
         const pw = document.getElementById('newPasswordInput').value;
         const reqLower = document.getElementById('req-lower');
@@ -1069,12 +1302,36 @@ async function rejectTreasurerPayment(paymentId, event) {
         const submitBtn = document.getElementById('resetPwSubmitBtn');
 
         let validCount = 0;
-        if(/[a-z]/.test(pw)) { reqLower.classList.add('valid'); validCount++; } else { reqLower.classList.remove('valid'); }
-        if(pw.length >= 8) { reqLen.classList.add('valid'); validCount++; } else { reqLen.classList.remove('valid'); }
-        if(/[A-Z]/.test(pw)) { reqUpper.classList.add('valid'); validCount++; } else { reqUpper.classList.remove('valid'); }
-        if(/[0-9]/.test(pw)) { reqNum.classList.add('valid'); validCount++; } else { reqNum.classList.remove('valid'); }
+        if (/[a-z]/.test(pw)) {
+            reqLower.classList.add('valid');
+            validCount++;
+        } else {
+            reqLower.classList.remove('valid');
+        }
+        if (pw.length >= 8) {
+            reqLen.classList.add('valid');
+            validCount++;
+        } else {
+            reqLen.classList.remove('valid');
+        }
+        if (/[A-Z]/.test(pw)) {
+            reqUpper.classList.add('valid');
+            validCount++;
+        } else {
+            reqUpper.classList.remove('valid');
+        }
+        if (/[0-9]/.test(pw)) {
+            reqNum.classList.add('valid');
+            validCount++;
+        } else {
+            reqNum.classList.remove('valid');
+        }
 
-        if(validCount === 4) { submitBtn.classList.add('active'); } else { submitBtn.classList.remove('active'); }
+        if (validCount === 4) {
+            submitBtn.classList.add('active');
+        } else {
+            submitBtn.classList.remove('active');
+        }
     }
     async function submitNewPassword() {
         const pw1 = document.getElementById('newPasswordInput').value;
@@ -1082,9 +1339,18 @@ async function rejectTreasurerPayment(paymentId, event) {
         const btn = document.getElementById('resetPwSubmitBtn');
         const otpApiBase = (window.PCCI_API_BASE_URL || window.API_BASE_URL || '').replace(/\/$/, '');
 
-        if(!btn.classList.contains('active')) { alert("Please ensure your password meets all security requirements."); return; }
-        if(pw1 !== pw2) { alert("Passwords do not match!"); return; }
-        if (!currentPasswordOtpCode || currentPasswordOtpCode.length !== 6) { alert('OTP is missing or invalid. Please request and enter OTP again.'); return; }
+        if (!btn.classList.contains('active')) {
+            alert("Please ensure your password meets all security requirements.");
+            return;
+        }
+        if (pw1 !== pw2) {
+            alert("Passwords do not match!");
+            return;
+        }
+        if (!currentPasswordOtpCode || currentPasswordOtpCode.length !== 6) {
+            alert('OTP is missing or invalid. Please request and enter OTP again.');
+            return;
+        }
 
         try {
             btn.disabled = true;
@@ -1095,7 +1361,9 @@ async function rejectTreasurerPayment(paymentId, event) {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    ...(token ? {
+                        'Authorization': `Bearer ${token}`
+                    } : {})
                 },
                 body: JSON.stringify({
                     otp: currentPasswordOtpCode,
@@ -1107,7 +1375,10 @@ async function rejectTreasurerPayment(paymentId, event) {
                 })
             });
 
-            const { data: result, raw } = await readApiResponse(response);
+            const {
+                data: result,
+                raw
+            } = await readApiResponse(response);
             if (!response.ok) throw new Error(result.message || raw || 'Failed to reset password.');
 
             alert(result.message || 'Password updated successfully.');
@@ -1123,10 +1394,22 @@ async function rejectTreasurerPayment(paymentId, event) {
     }
 
     // --- CROP PROFILE PICTURE MODAL LOGIC ---
-    function openCropModal() { document.getElementById('cropModal').style.display = 'flex'; }
-    function hideCropModal() { document.getElementById('cropModal').style.display = 'none'; }
-    function closeCropOverlay(e) { if (e.target.id === 'cropModal') hideCropModal(); }
-    function setNewProfilePicture() { alert("Profile picture successfully updated!"); hideCropModal(); }
+    function openCropModal() {
+        document.getElementById('cropModal').style.display = 'flex';
+    }
+
+    function hideCropModal() {
+        document.getElementById('cropModal').style.display = 'none';
+    }
+
+    function closeCropOverlay(e) {
+        if (e.target.id === 'cropModal') hideCropModal();
+    }
+
+    function setNewProfilePicture() {
+        alert("Profile picture successfully updated!");
+        hideCropModal();
+    }
 
     // --- DROPDOWN MENUS LOGIC ---
     function toggleReportDropdown(e) {
@@ -1134,39 +1417,42 @@ async function rejectTreasurerPayment(paymentId, event) {
         const menu = document.getElementById('reportDropdownMenu');
         menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
     }
+
     function toggleTransDropdown(e) {
         e.stopPropagation();
         const menu = document.getElementById('transDropdownMenu');
         menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
     }
+
     function toggleTransFilter(e) {
         e.stopPropagation();
         const menu = document.getElementById('transFilterMenu');
         menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
     }
-    
+
     function downloadReport(type) {
         alert(`Initiating ${type.toUpperCase()} Report Download...`);
         document.getElementById('reportDropdownMenu').style.display = 'none';
     }
+
     function exportTransactions() {
         alert("Preparing transaction data for export...");
         document.getElementById('transDropdownMenu').style.display = 'none';
     }
 
     // --- TRANSACTIONS SEARCH & FILTER LOGIC ---
-    let currentTransFilter = 'all'; 
+    let currentTransFilter = 'all';
 
     function filterTransactions(filterType) {
-        currentTransFilter = filterType; 
-        document.getElementById('transFilterMenu').style.display = 'none'; 
-        applyTransactionFilters(); 
+        currentTransFilter = filterType;
+        document.getElementById('transFilterMenu').style.display = 'none';
+        applyTransactionFilters();
     }
 
     function applyTransactionFilters() {
         const transSearchInput = document.getElementById('transactionSearch');
         const searchTerm = transSearchInput ? transSearchInput.value.toLowerCase() : '';
-        
+
         filteredTransactionsData = allTransactionsData.filter((txn, index) => {
             const status = String(txn.status || 'pending').toLowerCase();
             const businessName = (txn.applicant?.basic_profile?.registered_business_name || txn.basic_profile?.registered_business_name || '').toLowerCase();
@@ -1181,7 +1467,7 @@ async function rejectTreasurerPayment(paymentId, event) {
             } else {
                 matchesFilter = status.includes(currentTransFilter);
             }
-            
+
             const matchesSearch = rowText.includes(searchTerm);
             return matchesFilter && matchesSearch;
         });
@@ -1198,8 +1484,19 @@ async function rejectTreasurerPayment(paymentId, event) {
         displayTransactionsPage();
     }
 
-    function prevTransactionPage() { if (currentTransactionPage > 1) { currentTransactionPage--; displayTransactionsPage(); } }
-    function nextTransactionPage() { if (currentTransactionPage < Math.ceil(filteredTransactionsData.length / transactionsPerPage)) { currentTransactionPage++; displayTransactionsPage(); } }
+    function prevTransactionPage() {
+        if (currentTransactionPage > 1) {
+            currentTransactionPage--;
+            displayTransactionsPage();
+        }
+    }
+
+    function nextTransactionPage() {
+        if (currentTransactionPage < Math.ceil(filteredTransactionsData.length / transactionsPerPage)) {
+            currentTransactionPage++;
+            displayTransactionsPage();
+        }
+    }
 
     document.addEventListener('click', (e) => {
         const reportMenu = document.getElementById('reportDropdownMenu');
@@ -1214,7 +1511,7 @@ async function rejectTreasurerPayment(paymentId, event) {
         if (filterMenu && filterMenu.style.display === 'flex' && !e.target.closest('#transFilterContainer')) {
             filterMenu.style.display = 'none';
         }
-        const p = document.getElementById('notificationPanel'); 
+        const p = document.getElementById('notificationPanel');
         if (p && p.style.display === 'flex' && !p.contains(e.target) && !e.target.closest('.fa-bell')) {
             p.style.display = 'none';
         }
@@ -1226,16 +1523,16 @@ async function rejectTreasurerPayment(paymentId, event) {
         const icon = document.getElementById('darkModeIcon');
         const text = document.getElementById('darkModeText');
         const switchBtn = document.getElementById('darkModeSwitch');
-        
+
         if (document.body.classList.contains('dark-mode')) {
-            if(icon) icon.classList.replace('fa-moon', 'fa-sun');
-            if(text) text.innerText = 'Light Mode';
-            if(switchBtn) switchBtn.checked = true;
+            if (icon) icon.classList.replace('fa-moon', 'fa-sun');
+            if (text) text.innerText = 'Light Mode';
+            if (switchBtn) switchBtn.checked = true;
             localStorage.setItem('theme', 'dark');
         } else {
-            if(icon) icon.classList.replace('fa-sun', 'fa-moon');
-            if(text) text.innerText = 'Dark Mode';
-            if(switchBtn) switchBtn.checked = false;
+            if (icon) icon.classList.replace('fa-sun', 'fa-moon');
+            if (text) text.innerText = 'Dark Mode';
+            if (switchBtn) switchBtn.checked = false;
             localStorage.setItem('theme', 'light');
         }
     }
@@ -1246,9 +1543,9 @@ async function rejectTreasurerPayment(paymentId, event) {
             const icon = document.getElementById('darkModeIcon');
             const text = document.getElementById('darkModeText');
             const switchBtn = document.getElementById('darkModeSwitch');
-            if(icon) icon.classList.replace('fa-moon', 'fa-sun');
-            if(text) text.innerText = 'Light Mode';
-            if(switchBtn) switchBtn.checked = true;
+            if (icon) icon.classList.replace('fa-moon', 'fa-sun');
+            if (text) text.innerText = 'Light Mode';
+            if (switchBtn) switchBtn.checked = true;
         }, 50);
     }
 
@@ -1257,21 +1554,28 @@ async function rejectTreasurerPayment(paymentId, event) {
         document.getElementById('settings-main').style.display = 'none';
         document.getElementById(id).style.display = 'block';
     }
+
     function closeSetting(id) {
         document.getElementById(id).style.display = 'none';
         document.getElementById('settings-main').style.display = 'block';
     }
+
     function triggerAccountImagePicker() {
         const imageInput = document.getElementById('settingsImageInput');
         if (imageInput) imageInput.click();
     }
-    function resolveUserFromResponse(payload) { return payload?.data?.user || payload?.data || payload?.user || payload || {}; }
+
+    function resolveUserFromResponse(payload) {
+        return payload?.data?.user || payload?.data || payload?.user || payload || {};
+    }
+
     function normalizeImageUrl(value) {
         const raw = String(value || '').trim();
         if (!raw) return '';
         if (/^https?:\/\//i.test(raw)) return raw;
         return `${apiOrigin}/${raw.replace(/^\/+/, '')}`;
     }
+
     function applyAccountAvatar(imageValue) {
         const imageUrl = normalizeImageUrl(imageValue);
         if (!imageUrl) return;
@@ -1281,9 +1585,11 @@ async function rejectTreasurerPayment(paymentId, event) {
         });
         localStorage.setItem('userImage', imageUrl);
     }
+
     function extractUserImage(user) {
         return user?.image_url || user?.image || user?.avatar || user?.profile_image || user?.profile_photo || user?.photo || '';
     }
+
     function handleAccountImageChange(event) {
         const file = event?.target?.files?.[0] || null;
         accountImageFile = file;
@@ -1295,6 +1601,7 @@ async function rejectTreasurerPayment(paymentId, event) {
             });
         }
     }
+
     function toggleAccountField(fieldId) {
         const input = document.getElementById(fieldId);
         if (!input) return;
@@ -1322,8 +1629,14 @@ async function rejectTreasurerPayment(paymentId, event) {
         const email = (emailInput?.value || '').trim();
         const contact = (contactInput?.value || '').trim();
 
-        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('Please enter a valid email address.'); return; }
-        if (!email) { alert('Email is required.'); return; }
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            alert('Please enter a valid email address.');
+            return;
+        }
+        if (!email) {
+            alert('Email is required.');
+            return;
+        }
 
         const endpointBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
         const endpoint = `${endpointBase}/v1/user/change-info`;
@@ -1336,16 +1649,28 @@ async function rejectTreasurerPayment(paymentId, event) {
         payload.append('last_name', lastName);
 
         const saveButton = document.querySelector('#settings-account .new-acc-action-dark');
-        if (saveButton) { saveButton.disabled = true; saveButton.dataset.originalText = saveButton.innerText; saveButton.innerText = 'Saving...'; }
+        if (saveButton) {
+            saveButton.disabled = true;
+            saveButton.dataset.originalText = saveButton.innerText;
+            saveButton.innerText = 'Saving...';
+        }
 
         try {
             const response = await fetch(endpoint, {
                 method: 'POST',
-                headers: { 'Accept': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
+                headers: {
+                    'Accept': 'application/json',
+                    ...(token ? {
+                        'Authorization': `Bearer ${token}`
+                    } : {})
+                },
                 body: payload
             });
 
-            const { data: result, raw } = await readApiResponse(response);
+            const {
+                data: result,
+                raw
+            } = await readApiResponse(response);
             if (!response.ok) throw new Error(result.message || raw || 'Failed to save account settings.');
 
             const userPayload = resolveUserFromResponse(result);
@@ -1382,7 +1707,10 @@ async function rejectTreasurerPayment(paymentId, event) {
             console.error('Error updating account settings:', error);
             alert(error.message || 'Failed to save account settings.');
         } finally {
-            if (saveButton) { saveButton.disabled = false; saveButton.innerText = saveButton.dataset.originalText || 'Save Changes'; }
+            if (saveButton) {
+                saveButton.disabled = false;
+                saveButton.innerText = saveButton.dataset.originalText || 'Save Changes';
+            }
         }
     }
 
@@ -1416,11 +1744,16 @@ async function rejectTreasurerPayment(paymentId, event) {
         try {
             const endpointBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
             const response = await fetch(`${endpointBase}/v1/user`, {
-                headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
             });
             if (!response.ok) return false;
 
-            const { data: result } = await readApiResponse(response);
+            const {
+                data: result
+            } = await readApiResponse(response);
             const user = result?.data || result?.user || result || {};
 
             const localName = (localStorage.getItem('userName') || '').trim();
@@ -1463,50 +1796,56 @@ async function rejectTreasurerPayment(paymentId, event) {
 
             if (imageValue) applyAccountAvatar(imageValue);
             return Boolean(fullName || email || contact);
-        } catch (_) { return false; }
+        } catch (_) {
+            return false;
+        }
     }
 
-    console.log("Fetching from:", `${window.API_BASE_URL}/v1/notifications`);
- 
-async function updateNotificationsPanel() {
-    try {
-        // Fetch from your new single endpoint
-        const response = await fetch(`${window.API_BASE_URL}/v1/notifications`, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                // Add Authorization header here if you aren't using session cookies
-                'Authorization': `Bearer ${localStorage.getItem('token')}` 
-            }
-        });
+    const notifApiBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
+    console.log("Fetching from:", `${notifApiBase}/v1/notifications`);
 
-        if (!response.ok) throw new Error('Failed to fetch notifications');
+    async function updateNotificationsPanel() {
+        try {
+            // Fetch from your new single endpoint
+            const response = await fetch(`${notifApiBase}/v1/notifications`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    // Add Authorization header here if you aren't using session cookies
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
 
-        const data = await response.json();
-        const items = data.notifications || [];
-        const unreadCount = data.unread_count || 0;
-        
-        // Save globally so the Modal can use the exact same data without re-fetching
-        window.allNotificationItems = items;
+            if (!response.ok) throw new Error('Failed to fetch notifications');
 
-        const notifBody = document.getElementById('notifBody');
-        const notifBadge = document.getElementById('notifBadge');
-        const redDot = document.querySelector('.fa-bell')?.nextElementSibling;
+            const data = await response.json();
+            const items = data.notifications || [];
+            const unreadCount = data.unread_count || 0;
 
-        if (items.length > 0) {
-            // Slice the top 6 for the compact dropdown view
-            notifBody.innerHTML = items.slice(0, 6).map(item => {
-                const dateObj = new Date(item.created_at);
-                const dateStr = isNaN(dateObj.getTime()) ? 'Recent' : dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                
-                // Laravel stores our custom data inside the 'data' JSON column
-                const payload = item.data; 
-                
-                // Slight green tint if unread, white if read
-                const bgStyle = item.read_at === null ? 'background: #f0fdf4;' : 'background: #ffffff;';
+            // Save globally so the Modal can use the exact same data without re-fetching
+            window.allNotificationItems = items;
 
-                return `
+            const notifBody = document.getElementById('notifBody');
+            const notifBadge = document.getElementById('notifBadge');
+            const redDot = document.querySelector('.fa-bell')?.nextElementSibling;
+
+            if (items.length > 0) {
+                // Slice the top 6 for the compact dropdown view
+                notifBody.innerHTML = items.slice(0, 6).map(item => {
+                    const dateObj = new Date(item.created_at);
+                    const dateStr = isNaN(dateObj.getTime()) ? 'Recent' : dateObj.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
+                    });
+
+                    // Laravel stores our custom data inside the 'data' JSON column
+                    const payload = item.data;
+
+                    // Slight green tint if unread, white if read
+                    const bgStyle = item.read_at === null ? 'background: #f0fdf4;' : 'background: #ffffff;';
+
+                    return `
                 <div class="notif-item" style="${bgStyle} padding: 12px 15px; border-bottom: 1px solid #f3f4f6; display: flex; gap: 12px; align-items: flex-start; cursor: pointer; transition: background 0.2s;" onclick="markNotificationAsRead('${item.id}')">
                     <div class="notif-icon" style="width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; background: #f9fafb; border: 1px solid #e5e7eb; flex-shrink: 0;">
                         <i class="fa ${payload.icon} ${payload.tone}" style="font-size: 13px;"></i>
@@ -1519,63 +1858,70 @@ async function updateNotificationsPanel() {
                         <small style="font-size: 11px; color: #4b5563; display: block; margin-top: 2px;">${payload.message}</small>
                     </div>
                 </div>
-            `}).join('');
-            
-            // Update Badges
-            if (notifBadge) notifBadge.innerText = `${unreadCount} New`;
-            if (redDot) redDot.style.display = unreadCount > 0 ? 'block' : 'none';
-        } else {
-            // Empty State
-            notifBody.innerHTML = `
+            `
+                }).join('');
+
+                // Update Badges
+                if (notifBadge) notifBadge.innerText = `${unreadCount} New`;
+                if (redDot) redDot.style.display = unreadCount > 0 ? 'block' : 'none';
+            } else {
+                // Empty State
+                notifBody.innerHTML = `
                 <div class="notif-item" style="background: #f9fafb; padding: 15px; text-align: center;">
                     <i class="fa fa-check-circle text-success fs-3 mb-2 d-block"></i>
                     <p class="text-dark fw-bold mb-0" style="font-size: 13px;">No live notifications</p>
                     <small class="text-muted" style="font-size: 11px;">You're all caught up!</small>
                 </div>
             `;
-            if (notifBadge) notifBadge.innerText = `0 New`;
-            if (redDot) redDot.style.display = 'none';
-        }
-    } catch (error) {
-        console.error('Error updating notifications:', error);
-    }
-}
- 
- 
-// Initialize on page load and set up auto-refresh
-document.addEventListener('DOMContentLoaded', () => {
-    if (typeof allApplicantsData !== 'undefined' && 
-        typeof allTransactionsData !== 'undefined' && 
-        typeof allMembersData !== 'undefined') {
-        updateNotificationsPanel();
-        
-        // Auto-refresh notifications every 30 seconds
-        setInterval(() => {
-            if (typeof allApplicantsData !== 'undefined') {
-                updateNotificationsPanel();
+                if (notifBadge) notifBadge.innerText = `0 New`;
+                if (redDot) redDot.style.display = 'none';
             }
-        }, 30000);
+        } catch (error) {
+            console.error('Error updating notifications:', error);
+        }
     }
-});
 
-function openFullNotificationsModal() {
-    document.getElementById('notificationPanel').style.display = 'none';
-    
-    const modalBody = document.getElementById('fullNotificationsBody');
-    const items = window.allNotificationItems || [];
 
-    if (items.length > 0) {
-        // Render ALL items in the array, unsliced
-        modalBody.innerHTML = items.map(item => {
-            const dateObj = new Date(item.created_at);
-            const dateStr = isNaN(dateObj.getTime()) 
-                ? 'Recent' 
-                : dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute:'2-digit' });
-            
-            const payload = item.data;
-            const bgStyle = item.read_at === null ? 'background: #f0fdf4;' : 'background: #ffffff;';
+    // Initialize on page load and set up auto-refresh
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof allApplicantsData !== 'undefined' &&
+            typeof allTransactionsData !== 'undefined' &&
+            typeof allMembersData !== 'undefined') {
+            updateNotificationsPanel();
 
-            return `
+            // Auto-refresh notifications every 30 seconds
+            setInterval(() => {
+                if (typeof allApplicantsData !== 'undefined') {
+                    updateNotificationsPanel();
+                }
+            }, 30000);
+        }
+    });
+
+    function openFullNotificationsModal() {
+        document.getElementById('notificationPanel').style.display = 'none';
+
+        const modalBody = document.getElementById('fullNotificationsBody');
+        const items = window.allNotificationItems || [];
+
+        if (items.length > 0) {
+            // Render ALL items in the array, unsliced
+            modalBody.innerHTML = items.map(item => {
+                const dateObj = new Date(item.created_at);
+                const dateStr = isNaN(dateObj.getTime()) ?
+                    'Recent' :
+                    dateObj.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                const payload = item.data;
+                const bgStyle = item.read_at === null ? 'background: #f0fdf4;' : 'background: #ffffff;';
+
+                return `
             <div class="p-4 border-bottom d-flex align-items-start gap-3 transition-hover" style="${bgStyle} cursor: pointer;" onclick="markNotificationAsRead('${item.id}')">
                 <div style="width: 45px; height: 45px; border-radius: 50%; background: #f9fafb; border: 1px solid #e5e7eb; display: flex; justify-content: center; align-items: center; flex-shrink: 0;">
                     <i class="fa ${payload.icon} ${payload.tone} fs-5"></i>
@@ -1586,95 +1932,137 @@ function openFullNotificationsModal() {
                     <small class="text-secondary fw-bold" style="font-size: 11px;"><i class="fa fa-clock me-1"></i> ${dateStr}</small>
                 </div>
             </div>`;
-        }).join('');
-    } else {
-        modalBody.innerHTML = `<div class="p-5 text-center text-muted fw-bold">No notifications found.</div>`;
-    }
-
-    const modal = new bootstrap.Modal(document.getElementById('fullNotificationsModal'));
-    modal.show();
-}
-
-// 4. INTERACTIVE HELPER: MARK ALL AS READ
-async function markAllNotificationsAsRead() {
-    try {
-        await fetch('/api/v1/notifications/read-all', {
-            method: 'POST', // The route we made uses POST for this
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}` // Ensure token is sent
-            }
-        });
-        
-        // Refresh the panel immediately to clear all green backgrounds and red dots
-        updateNotificationsPanel(); 
-        
-        if (document.getElementById('fullNotificationsModal').classList.contains('show')) {
-            setTimeout(openFullNotificationsModal, 200); 
+            }).join('');
+        } else {
+            modalBody.innerHTML = `<div class="p-5 text-center text-muted fw-bold">No notifications found.</div>`;
         }
-    } catch (error) {
-        console.error('Error marking all as read:', error);
+
+        const modal = new bootstrap.Modal(document.getElementById('fullNotificationsModal'));
+        modal.show();
     }
-}
+
+    // 4. INTERACTIVE HELPER: MARK ALL AS READ
+    async function markNotificationAsRead(id) {
+        if (!id) return;
+        try {
+            await fetch(`${notifApiBase}/v1/notifications/${id}/read`, {
+                method: 'PATCH',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        } finally {
+            updateNotificationsPanel();
+        }
+    }
+
+    async function markAllNotificationsAsRead() {
+        try {
+            await fetch(`${notifApiBase}/v1/notifications/read-all`, {
+                method: 'POST', // The route we made uses POST for this
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}` // Ensure token is sent
+                }
+            });
+
+            // Refresh the panel immediately to clear all green backgrounds and red dots
+            updateNotificationsPanel();
+
+            if (document.getElementById('fullNotificationsModal').classList.contains('show')) {
+                setTimeout(openFullNotificationsModal, 200);
+            }
+        } catch (error) {
+            console.error('Error marking all as read:', error);
+        }
+    }
 
     // ==========================================
     // IMAGE VIEWER (SPINNER FIX)
     // ==========================================
     function openSimpleProof(encodedUrl) {
         const url = decodeURIComponent(encodedUrl);
-        if (!url || url === '#' || url === 'null' || url === 'undefined' || url.trim() === '') { 
-            alert("No receipt image was found for this transaction."); return; 
+        if (!url || url === '#' || url === 'null' || url === 'undefined' || url.trim() === '') {
+            alert("No receipt image was found for this transaction.");
+            return;
         }
-        
+
         const img = document.getElementById('simpleModalImage');
         const spinner = document.getElementById('simpleModalSpinner');
-        
+
         // Show spinner, hide image initially
-        if(spinner) spinner.style.display = 'flex';
+        if (spinner) spinner.style.display = 'flex';
         img.style.display = 'none';
-        
+
         let finalUrl = url;
         if (!url.startsWith('http')) {
             const base = (window.API_BASE_URL || '').replace('/api', '');
             finalUrl = `${base}/${url.replace(/^\/+/, '')}`;
         }
-        
+
         // THE FIX: When the image finishes loading, hide the spinner and show the image!
         img.onload = function() {
-            if(spinner) spinner.style.display = 'none';
+            if (spinner) spinner.style.display = 'none';
             img.style.display = 'block';
         };
 
         // Failsafe: If the S3 link expired, show an error
         img.onerror = function() {
-            if(spinner) spinner.style.display = 'none';
+            if (spinner) spinner.style.display = 'none';
             alert("Failed to load image. The secure link may have expired or is broken.");
         };
-        
+
         img.src = finalUrl;
         document.getElementById('simpleProofModal').style.display = 'flex';
     }
-    function onSimpleImageLoad() { document.getElementById('simpleModalImage').style.display = 'block'; document.getElementById('simpleModalSpinner').style.display = 'none'; }
-    function hideSimpleProofModal() { document.getElementById('simpleProofModal').style.display = 'none'; }
-    function closeSimpleProofModal(e) { if (e.target.id === 'simpleProofModal') hideSimpleProofModal(); }
+
+    function onSimpleImageLoad() {
+        document.getElementById('simpleModalImage').style.display = 'block';
+        document.getElementById('simpleModalSpinner').style.display = 'none';
+    }
+
+    function hideSimpleProofModal() {
+        document.getElementById('simpleProofModal').style.display = 'none';
+    }
+
+    function closeSimpleProofModal(e) {
+        if (e.target.id === 'simpleProofModal') hideSimpleProofModal();
+    }
 
     function openProof(url, applicantId) {
-        if (!url || url === '#' || url === 'null') { alert("No proof found."); return; }
-        currentApplicantId = applicantId; 
+        if (!url || url === '#' || url === 'null') {
+            alert("No proof found.");
+            return;
+        }
+        currentApplicantId = applicantId;
         const img = document.getElementById('modalImage');
         document.getElementById('modalSpinner').style.display = 'flex';
         img.style.display = 'none';
         img.src = url.startsWith('http') ? url : `${window.API_BASE_URL || ''}/${url.replace(/^\/+/, '')}`;
-        selectType(1); 
+        selectType(1);
         document.getElementById('proofModal').style.display = 'flex';
     }
-    function onImageLoad() { document.getElementById('modalImage').style.display = 'block'; document.getElementById('modalSpinner').style.display = 'none'; }
-    function hideProofModal() { document.getElementById('proofModal').style.display = 'none'; }
-    function closeProofModal(e) { if (e.target.id === 'proofModal') hideProofModal(); }
+
+    function onImageLoad() {
+        document.getElementById('modalImage').style.display = 'block';
+        document.getElementById('modalSpinner').style.display = 'none';
+    }
+
+    function hideProofModal() {
+        document.getElementById('proofModal').style.display = 'none';
+    }
+
+    function closeProofModal(e) {
+        if (e.target.id === 'proofModal') hideProofModal();
+    }
 
     function selectType(id) {
-        currentSelectedType = id; 
+        currentSelectedType = id;
         document.getElementById('toggleBtn1').className = (id == 1) ? 'type-toggle-btn active-1 flex-grow-1' : 'type-toggle-btn flex-grow-1';
         document.getElementById('toggleBtn2').className = (id == 2) ? 'type-toggle-btn active-2 flex-grow-1' : 'type-toggle-btn flex-grow-1';
     }
@@ -1720,7 +2108,9 @@ async function markAllNotificationsAsRead() {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    ...(token ? {
+                        'Authorization': `Bearer ${token}`
+                    } : {})
                 },
                 body: JSON.stringify({
                     applicant_id: parseInt(currentApplicantId),
@@ -1730,17 +2120,17 @@ async function markAllNotificationsAsRead() {
 
             if (response.ok || response.status === 200 || response.status === 201) {
                 hideProofModal();
-                
+
                 // 2. Wait for all the data to refresh
                 await fetchApplicants();
                 await fetchMembers();
                 await fetchTransactions();
                 await renderRecentPayments();
-                
+
                 // 3. Hide loader and show success
                 hideGlobalLoader();
                 alert("Success: Payment Processed!");
-                
+
             } else {
                 hideGlobalLoader(); // Hide loader on error
                 const result = await response.json().catch(() => ({}));
@@ -1750,9 +2140,9 @@ async function markAllNotificationsAsRead() {
                     alert(`Error: ${result.message || 'Something went wrong. Please try again.'}`);
                 }
             }
-        } catch (err) { 
+        } catch (err) {
             hideGlobalLoader(); // Hide loader on error
-            alert("Network error: Could not reach the server."); 
+            alert("Network error: Could not reach the server.");
         }
     }
 
@@ -1773,24 +2163,28 @@ async function markAllNotificationsAsRead() {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    ...(token ? {
+                        'Authorization': `Bearer ${token}`
+                    } : {})
                 },
-                body: JSON.stringify({ rejection_reason: rejectionReason.trim() })
+                body: JSON.stringify({
+                    rejection_reason: rejectionReason.trim()
+                })
             });
 
             if (response.ok) {
                 hideProofModal();
-                
+
                 // 2. Wait for all the data to refresh
                 await fetchApplicants();
                 await fetchMembers();
                 await fetchTransactions();
                 await renderRecentPayments();
-                
+
                 // 3. Hide loader and show success
                 hideGlobalLoader();
                 alert("Success: Payment Rejected.");
-                
+
             } else {
                 hideGlobalLoader(); // Hide loader on error
                 const result = await response.json().catch(() => ({}));
@@ -1816,9 +2210,13 @@ async function markAllNotificationsAsRead() {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    ...(token ? {
+                        'Authorization': `Bearer ${token}`
+                    } : {})
                 },
-                body: JSON.stringify({ rejection_reason: rejectionReason.trim() })
+                body: JSON.stringify({
+                    rejection_reason: rejectionReason.trim()
+                })
             });
 
             if (response.ok) {
@@ -1830,7 +2228,7 @@ async function markAllNotificationsAsRead() {
                 await fetchMembers();
                 await fetchTransactions();
                 await renderRecentPayments();
-                
+
             } else {
                 const result = await response.json().catch(() => ({}));
                 alert(`Error: ${result.message || 'Failed to reject payment.'}`);
@@ -1854,9 +2252,13 @@ async function markAllNotificationsAsRead() {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    ...(token ? {
+                        'Authorization': `Bearer ${token}`
+                    } : {})
                 },
-                body: JSON.stringify({ rejection_reason: rejectionReason.trim() })
+                body: JSON.stringify({
+                    rejection_reason: rejectionReason.trim()
+                })
             });
 
             if (response.ok) {
@@ -1866,10 +2268,21 @@ async function markAllNotificationsAsRead() {
                 const bge = document.getElementById(`status-badge-${currentApplicantId}`);
                 const actionBox = document.getElementById(`action-container-${currentApplicantId}`);
 
-                if(amtLbl) { amtLbl.innerText = `---`; amtLbl.className = "fw-bold text-muted"; }
-                if(typeLbl) { typeLbl.innerText = "REJECTED"; typeLbl.className = "text-danger fw-bold"; }
-                if(bge) { bge.innerHTML = `<i class="fa fa-times-circle me-1"></i> REJECTED`; bge.className = "badge bg-danger text-white px-2 py-1 rounded-pill fw-bold shadow-sm"; }
-                if(actionBox) { actionBox.innerHTML = `<button class="action-btn btn-gray" disabled style="width: 130px;"><i class="fa fa-times"></i> Rejected</button>`; }
+                if (amtLbl) {
+                    amtLbl.innerText = `---`;
+                    amtLbl.className = "fw-bold text-muted";
+                }
+                if (typeLbl) {
+                    typeLbl.innerText = "REJECTED";
+                    typeLbl.className = "text-danger fw-bold";
+                }
+                if (bge) {
+                    bge.innerHTML = `<i class="fa fa-times-circle me-1"></i> REJECTED`;
+                    bge.className = "badge bg-danger text-white px-2 py-1 rounded-pill fw-bold shadow-sm";
+                }
+                if (actionBox) {
+                    actionBox.innerHTML = `<button class="action-btn btn-gray" disabled style="width: 130px;"><i class="fa fa-times"></i> Rejected</button>`;
+                }
 
                 fetchMembers();
                 fetchTransactions();
@@ -1888,7 +2301,7 @@ async function markAllNotificationsAsRead() {
         const member = allMembersData.find(m => m.id === memberId);
         if (!member) return;
         const profile = member.applicant?.basic_profile || {};
-        
+
         document.getElementById('member-detail-content').innerHTML = `
             <div class="row g-3 text-start">
                 <div class="col-12 border-bottom pb-2 mb-2"><label class="text-muted small fw-bold">BUSINESS NAME</label><h5 class="fw-bold text-dark">${profile.registered_business_name || 'N/A'}</h5></div>
@@ -1898,8 +2311,14 @@ async function markAllNotificationsAsRead() {
         `;
         document.getElementById('memberDetailsModal').style.display = 'flex';
     }
-    function hideMemberModal() { document.getElementById('memberDetailsModal').style.display = 'none'; }
-    function closeMemberModal(e) { if (e.target.id === 'memberDetailsModal') hideMemberModal(); }
+
+    function hideMemberModal() {
+        document.getElementById('memberDetailsModal').style.display = 'none';
+    }
+
+    function closeMemberModal(e) {
+        if (e.target.id === 'memberDetailsModal') hideMemberModal();
+    }
 
     // --- ADD PAYMENT MODAL ---
     function openAddPaymentModal(mode = 'add') {
@@ -1917,14 +2336,26 @@ async function markAllNotificationsAsRead() {
         document.getElementById('transactionModalConfirmBtn').innerText = mode === 'edit' ? 'Save Changes' : 'Confirm';
         document.getElementById('addPaymentModal').style.display = 'flex';
     }
+
     function hideAddPaymentModal() {
         document.getElementById('addPaymentModal').style.display = 'none';
         editingTransactionId = null;
         document.getElementById('addPaymentModalTitle').innerText = 'Add Payment';
         document.getElementById('transactionModalConfirmBtn').innerText = 'Confirm';
     }
-    function closeAddPaymentModal(e) { if (e) { e.preventDefault(); e.stopPropagation(); } hideAddPaymentModal(); }
-    function closeAddPaymentOverlay(e) { if (e.target.id === 'addPaymentModal') hideAddPaymentModal(); }
+
+    function closeAddPaymentModal(e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        hideAddPaymentModal();
+    }
+
+    function closeAddPaymentOverlay(e) {
+        if (e.target.id === 'addPaymentModal') hideAddPaymentModal();
+    }
+
     function clearPaymentForm() {
         document.getElementById('transactionMemberInput').value = '';
         document.getElementById('transactionOrNumber').value = '';
@@ -1935,9 +2366,17 @@ async function markAllNotificationsAsRead() {
         document.getElementById('transactionReceiverSelect').selectedIndex = 0;
     }
     async function confirmPaymentAdd() {
-        if (!editingTransactionId) { alert('Payment details confirmed!'); hideAddPaymentModal(); return; }
+        if (!editingTransactionId) {
+            alert('Payment details confirmed!');
+            hideAddPaymentModal();
+            return;
+        }
         const record = getTransactionRecordByKey(editingTransactionId);
-        if (!record) { hideAddPaymentModal(); editingTransactionId = null; return; }
+        if (!record) {
+            hideAddPaymentModal();
+            editingTransactionId = null;
+            return;
+        }
 
         const updatedOrNumber = document.getElementById('transactionOrNumber').value || record.or_number || '---';
         const updatedDate = document.getElementById('transactionPaymentDate').value || getRecordDate(record);
@@ -1945,12 +2384,19 @@ async function markAllNotificationsAsRead() {
         const updatedMembership = document.getElementById('transactionMembershipType').value || 'Annual';
         const apiId = getTransactionApiId(editingTransactionId);
 
-        if (!apiId) { alert('This transaction cannot be updated because it has no backend id.'); return; }
+        if (!apiId) {
+            alert('This transaction cannot be updated because it has no backend id.');
+            return;
+        }
 
         try {
             const response = await fetch(`/treasurer/transactions/${apiId}`, {
                 method: 'PUT',
-                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({
                     or_number: updatedOrNumber,
                     payment_type: updatedPaymentType,
@@ -1979,7 +2425,10 @@ async function markAllNotificationsAsRead() {
             document.getElementById('transactionModalConfirmBtn').innerText = 'Confirm';
             await fetchTransactions();
             alert('Transaction updated.');
-        } catch (error) { console.error(error); alert(error.message || 'Failed to update transaction.'); }
+        } catch (error) {
+            console.error(error);
+            alert(error.message || 'Failed to update transaction.');
+        }
     }
 
     // --- UTILITY FUNCTIONS ---
@@ -1989,7 +2438,7 @@ async function markAllNotificationsAsRead() {
             document.getElementById('memberSearch'), document.getElementById('applicantSearch'),
             document.getElementById('transactionSearch'), document.querySelector('.topbar-search')
         ].filter(Boolean);
-        
+
         searchInputs.forEach((input, index) => {
             input.setAttribute('autocomplete', 'off');
             input.setAttribute('autocapitalize', 'off');
@@ -2002,10 +2451,10 @@ async function markAllNotificationsAsRead() {
 
     // NEW: Added missing checkAuth function to prevent ReferenceErrors
     function checkAuth(res) {
-        if (res.status === 401) { 
-            localStorage.removeItem('token'); 
-            window.location.href = '/login'; 
-            return false; 
+        if (res.status === 401) {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+            return false;
         }
         return true;
     }
@@ -2013,85 +2462,108 @@ async function markAllNotificationsAsRead() {
     // NEW: Added missing readApiResponse function to safely parse API responses
     async function readApiResponse(response) {
         const contentType = (response.headers.get('content-type') || '').toLowerCase();
-        if (contentType.includes('application/json')) { 
-            return { data: await response.json().catch(() => ({})), raw: '' }; 
+        if (contentType.includes('application/json')) {
+            return {
+                data: await response.json().catch(() => ({})),
+                raw: ''
+            };
         }
-        return { data: {}, raw: await response.text().catch(() => '') };
+        return {
+            data: {},
+            raw: await response.text().catch(() => '')
+        };
     }
-        // --- INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', async () => {
-        if (!token) { window.location.href = '/login'; return; }
-                
-                sanitizeSearchAutofill();
-                setTimeout(sanitizeSearchAutofill, 120);
-                
-                const loadedFromApi = await loadAccountSettingsFromApi();
-                if (!loadedFromApi) applyStoredAccountSettings();
-                
-                // NEW: Fetch membership types before loading tables!
-                await fetchMembershipTypes();
-                
-                fetchApplicants();
-                fetchMembers();        
-                renderRecentPayments();
-                fetchTransactions();
+    // --- INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', async () => {
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
 
-                const searchInputs = [
-                    { id: 'memberSearch', func: applyMemberFilters },
-                    { id: 'memberSort', func: applyMemberFilters },
-                    { id: 'applicantSearch', func: applyApplicantFilters },
-                    { id: 'applicantSort', func: applyApplicantFilters },
-                    { id: 'applicantStatusFilter', func: applyApplicantFilters } // Strict Treasurer Dropdown
-                ];
-                
-                searchInputs.forEach(input => {
-                    const el = document.getElementById(input.id);
-                    if (el) {
-                        el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', input.func);
-                    }
-                });
+        sanitizeSearchAutofill();
+        setTimeout(sanitizeSearchAutofill, 120);
 
-                // Event listener for Add Member Dropdown
-                const companySelect = document.getElementById('addMemberCompanySelect');
-                if (companySelect) {
-                    companySelect.addEventListener('change', function() {
-                        const selectedId = this.value;
-                        if (!selectedId) {
-                            populateAddMemberReadOnlyFields(null);
-                            return;
-                        }
-                        const selectedApplicant = approvedApplicantsForModal.find(app => String(app.id) === String(selectedId));
-                        populateAddMemberReadOnlyFields(selectedApplicant);
-                    });
+        const loadedFromApi = await loadAccountSettingsFromApi();
+        if (!loadedFromApi) applyStoredAccountSettings();
+
+        // NEW: Fetch membership types before loading tables!
+        await fetchMembershipTypes();
+
+        fetchApplicants();
+        fetchMembers();
+        renderRecentPayments();
+        fetchTransactions();
+
+        const searchInputs = [{
+                id: 'memberSearch',
+                func: applyMemberFilters
+            },
+            {
+                id: 'memberSort',
+                func: applyMemberFilters
+            },
+            {
+                id: 'applicantSearch',
+                func: applyApplicantFilters
+            },
+            {
+                id: 'applicantSort',
+                func: applyApplicantFilters
+            },
+            {
+                id: 'applicantStatusFilter',
+                func: applyApplicantFilters
+            } // Strict Treasurer Dropdown
+        ];
+
+        searchInputs.forEach(input => {
+            const el = document.getElementById(input.id);
+            if (el) {
+                el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', input.func);
+            }
+        });
+
+        // Event listener for Add Member Dropdown
+        const companySelect = document.getElementById('addMemberCompanySelect');
+        if (companySelect) {
+            companySelect.addEventListener('change', function() {
+                const selectedId = this.value;
+                if (!selectedId) {
+                    populateAddMemberReadOnlyFields(null);
+                    return;
                 }
-
-                const dashboardPaymentRangeEl = document.getElementById('dashboardPaymentRange');
-                if (dashboardPaymentRangeEl) {
-                    dashboardPaymentRange = dashboardPaymentRangeEl.value || 'day';
-                    dashboardPaymentRangeEl.addEventListener('change', (event) => {
-                        dashboardPaymentRange = event.target.value;
-                        updateDashboardPaymentSummary(allTransactionsData);
-                    });
-                }
-
-                const dashboardRevenueRangeEl = document.getElementById('dashboardRevenueRange');
-                if (dashboardRevenueRangeEl) {
-                    dashboardRevenueRange = dashboardRevenueRangeEl.value || 'month';
-                    dashboardRevenueRangeEl.addEventListener('change', (event) => {
-                        dashboardRevenueRange = event.target.value;
-                        updateReportsDashboard();
-                    });
-                }
-
-                const savedTab = localStorage.getItem('activeTab') || 'dashboard';
-                switchTab(savedTab, false);
-
-                setInterval(() => {
-                    if (document.visibilityState !== 'visible') return;
-                    if (!['members', 'dashboard', 'reports'].includes(currentActiveTab)) return;
-                    fetchMembers();
-                }, TREASURER_MEMBERS_AUTO_REFRESH_MS);
+                const selectedApplicant = approvedApplicantsForModal.find(app => String(app.id) === String(selectedId));
+                populateAddMemberReadOnlyFields(selectedApplicant);
             });
+        }
+
+        const dashboardPaymentRangeEl = document.getElementById('dashboardPaymentRange');
+        if (dashboardPaymentRangeEl) {
+            dashboardPaymentRange = dashboardPaymentRangeEl.value || 'day';
+            dashboardPaymentRangeEl.addEventListener('change', (event) => {
+                dashboardPaymentRange = event.target.value;
+                updateDashboardPaymentSummary(allTransactionsData);
+            });
+        }
+
+        const dashboardRevenueRangeEl = document.getElementById('dashboardRevenueRange');
+        if (dashboardRevenueRangeEl) {
+            dashboardRevenueRange = dashboardRevenueRangeEl.value || 'month';
+            dashboardRevenueRangeEl.addEventListener('change', (event) => {
+                dashboardRevenueRange = event.target.value;
+                updateReportsDashboard();
+            });
+        }
+
+        const savedTab = localStorage.getItem('activeTab') || 'dashboard';
+        switchTab(savedTab, false);
+
+        setInterval(() => {
+            if (document.visibilityState !== 'visible') return;
+            if (!['members', 'dashboard', 'reports'].includes(currentActiveTab)) return;
+            fetchMembers();
+        }, TREASURER_MEMBERS_AUTO_REFRESH_MS);
+    });
 
     // --- MEMBER FILTER/SORT ---
     function applyMemberFilters() {
@@ -2128,7 +2600,7 @@ async function markAllNotificationsAsRead() {
         if (paidCountEl) paidCountEl.innerText = paidCount;
         if (unpaidCountEl) unpaidCountEl.innerText = unpaidCount;
 
-        currentMemberPage = 1; 
+        currentMemberPage = 1;
         displayMembersPage();
     }
 
@@ -2141,14 +2613,14 @@ async function markAllNotificationsAsRead() {
 
         const memberEmails = new Set(
             (Array.isArray(allMembersData) ? allMembersData : [])
-                .map(m => String(m?.applicant?.basic_profile?.email || '').trim().toLowerCase())
-                .filter(Boolean)
+            .map(m => String(m?.applicant?.basic_profile?.email || '').trim().toLowerCase())
+            .filter(Boolean)
         );
 
         const memberCompanyNames = new Set(
             (Array.isArray(allMembersData) ? allMembersData : [])
-                .map(m => String(m?.applicant?.basic_profile?.registered_business_name || '').trim().toLowerCase())
-                .filter(Boolean)
+            .map(m => String(m?.applicant?.basic_profile?.registered_business_name || '').trim().toLowerCase())
+            .filter(Boolean)
         );
 
         filteredApplicantsData = allApplicantsData.filter(a => {
@@ -2199,13 +2671,19 @@ async function markAllNotificationsAsRead() {
         try {
             // FIX: Only fetch the fresh members list and PAID applicants (removed 'approved')
             const [membersRes, paidRes] = await Promise.all([
-                fetch(`${window.API_BASE_URL}/v1/members`, { 
-                    method: 'GET', 
-                    headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } 
+                fetch(`${window.API_BASE_URL}/v1/members`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
                 }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, { 
-                    method: 'GET', 
-                    headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } 
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
                 })
             ]);
 
@@ -2222,24 +2700,24 @@ async function markAllNotificationsAsRead() {
             // Map exact emails and company names from the fresh members list for strict validation
             const existingMemberEmails = new Set(
                 freshMembers
-                    .map((member) => String(member?.applicant?.basic_profile?.email || '').trim().toLowerCase())
-                    .filter(Boolean)
+                .map((member) => String(member?.applicant?.basic_profile?.email || '').trim().toLowerCase())
+                .filter(Boolean)
             );
 
             const existingMemberCompanyNames = new Set(
                 freshMembers
-                    .map((member) => String(member?.applicant?.basic_profile?.registered_business_name || '').trim().toLowerCase())
-                    .filter(Boolean)
+                .map((member) => String(member?.applicant?.basic_profile?.registered_business_name || '').trim().toLowerCase())
+                .filter(Boolean)
             );
 
             // Filter out anyone who is already an existing member
             approvedApplicantsForModal = paidApplicants.filter((applicant) => {
                 const email = String(applicant?.basic_profile?.email || '').trim().toLowerCase();
                 const companyName = String(applicant?.basic_profile?.registered_business_name || '').trim().toLowerCase();
-                
+
                 if (email && existingMemberEmails.has(email)) return false;
                 if (companyName && existingMemberCompanyNames.has(companyName)) return false;
-                
+
                 return true;
             });
 
@@ -2248,7 +2726,7 @@ async function markAllNotificationsAsRead() {
             approvedApplicantsForModal.forEach((applicant) => {
                 const companyName = applicant?.basic_profile?.registered_business_name || `Applicant #${applicant.id}`;
                 const statusLabel = String(applicant.status || '').toUpperCase();
-                
+
                 companySelect.insertAdjacentHTML(
                     'beforeend',
                     `<option value="${applicant.id}">${companyName} (${statusLabel})</option>`
@@ -2317,18 +2795,37 @@ async function markAllNotificationsAsRead() {
     async function fetchApplicants() {
         try {
             const [resApproved, resRejected] = await Promise.all([
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=rejected`, { headers: { 'Authorization': `Bearer ${token}` } })
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=rejected`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
             ]);
 
             let combinedData = [];
-            if (resApproved.ok) { const data1 = await resApproved.json(); if (data1.data) combinedData = combinedData.concat(data1.data); }
-            if (resRejected.ok) { const data2 = await resRejected.json(); if (data2.data) combinedData = combinedData.concat(data2.data); }
+            if (resApproved.ok) {
+                const data1 = await resApproved.json();
+                if (data1.data) combinedData = combinedData.concat(data1.data);
+            }
+            if (resRejected.ok) {
+                const data2 = await resRejected.json();
+                if (data2.data) combinedData = combinedData.concat(data2.data);
+            }
 
             allApplicantsData = combinedData;
 
             try {
-                const membersRes = await fetch('/api/v1/members', { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } });
+                const membersRes = await fetch('/api/v1/members', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
                 if (membersRes.ok) {
                     const membersJson = await membersRes.json();
                     if (Array.isArray(membersJson?.data)) allMembersData = membersJson.data;
@@ -2338,40 +2835,42 @@ async function markAllNotificationsAsRead() {
             applyApplicantFilters();
             updateNotificationsPanel();
             updateReportsDashboard();
-        } catch (err) { console.error('Error fetching applicants:', err); }
+        } catch (err) {
+            console.error('Error fetching applicants:', err);
+        }
     }
 
     function displayApplicantsPage() {
         const totalPages = Math.ceil(filteredApplicantsData.length / applicantsPerPage) || 1;
         if (currentApplicantPage > totalPages) currentApplicantPage = totalPages;
         if (currentApplicantPage < 1) currentApplicantPage = 1;
-        
+
         const pageData = filteredApplicantsData.slice((currentApplicantPage - 1) * applicantsPerPage, currentApplicantPage * applicantsPerPage);
         const tbody = document.getElementById('applicants-table-body');
-        if(!tbody) return;
-        
+        if (!tbody) return;
+
         tbody.innerHTML = '';
-        if(pageData.length === 0) {
+        if (pageData.length === 0) {
             tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted fw-bold">No applicants found matching the selected status.</td></tr>`;
         }
 
         pageData.forEach(app => {
             const profile = app.basic_profile || {};
             const appStatus = String(app.status).toLowerCase();
-            
+
             let typeLabelHTML = '';
             let statusBadge = '';
             let amountText = '---';
             let actionButton = '';
 
             if (appStatus === 'approved') {
-                 typeLabelHTML = `<span id="type-label-${app.id}" class="text-warning fw-bold" style="color: #d97706 !important;">PENDING PAYMENT</span>`;
-                 statusBadge = `<span id="status-badge-${app.id}" class="badge bg-warning text-dark px-2 py-1 rounded-pill fw-bold shadow-sm" style="font-size:10px;"><i class="fa fa-clock me-1"></i> APPROVED</span>`;
-                 actionButton = `<button onclick="openProof('${app.proof_of_payment_url}', ${app.id})" class="action-btn btn-green" style="width: 130px;"><i class="fa fa-image me-1"></i> Process Payment</button>`;
+                typeLabelHTML = `<span id="type-label-${app.id}" class="text-warning fw-bold" style="color: #d97706 !important;">PENDING PAYMENT</span>`;
+                statusBadge = `<span id="status-badge-${app.id}" class="badge bg-warning text-dark px-2 py-1 rounded-pill fw-bold shadow-sm" style="font-size:10px;"><i class="fa fa-clock me-1"></i> APPROVED</span>`;
+                actionButton = `<button onclick="openProof('${app.proof_of_payment_url}', ${app.id})" class="action-btn btn-green" style="width: 130px;"><i class="fa fa-image me-1"></i> Process Payment</button>`;
             } else if (appStatus === 'rejected') {
-                 typeLabelHTML = `<span id="type-label-${app.id}" class="text-danger fw-bold">REJECTED</span>`;
-                 statusBadge = `<span id="status-badge-${app.id}" class="badge bg-danger text-white px-2 py-1 rounded-pill fw-bold shadow-sm" style="font-size:10px;"><i class="fa fa-times-circle me-1"></i> REJECTED</span>`;
-                 actionButton = `<button class="action-btn btn-gray" disabled style="width: 130px;"><i class="fa fa-times"></i> Rejected</button>`;
+                typeLabelHTML = `<span id="type-label-${app.id}" class="text-danger fw-bold">REJECTED</span>`;
+                statusBadge = `<span id="status-badge-${app.id}" class="badge bg-danger text-white px-2 py-1 rounded-pill fw-bold shadow-sm" style="font-size:10px;"><i class="fa fa-times-circle me-1"></i> REJECTED</span>`;
+                actionButton = `<button class="action-btn btn-gray" disabled style="width: 130px;"><i class="fa fa-times"></i> Rejected</button>`;
             }
 
             tbody.insertAdjacentHTML('beforeend', `
@@ -2388,17 +2887,31 @@ async function markAllNotificationsAsRead() {
             `);
         });
         const paginationText = document.getElementById('applicant-pagination-text');
-        if(paginationText) paginationText.innerText = `Page ${currentApplicantPage} of ${totalPages}`;
+        if (paginationText) paginationText.innerText = `Page ${currentApplicantPage} of ${totalPages}`;
     }
 
-    function prevApplicantPage() { if (currentApplicantPage > 1) { currentApplicantPage--; displayApplicantsPage(); } }
-    function nextApplicantPage() { if (currentApplicantPage < Math.ceil(filteredApplicantsData.length / applicantsPerPage)) { currentApplicantPage++; displayApplicantsPage(); } }
+    function prevApplicantPage() {
+        if (currentApplicantPage > 1) {
+            currentApplicantPage--;
+            displayApplicantsPage();
+        }
+    }
+
+    function nextApplicantPage() {
+        if (currentApplicantPage < Math.ceil(filteredApplicantsData.length / applicantsPerPage)) {
+            currentApplicantPage++;
+            displayApplicantsPage();
+        }
+    }
 
     async function fetchMembers() {
         try {
             const response = await fetch(`${window.API_BASE_URL}/v1/members`, {
                 method: 'GET',
-                headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
             });
 
             if (!checkAuth(response)) return;
@@ -2420,7 +2933,7 @@ async function markAllNotificationsAsRead() {
         } catch (err) {
             console.error("Failed to fetch members:", err);
             const tbody = document.getElementById('members-table-body');
-            if(tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-center py-5 text-danger fw-bold">Network error. Failed to load data.</td></tr>`;
+            if (tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-center py-5 text-danger fw-bold">Network error. Failed to load data.</td></tr>`;
         }
     }
 
@@ -2443,22 +2956,22 @@ async function markAllNotificationsAsRead() {
             startIndex = (currentMemberPage - 1) * membersPerPage;
             pageData = filteredMembersData.slice(startIndex, startIndex + membersPerPage);
         }
-        
+
         const tbody = document.getElementById('members-table-body');
-        if(!tbody) return;
+        if (!tbody) return;
 
         tbody.innerHTML = '';
-        if(totalRecords === 0) tbody.innerHTML = `<tr><td colspan="9" class="text-center py-5 text-muted fw-bold">No members found matching your search.</td></tr>`;
+        if (totalRecords === 0) tbody.innerHTML = `<tr><td colspan="9" class="text-center py-5 text-muted fw-bold">No members found matching your search.</td></tr>`;
 
         pageData.forEach(member => {
             const name = member.applicant?.basic_profile?.registered_business_name || 'N/A';
-            const orNumber = `OR-${10000 + member.id}`; 
+            const orNumber = `OR-${10000 + member.id}`;
             const regDate = member.created_at ? member.created_at.split('T')[0] : 'N/A';
             let expDate = member.membership_end_date ? member.membership_end_date.split('T')[0] : 'N/A';
-            if(expDate === 'N/A' && member.created_at) {
-                 const dateObj = new Date(member.created_at);
-                 dateObj.setFullYear(dateObj.getFullYear() + 1);
-                 expDate = dateObj.toISOString().split('T')[0];
+            if (expDate === 'N/A' && member.created_at) {
+                const dateObj = new Date(member.created_at);
+                dateObj.setFullYear(dateObj.getFullYear() + 1);
+                expDate = dateObj.toISOString().split('T')[0];
             }
 
             tbody.insertAdjacentHTML('beforeend', `
@@ -2476,15 +2989,31 @@ async function markAllNotificationsAsRead() {
             `);
         });
         const paginationText = document.getElementById('member-pagination-text');
-        if(paginationText) paginationText.innerText = `Page ${currentMemberPage} of ${totalPages}`;
+        if (paginationText) paginationText.innerText = `Page ${currentMemberPage} of ${totalPages}`;
     }
 
-    function prevMemberPage() { if (currentMemberPage > 1) { currentMemberPage--; displayMembersPage(); } }
-    function nextMemberPage() { if (currentMemberPage < getMembersTotalPages()) { currentMemberPage++; displayMembersPage(); } }
+    function prevMemberPage() {
+        if (currentMemberPage > 1) {
+            currentMemberPage--;
+            displayMembersPage();
+        }
+    }
 
-    function verifyRecentPayment(proofUrl, applicantId) { openProof(proofUrl, applicantId); }
-    function printRecentReceipt(applicantId) { window.print(); }
-    
+    function nextMemberPage() {
+        if (currentMemberPage < getMembersTotalPages()) {
+            currentMemberPage++;
+            displayMembersPage();
+        }
+    }
+
+    function verifyRecentPayment(proofUrl, applicantId) {
+        openProof(proofUrl, applicantId);
+    }
+
+    function printRecentReceipt(applicantId) {
+        window.print();
+    }
+
     function rejectRecentPayment(applicantId) {
         const row = document.getElementById(`recent-payment-row-${applicantId}`);
         if (row) row.remove();
@@ -2495,37 +3024,43 @@ async function markAllNotificationsAsRead() {
     async function fetchTransactions() {
         try {
             // 1. Fetch Global Financial Stats for the Cards
-            const statsRes = await fetch(`${window.API_BASE_URL}/v1/transactions/stats`, { 
-                headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } 
+            const statsRes = await fetch(`${window.API_BASE_URL}/v1/transactions/stats`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
             });
-            
+
             if (checkAuth(statsRes) && statsRes.ok) {
                 const stats = await statsRes.json();
                 const fmt = val => `₱ ${parseFloat(val || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-                
+
                 document.getElementById('trans-total-amt').innerText = fmt(stats.total_revenue);
                 document.getElementById('trans-initial-amt').innerText = fmt(stats.initial_registration_total);
                 document.getElementById('trans-renewal-amt').innerText = fmt(stats.renewal_total);
                 // Calculate an estimated pending/failed total if needed, or leave at 0 if backend doesn't provide it yet
-                document.getElementById('trans-failed-amt').innerText = '₱ 0.00'; 
+                document.getElementById('trans-failed-amt').innerText = '₱ 0.00';
             }
 
             // 2. Fetch the Master Ledger Rows
             // Passing per_page=100 so client-side pagination and search works smoothly without additional API calls
-            const transRes = await fetch(`${window.API_BASE_URL}/v1/transactions?per_page=500`, { 
-                headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } 
+            const transRes = await fetch(`${window.API_BASE_URL}/v1/transactions?per_page=500`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
             });
-            
+
             if (!checkAuth(transRes)) return;
-            
+
             if (transRes.ok) {
                 const transData = await transRes.json();
-                
+
                 // Laravel pagination wraps the array inside the '.data' property
                 allTransactionsData = transData.data || [];
                 filteredTransactionsData = allTransactionsData.slice();
                 currentTransactionPage = 1;
-                
+
                 displayTransactionsPage();
                 updateReportsDashboard(); // Update other dashboard charts if tied to this
             }
@@ -2537,59 +3072,88 @@ async function markAllNotificationsAsRead() {
         }
     }
 
-    function initCharts() { updateReportsDashboard(); }
+    function initCharts() {
+        updateReportsDashboard();
+    }
 
     async function refreshTabData(tabName) {
         if (!token) return;
-        
+
         // FIX: Add "await" to everything so data loads in the exact right order.
         // We must load Applicants and Members BEFORE Transactions so the fallback arrays are populated!
         if (tabName === 'dashboard') {
-            await fetchApplicants(); await fetchMembers(); await renderRecentPayments(); await fetchTransactions(); initCharts();
+            await fetchApplicants();
+            await fetchMembers();
+            await renderRecentPayments();
+            await fetchTransactions();
+            initCharts();
         } else if (tabName === 'members') {
             await fetchMembers();
-            await fetchTreasurerApprovedApplicantsForModal(); 
+            await fetchTreasurerApprovedApplicantsForModal();
         } else if (tabName === 'applicants') {
-            await fetchApplicants(); await renderRecentPayments();
+            await fetchApplicants();
+            await renderRecentPayments();
         } else if (tabName === 'transactions') {
-            await fetchApplicants(); await fetchMembers(); await fetchTransactions();
+            await fetchApplicants();
+            await fetchMembers();
+            await fetchTransactions();
         } else if (tabName === 'reports') {
-            await fetchApplicants(); await fetchMembers(); await fetchTransactions(); initCharts();
+            await fetchApplicants();
+            await fetchMembers();
+            await fetchTransactions();
+            initCharts();
         }
     }
 
     // --- INITIALIZATION ---
     document.addEventListener('DOMContentLoaded', async () => {
-        if (!token) { window.location.href = '/login'; return; }
-        
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
+
         sanitizeSearchAutofill();
         setTimeout(sanitizeSearchAutofill, 120);
-        
+
         const loadedFromApi = await loadAccountSettingsFromApi();
         if (!loadedFromApi) applyStoredAccountSettings();
-        
+
         // Fetch membership types first
         await fetchMembershipTypes();
-        
+
         // 1. Fetch data
         await fetchMembershipTypes();
         await fetchApplicants();
         await fetchMembers();
         await fetchTransactions(); // Inside fetchTransactions, ensure you call initCharts() at the end
-        
+
         // 2. Initial UI setup
-        fetchWelcomeName(); 
+        fetchWelcomeName();
         initCharts();
 
 
-        const searchInputs = [
-            { id: 'memberSearch', func: applyMemberFilters },
-            { id: 'memberSort', func: applyMemberFilters },
-            { id: 'applicantSearch', func: applyApplicantFilters },
-            { id: 'applicantSort', func: applyApplicantFilters },
-            { id: 'applicantStatusFilter', func: applyApplicantFilters }
+        const searchInputs = [{
+                id: 'memberSearch',
+                func: applyMemberFilters
+            },
+            {
+                id: 'memberSort',
+                func: applyMemberFilters
+            },
+            {
+                id: 'applicantSearch',
+                func: applyApplicantFilters
+            },
+            {
+                id: 'applicantSort',
+                func: applyApplicantFilters
+            },
+            {
+                id: 'applicantStatusFilter',
+                func: applyApplicantFilters
+            }
         ];
-        
+
         searchInputs.forEach(input => {
             const el = document.getElementById(input.id);
             if (el) {
@@ -2651,78 +3215,138 @@ async function markAllNotificationsAsRead() {
         });
     });
 
+    // ==========================================
+    // SEAMLESS TAB SWITCHING (NO PAGE RELOADS)
+    // ==========================================
     let currentActiveTab = 'dashboard';
 
-    function switchTab(tabName, shouldReload = true) {
+    function switchTab(tabName) {
         currentActiveTab = tabName;
         localStorage.setItem('activeTab', tabName);
 
-        if (shouldReload) {
-            window.location.href = `${window.location.pathname}?refresh=${Date.now()}#${tabName}`;
-            return;
-        }
+        // 1. Smoothly update the URL without refreshing the page!
+        window.history.pushState(null, null, `#${tabName}`);
 
+        // 2. Hide all sections and remove active states
         document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
         document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
-        
+
+        // 3. Show target section and highlight sidebar
         const targetSection = document.getElementById('section-' + tabName);
         const targetNav = document.getElementById('nav-' + tabName);
-        if(targetSection) targetSection.style.display = 'block';
-        if(targetNav) targetNav.classList.add('active');
-        
-        if(tabName !== 'settings') {
+        if (targetSection) targetSection.style.display = 'block';
+        if (targetNav) targetNav.classList.add('active');
+
+        // Handle Settings sub-menus
+        if (tabName !== 'settings') {
             const mainSet = document.getElementById('settings-main');
-            if(mainSet) mainSet.style.display = 'block';
+            if (mainSet) mainSet.style.display = 'block';
             const accSet = document.getElementById('settings-account');
-            if(accSet) accSet.style.display = 'none';
+            if (accSet) accSet.style.display = 'none';
             const secSet = document.getElementById('settings-security');
-            if(secSet) secSet.style.display = 'none';
+            if (secSet) secSet.style.display = 'none';
             const prefSet = document.getElementById('settings-preferences');
-            if(prefSet) prefSet.style.display = 'none';
+            if (prefSet) prefSet.style.display = 'none';
         }
 
+        // 4. Trigger the smart cache loader
         refreshTabData(tabName);
     }
-    
-    function toggleNotificationPanel(e) { e.stopPropagation(); const p = document.getElementById('notificationPanel'); p.style.display = p.style.display === 'flex' ? 'none' : 'flex'; }
-    function clearNotifications(e) { e.stopPropagation(); document.getElementById('notificationPanel').style.display = 'none'; }
-    function logout() { localStorage.removeItem('token'); window.location.href = '/login'; }
 
-// ==========================================
-// 4. TREASURER APPROVAL FUNCTION
-// ==========================================
-async function approveTreasurerPayment(paymentId, event) {
-    if (!confirm("Are you sure you want to approve this payment? This will permanently reactivate the member for another year.")) return;
-    
-    const token = localStorage.getItem('token');
-    const btn = event.target;
-    
-    try {
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+    // ==========================================
+    // TREASURER SMART CACHE (NO DATA RESET)
+    // ==========================================
+    async function refreshTabData(tabName) {
+        if (!token) return;
 
-        const response = await fetch(`${window.API_BASE_URL}/v1/members/approve-renewal-payment/${paymentId}`, {
-            method: 'POST',
-            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
-        });
+        const needsApplicants = allApplicantsData.length === 0;
+        const needsMembers = allMembersData.length === 0;
+        const needsTransactions = allTransactionsData.length === 0;
 
-        const data = await response.json();
+        if (tabName === 'dashboard') {
+            if (needsApplicants) await fetchApplicants();
+            if (needsMembers) await fetchMembers();
+            if (needsTransactions) await fetchTransactions();
 
-        if (response.ok) {
-            alert("Success! The payment has been approved and the member's active status has been restored.");
-            if (typeof fetchTransactions === 'function') fetchTransactions();
-            if (typeof fetchMembers === 'function') fetchMembers(); 
-        } else {
-            alert("Approval Failed: " + (data.message || "Unknown error occurred."));
-            btn.disabled = false;
-            btn.innerHTML = originalText;
+            // THE FIX: Only draw charts if they don't exist yet! 
+            // Stops the dashboard from resetting visually.
+            if (!window.dashPieChartInstance) {
+                initCharts();
+            }
+
+        } else if (tabName === 'members') {
+            if (needsMembers) await fetchMembers();
+            fetchTreasurerApprovedApplicantsForModal();
+
+        } else if (tabName === 'applicants') {
+            if (needsApplicants) await fetchApplicants();
+
+        } else if (tabName === 'transactions') {
+            if (needsTransactions) await fetchTransactions();
+
+        } else if (tabName === 'reports') {
+            if (needsApplicants) await fetchApplicants();
+            if (needsMembers) await fetchMembers();
+            if (needsTransactions) await fetchTransactions();
         }
-    } catch (error) {
-        alert("A network error occurred while trying to approve the payment.");
-        btn.disabled = false;
-        btn.innerHTML = 'Approve';
-    }
-}
 
+        // Note: We DO NOT call applyFilters() here anymore. 
+        // The HTML table is already rendered, so switching tabs will just reveal it exactly as you left it!
+    }
+
+    function toggleNotificationPanel(e) {
+        e.stopPropagation();
+        const p = document.getElementById('notificationPanel');
+        p.style.display = p.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function clearNotifications(e) {
+        e.stopPropagation();
+        document.getElementById('notificationPanel').style.display = 'none';
+    }
+
+    function logout() {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+    }
+
+    // ==========================================
+    // 4. TREASURER APPROVAL FUNCTION
+    // ==========================================
+    async function approveTreasurerPayment(paymentId, event) {
+        if (!confirm("Are you sure you want to approve this payment? This will permanently reactivate the member for another year.")) return;
+
+        const token = localStorage.getItem('token');
+        const btn = event.target;
+
+        try {
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+
+            const response = await fetch(`${window.API_BASE_URL}/v1/members/approve-renewal-payment/${paymentId}`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert("Success! The payment has been approved and the member's active status has been restored.");
+                if (typeof fetchTransactions === 'function') fetchTransactions();
+                if (typeof fetchMembers === 'function') fetchMembers();
+            } else {
+                alert("Approval Failed: " + (data.message || "Unknown error occurred."));
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        } catch (error) {
+            alert("A network error occurred while trying to approve the payment.");
+            btn.disabled = false;
+            btn.innerHTML = 'Approve';
+        }
+    }
 </script>

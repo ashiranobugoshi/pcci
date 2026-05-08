@@ -26,8 +26,8 @@
     /* --- Grid Layout (Natural Page Scrolling) --- */
     .applicant-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
-        gap: 16px; 
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
     }
 
     /* --- Individual Card --- */
@@ -35,7 +35,7 @@
         border: 1.5px solid #eee;
         border-top: 3px solid var(--pcci-red, #be1e38);
         border-radius: 8px;
-        padding: 20px 16px; 
+        padding: 20px 16px;
         background: #fff;
         text-align: center;
         text-decoration: none;
@@ -55,22 +55,22 @@
     }
 
     .applicant-card-name {
-        font-size: 1.05rem; 
+        font-size: 1.05rem;
         font-weight: 800;
         color: #111;
         text-transform: uppercase;
         margin-bottom: 6px;
         width: 100%;
-        word-wrap: break-word; 
+        word-wrap: break-word;
         line-height: 1.3;
     }
 
     .applicant-card-industry {
-        font-size: 0.85rem; 
+        font-size: 0.85rem;
         color: #666;
         margin-bottom: 12px;
         width: 100%;
-        word-wrap: break-word; 
+        word-wrap: break-word;
         line-height: 1.4;
     }
 
@@ -96,9 +96,23 @@
         margin-top: auto;
     }
 
-    .status-pending { background-color: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
-    .status-approved { background-color: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-    .status-rejected { background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .status-pending {
+        background-color: #fff7ed;
+        color: #c2410c;
+        border: 1px solid #fed7aa;
+    }
+
+    .status-approved {
+        background-color: #f0fdf4;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+    }
+
+    .status-rejected {
+        background-color: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+    }
 
     /* Messages */
     .grid-message {
@@ -204,18 +218,48 @@
 
     /* --- Responsive --- */
     @media (max-width: 768px) {
-        .applicant-header-banner { padding: 36px 24px; font-size: 1.5rem; }
-        .applicant-search-wrapper { max-width: 100%; }
-        .applicant-toolbar { gap: 8px; }
-        .applicant-toolbar .toolbar-group:last-child { margin-left: 0; }
+        .applicant-header-banner {
+            padding: 36px 24px;
+            font-size: 1.5rem;
+        }
+
+        .applicant-search-wrapper {
+            max-width: 100%;
+        }
+
+        .applicant-toolbar {
+            gap: 8px;
+        }
+
+        .applicant-toolbar .toolbar-group:last-child {
+            margin-left: 0;
+        }
     }
 
     @media (max-width: 576px) {
-        .applicant-header-banner { padding: 24px 20px; font-size: 1.3rem; }
-        .applicant-toolbar { flex-direction: column; align-items: flex-start; gap: 10px; }
-        .applicant-toolbar .toolbar-group { flex-wrap: wrap; }
-        .applicant-toolbar .toolbar-group:last-child { margin-left: 0; }
-        .applicant-search { font-size: 0.85rem; padding: 9px 12px 9px 36px; }
+        .applicant-header-banner {
+            padding: 24px 20px;
+            font-size: 1.3rem;
+        }
+
+        .applicant-toolbar {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .applicant-toolbar .toolbar-group {
+            flex-wrap: wrap;
+        }
+
+        .applicant-toolbar .toolbar-group:last-child {
+            margin-left: 0;
+        }
+
+        .applicant-search {
+            font-size: 0.85rem;
+            padding: 9px 12px 9px 36px;
+        }
     }
 </style>
 
@@ -257,10 +301,10 @@
 {{-- ======== DYNAMIC FETCH LOGIC ======== --}}
 <script>
     let allApplicants = [];
-    let nameSortAsc = null; 
+    let nameSortAsc = null;
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const token = localStorage.getItem('token');
+    function initApplicantsPage() {
+        var token = localStorage.getItem('token');
 
         if (!token) {
             window.location.href = '/login';
@@ -268,7 +312,13 @@
         }
 
         fetchApplicantsList(token);
-    });
+    }
+
+    if (document.readyState !== 'loading') {
+        initApplicantsPage();
+    } else {
+        document.addEventListener('DOMContentLoaded', initApplicantsPage);
+    }
 
     async function fetchApplicantsList(token) {
         const grid = document.getElementById('applicantGrid');
@@ -337,7 +387,7 @@
         if (statusVal !== 'all') {
             filtered = filtered.filter(app => {
                 const status = (app.status || '').toLowerCase();
-                if (statusVal === 'rejected' && status === 'declined') return true; 
+                if (statusVal === 'rejected' && status === 'declined') return true;
                 return status === statusVal;
             });
         }
@@ -382,7 +432,7 @@
             } else if (statusRaw === 'rejected' || statusRaw === 'declined') {
                 statusClass = 'status-rejected';
                 iconClass = 'bi-x-circle';
-            } 
+            }
 
             const displayStatus = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
             const profileUrl = `/applicant/${app.id}`;
@@ -400,6 +450,6 @@
 
             grid.insertAdjacentHTML('beforeend', cardHtml);
         });
-    }   
+    }
 </script>
 @endsection

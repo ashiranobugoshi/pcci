@@ -7,9 +7,10 @@
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;700&family=Poppins:wght@600;700;800&display=swap');
 
     body {
-        background-color: #f3f4f6; /* Switched to light gray background for a cleaner PCCI feel */
+        background-color: #f3f4f6;
+        /* Switched to light gray background for a cleaner PCCI feel */
         color: #333333;
-        font-family: 'DM Sans', sans-serif; 
+        font-family: 'DM Sans', sans-serif;
     }
 
     .setup-container {
@@ -53,7 +54,7 @@
         border-radius: 0 8px 8px 0;
     }
 
-    .form-control-custom:focus + .input-group-text-custom {
+    .form-control-custom:focus+.input-group-text-custom {
         border-color: #b61b2a;
     }
 
@@ -67,11 +68,13 @@
         width: 100%;
         transition: all 0.3s;
     }
-    .btn-red-custom:hover:not(:disabled) { 
-        background-color: #8f1521; 
-        transform: translateY(-2px); 
+
+    .btn-red-custom:hover:not(:disabled) {
+        background-color: #8f1521;
+        transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(182, 27, 42, 0.2);
     }
+
     .btn-red-custom:disabled {
         background-color: #d1d5db;
         cursor: not-allowed;
@@ -85,19 +88,42 @@
         font-size: 0.8rem;
         color: #6b7280;
     }
+
     .validation-list li {
         margin-bottom: 4px;
         display: flex;
         align-items: center;
         gap: 6px;
     }
-    .validation-list li i { font-size: 0.9rem; }
-    .val-invalid i { color: #ef4444; } /* Red cross */
-    .val-valid { color: #10b981; } /* Green check */
-    .val-valid i { color: #10b981; }
 
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-    .spin { display: inline-block; animation: spin 1s linear infinite; }
+    .validation-list li i {
+        font-size: 0.9rem;
+    }
+
+    .val-invalid i {
+        color: #ef4444;
+    }
+
+    /* Red cross */
+    .val-valid {
+        color: #10b981;
+    }
+
+    /* Green check */
+    .val-valid i {
+        color: #10b981;
+    }
+
+    @keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .spin {
+        display: inline-block;
+        animation: spin 1s linear infinite;
+    }
 </style>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -105,7 +131,7 @@
 <div class="setup-container">
     <div class="container">
         <div class="row align-items-center justify-content-center">
-            
+
             <div class="col-lg-5">
                 <div class="glass-card">
                     <div class="text-center mb-4">
@@ -117,7 +143,7 @@
                     </div>
 
                     <form id="setupPasswordForm" onsubmit="submitFirstTimePassword(event)">
-                        
+
                         <div class="mb-3">
                             <label class="form-label" style="color: #4b5563; font-weight: 600; font-size: 0.85rem;">New Password <span class="text-danger">*</span></label>
                             <div class="input-group">
@@ -126,7 +152,7 @@
                                     <i class="bi bi-eye-slash" id="toggleIcon1"></i>
                                 </span>
                             </div>
-                            
+
                             <ul class="validation-list" id="password-validation">
                                 <li id="req-len" class="val-invalid"><i class="bi bi-x-circle-fill"></i> At least 8 characters</li>
                                 <li id="req-upper" class="val-invalid"><i class="bi bi-x-circle-fill"></i> One uppercase letter</li>
@@ -199,13 +225,17 @@
             el.querySelector('i').className = 'bi bi-x-circle-fill';
         };
 
-        if (pw.length >= 8) setValid('req-len'); else setInvalid('req-len');
-        if (/[A-Z]/.test(pw)) setValid('req-upper'); else setInvalid('req-upper');
-        if (/[a-z]/.test(pw)) setValid('req-lower'); else setInvalid('req-lower');
-        if (/[0-9]/.test(pw)) setValid('req-num'); else setInvalid('req-num');
+        if (pw.length >= 8) setValid('req-len');
+        else setInvalid('req-len');
+        if (/[A-Z]/.test(pw)) setValid('req-upper');
+        else setInvalid('req-upper');
+        if (/[a-z]/.test(pw)) setValid('req-lower');
+        else setInvalid('req-lower');
+        if (/[0-9]/.test(pw)) setValid('req-num');
+        else setInvalid('req-num');
 
         isPasswordValid = (validCount === 4);
-        checkMatch(); 
+        checkMatch();
     }
 
     // 3. Confirm Password Match Checker
@@ -238,7 +268,7 @@
     // 4. Submission & Smart Redirection
     async function submitFirstTimePassword(event) {
         event.preventDefault();
-        
+
         const token = localStorage.getItem('token');
         const pass = document.getElementById('new_password').value;
         const passConfirm = document.getElementById('new_password_confirmation').value;
@@ -251,9 +281,9 @@
 
         try {
             const apiUrl = `${window.API_BASE_URL}/v1/user/first-time-password-change`;
-            
+
             const response = await fetch(apiUrl, {
-                method: 'POST', 
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
@@ -270,13 +300,16 @@
             if (response.ok) {
                 btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Success! Redirecting...';
                 btn.classList.replace('btn-red-custom', 'btn-success');
-                
+
                 // Smart Redirection: Fetch user role to send them to the correct dashboard
                 try {
                     const userRes = await fetch(`${window.API_BASE_URL}/v1/user`, {
-                        headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
                     });
-                    
+
                     if (userRes.ok) {
                         const userData = await userRes.json();
                         const user = userData.data || userData;
@@ -287,13 +320,13 @@
                         } else if (roles.includes('treasurer')) {
                             window.location.href = '/treasurer/dashboard';
                         } else {
-                            window.location.href = '/member/dashboard';
+                            window.location.href = '/member-dashboard';
                         }
                     } else {
-                        window.location.href = '/member/dashboard'; // Safe fallback
+                        window.location.href = '/member-dashboard'; // Safe fallback
                     }
                 } catch (e) {
-                    window.location.href = '/member/dashboard'; // Safe fallback
+                    window.location.href = '/member-dashboard'; // Safe fallback
                 }
 
             } else {

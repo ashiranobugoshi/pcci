@@ -12,7 +12,7 @@
     .members-header-banner {
         background-color: var(--pcci-red);
         color: #fff;
-        padding: 30px 40px; 
+        padding: 30px 40px;
         border-radius: 10px;
         font-size: 1.8rem;
         font-weight: 800;
@@ -40,7 +40,7 @@
 
     .search-box input {
         width: 100%;
-        padding: 11px 4px 11px 40px; 
+        padding: 11px 4px 11px 40px;
         border: 1.5px solid #ddd;
         border-radius: 8px;
         font-size: 0.92rem;
@@ -101,13 +101,16 @@
     .members-table-wrapper {
         border: 2px solid var(--pcci-red);
         border-radius: 12px;
-        overflow-x: auto; /* Allows horizontal scrolling */
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        overflow-x: auto;
+        /* Allows horizontal scrolling */
+        -webkit-overflow-scrolling: touch;
+        /* Smooth scrolling on iOS */
     }
 
     .members-table {
         width: 100%;
-        min-width: 1100px; /* Forces scrolling on screens smaller than 1100px */
+        min-width: 1100px;
+        /* Forces scrolling on screens smaller than 1100px */
         border-collapse: collapse;
         font-size: 0.88rem;
         margin-bottom: 0;
@@ -121,7 +124,7 @@
         font-size: 0.82rem;
         padding: 14px 12px;
         white-space: nowrap;
-        border-right: 1px solid rgba(255,255,255,0.15);
+        border-right: 1px solid rgba(255, 255, 255, 0.15);
         text-align: center;
     }
 
@@ -155,7 +158,7 @@
         color: #333;
         vertical-align: middle;
         border-right: 1px solid #f0f0f0;
-        text-align: center; 
+        text-align: center;
     }
 
     .members-table tbody td:last-child {
@@ -168,7 +171,7 @@
         color: white !important;
         font-weight: bold;
     }
-    
+
     .icon-add {
         font-size: 0.85rem;
         cursor: pointer;
@@ -176,7 +179,7 @@
         transition: opacity 0.2s;
         color: #0d6efd;
     }
-    
+
     .icon-add:hover {
         opacity: 1;
     }
@@ -252,15 +255,77 @@
     }
 
     /* MODAL CSS */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 15, 20, 0.55); z-index: 9999; align-items: center; justify-content: center; }
-    .modal-overlay.active { display: flex; }
-    .modal-card { background: #fff; border-radius: 16px; width: 100%; max-width: 620px; margin: 20px; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; overflow: hidden; max-height: 90vh; }
-    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 28px 16px; border-bottom: 1px solid #eee; }
-    .modal-body { padding: 24px 32px; overflow-y: auto; flex: 1; }
-    .modal-footer { padding: 16px 28px; border-top: 1px solid #f0f0f0; background: #fafafa; display: flex; justify-content: flex-end; gap: 12px; }
-    .modal-field { margin-bottom: 20px; }
-    .modal-field label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; }
-    .modal-field input, .modal-field select { width: 100%; padding: 10px 14px; border: 1.5px solid #ddd; border-radius: 8px; }
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 15, 20, 0.55);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal-card {
+        background: #fff;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 620px;
+        margin: 20px;
+        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        max-height: 90vh;
+    }
+
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 28px 16px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .modal-body {
+        padding: 24px 32px;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .modal-footer {
+        padding: 16px 28px;
+        border-top: 1px solid #f0f0f0;
+        background: #fafafa;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+
+    .modal-field {
+        margin-bottom: 20px;
+    }
+
+    .modal-field label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .modal-field input,
+    .modal-field select {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1.5px solid #ddd;
+        border-radius: 8px;
+    }
 </style>
 
 {{-- ======== RED HEADER BANNER ======== --}}
@@ -406,81 +471,111 @@
     // ==============================================
     // API AND DATA LOGIC
     // ==============================================
-    let allMembersData = [];
-    let approvedApplicantsForModal = [];
-    let currentPage = 1;
-    let rowsPerPage = 10;
-    let currentSearchTerm = '';
-    const ADMIN_MEMBERS_AUTO_REFRESH_MS = 15000;
+    var allMembersData = [];
+    var approvedApplicantsForModal = [];
+    var currentPage = 1;
+    var rowsPerPage = 10;
+    var currentSearchTerm = '';
+    var ADMIN_MEMBERS_AUTO_REFRESH_MS = 15000;
+    var MEMBERS_PAGE_STATE = window.adminMembersPageState = window.adminMembersPageState || {
+        initialized: false,
+        intervalId: null,
+    };
 
-    document.addEventListener('DOMContentLoaded', function() {
-        fetchMembers();
-
-        setInterval(() => {
-            if (document.visibilityState !== 'visible') return;
-            fetchMembers();
-        }, ADMIN_MEMBERS_AUTO_REFRESH_MS);
-
-        // --- Event Listeners for Filters & Pagination ---
-        document.getElementById('rowsPerPageSelect').addEventListener('change', function() {
-            rowsPerPage = Number(this.value) || 10;
-            currentPage = 1;
-            renderMembers(currentSearchTerm);
-        });
-
-        document.getElementById('memberSearchInput').addEventListener('input', function() {
-            currentSearchTerm = this.value.trim().toLowerCase();
-            currentPage = 1;
-            renderMembers(currentSearchTerm);
-        });
-
-        document.getElementById('memberStatusFilter').addEventListener('change', function() {
-            currentPage = 1;
-            renderMembers(currentSearchTerm);
-        });
-
-        document.getElementById('firstPageBtn').addEventListener('click', function() {
-            if (this.classList.contains('disabled')) return;
-            currentPage = 1;
-            renderMembers(currentSearchTerm);
-        });
-
-        document.getElementById('prevPageBtn').addEventListener('click', function() {
-            if (this.classList.contains('disabled')) return;
-            currentPage -= 1;
-            renderMembers(currentSearchTerm);
-        });
-
-        document.getElementById('nextPageBtn').addEventListener('click', function() {
-            if (this.classList.contains('disabled')) return;
-            currentPage += 1;
-            renderMembers(currentSearchTerm);
-        });
-
-        document.getElementById('lastPageBtn').addEventListener('click', function() {
-            if (this.classList.contains('disabled')) return;
-            const filtered = getFilteredMembers(currentSearchTerm);
-            currentPage = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
-            renderMembers(currentSearchTerm);
-        });
-
-        // Modal Dropdown listener
-        const companySelect = document.getElementById('addMemberCompanySelect');
-        if (companySelect) {
-            companySelect.addEventListener('change', function () {
-                const selectedApplicant = approvedApplicantsForModal.find((item) => String(item.id) === String(this.value));
-                if(selectedApplicant) {
-                    document.getElementById('addMemberCompanyNameReadOnly').value = selectedApplicant.basic_profile?.registered_business_name || '';
-                    document.getElementById('addMemberEmail').value = selectedApplicant.basic_profile?.email || '';
-                }
-            });
+    window.cleanupCurrentAdminPage = function() {
+        if (MEMBERS_PAGE_STATE.intervalId) {
+            clearInterval(MEMBERS_PAGE_STATE.intervalId);
+            MEMBERS_PAGE_STATE.intervalId = null;
         }
-    });
+        MEMBERS_PAGE_STATE.initialized = false;
+    };
+
+    function initMembersPage() {
+        if (!MEMBERS_PAGE_STATE.initialized) {
+            MEMBERS_PAGE_STATE.initialized = true;
+
+            if (!MEMBERS_PAGE_STATE.intervalId) {
+                MEMBERS_PAGE_STATE.intervalId = setInterval(() => {
+                    if (document.visibilityState !== 'visible') return;
+                    if (!document.getElementById('membersTableBody')) {
+                        clearInterval(MEMBERS_PAGE_STATE.intervalId);
+                        MEMBERS_PAGE_STATE.intervalId = null;
+                        MEMBERS_PAGE_STATE.initialized = false;
+                        return;
+                    }
+                    fetchMembers();
+                }, ADMIN_MEMBERS_AUTO_REFRESH_MS);
+            }
+
+            // --- Event Listeners for Filters & Pagination ---
+            document.getElementById('rowsPerPageSelect').addEventListener('change', function() {
+                rowsPerPage = Number(this.value) || 10;
+                currentPage = 1;
+                renderMembers(currentSearchTerm);
+            });
+
+            document.getElementById('memberSearchInput').addEventListener('input', function() {
+                currentSearchTerm = this.value.trim().toLowerCase();
+                currentPage = 1;
+                renderMembers(currentSearchTerm);
+            });
+
+            document.getElementById('memberStatusFilter').addEventListener('change', function() {
+                currentPage = 1;
+                renderMembers(currentSearchTerm);
+            });
+
+            document.getElementById('firstPageBtn').addEventListener('click', function() {
+                if (this.classList.contains('disabled')) return;
+                currentPage = 1;
+                renderMembers(currentSearchTerm);
+            });
+
+            document.getElementById('prevPageBtn').addEventListener('click', function() {
+                if (this.classList.contains('disabled')) return;
+                currentPage -= 1;
+                renderMembers(currentSearchTerm);
+            });
+
+            document.getElementById('nextPageBtn').addEventListener('click', function() {
+                if (this.classList.contains('disabled')) return;
+                currentPage += 1;
+                renderMembers(currentSearchTerm);
+            });
+
+            document.getElementById('lastPageBtn').addEventListener('click', function() {
+                if (this.classList.contains('disabled')) return;
+                const filtered = getFilteredMembers(currentSearchTerm);
+                currentPage = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
+                renderMembers(currentSearchTerm);
+            });
+
+            // Modal Dropdown listener
+            const companySelect = document.getElementById('addMemberCompanySelect');
+            if (companySelect) {
+                companySelect.addEventListener('change', function() {
+                    const selectedApplicant = approvedApplicantsForModal.find((item) => String(item.id) === String(this.value));
+                    if (selectedApplicant) {
+                        document.getElementById('addMemberCompanyNameReadOnly').value = selectedApplicant.basic_profile?.registered_business_name || '';
+                        document.getElementById('addMemberEmail').value = selectedApplicant.basic_profile?.email || '';
+                    }
+                });
+            }
+        }
+
+        fetchMembers();
+    }
+    if (document.readyState !== 'loading') {
+        initMembersPage();
+    } else {
+        document.addEventListener('DOMContentLoaded', initMembersPage);
+    }
 
     // --- FETCH MEMBERS CORE LOGIC ---
     async function fetchMembers() {
         const tbody = document.getElementById('membersTableBody');
-        const token = localStorage.getItem('token');
+        if (!tbody) return;
+        var token = localStorage.getItem('token');
 
         try {
             const response = await fetch(`${window.API_BASE_URL}/v1/members`, {
@@ -496,8 +591,8 @@
             const data = await response.json();
 
             allMembersData = data.data || [];
-            
-            if(allMembersData.length > 0 && document.getElementById('membersTableBody').innerHTML.includes('Loading')) {
+
+            if (allMembersData.length > 0 && document.getElementById('membersTableBody').innerHTML.includes('Loading')) {
                 currentPage = 1;
                 currentSearchTerm = '';
                 document.getElementById('memberSearchInput').value = '';
@@ -542,20 +637,20 @@
 
             const companyName = profile.registered_business_name || 'N/A';
             const email = profile.email || 'N/A';
-            
+
             // Grab raw status and uppercase it for display
             const rawStatus = String(member.status || 'Active').toLowerCase();
             const statusDisplay = rawStatus.toUpperCase();
-            
+
             const memberType = member.membership_type_id === 1 ? 'Directory Member' : 'Regular Member';
 
             // Missing Data Checks for Plus Icons
             const addressRaw = [loc.business_address, loc.city_municipality, loc.province].filter(Boolean).join(', ');
             const addressContent = addressRaw ? addressRaw : '<i class="fa fa-plus icon-add" title="Add Address"></i>';
-            
+
             const contactRaw = profile.telephone_no || rep.contact_no;
             const contactContent = contactRaw ? contactRaw : '<i class="fa fa-plus icon-add" title="Add Contact"></i>';
-            
+
             const repRaw = [rep.first_name, rep.mid_name, rep.surname].filter(Boolean).join(' ');
             const registeredMemberContent = repRaw ? repRaw : '<i class="fa fa-plus icon-add" title="Add Member"></i>';
 
@@ -563,7 +658,7 @@
 
             // FIX: Check against the raw lowercase status for the color coding
             let statusBadge = `<span class="badge bg-success text-uppercase rounded-pill shadow-sm py-1 px-3">${statusDisplay}</span>`;
-            
+
             if (rawStatus === 'inactive' || rawStatus === 'expired') {
                 statusBadge = `<span class="badge text-uppercase rounded-pill shadow-sm py-1 px-3 status-inactive">${statusDisplay}</span>`;
             } else if (rawStatus === 'pending') {
@@ -605,7 +700,7 @@
             const applicant = member.applicant || {};
             const profile = applicant.basic_profile || {};
             const rep = applicant.official_representative || {};
-            
+
             const companyName = (profile.registered_business_name || '').toLowerCase();
             const email = (profile.email || '').toLowerCase();
             const repName = [rep.first_name, rep.surname].filter(Boolean).join(' ').toLowerCase();
@@ -640,14 +735,29 @@
     // --- FETCH MODAL DROPDOWN ---
     async function fetchTreasurerApprovedApplicantsForModal() {
         const companySelect = document.getElementById('addMemberCompanySelect');
-        const token = localStorage.getItem('token');
+        var token = localStorage.getItem('token');
         if (!companySelect) return;
 
         try {
             const [membersRes, paidRes, approvedRes] = await Promise.all([
-                fetch(`${window.API_BASE_URL}/v1/members`, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } }),
-                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } })
+                fetch(`${window.API_BASE_URL}/v1/members`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=paid`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                }),
+                fetch(`${window.API_BASE_URL}/v1/applicants?status=approved`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
             ]);
 
             const membersData = await membersRes.json();
@@ -683,10 +793,10 @@
         const companySelect = document.getElementById('addMemberCompanySelect');
         const inductionDateInput = document.getElementById('addMemberInductionDate');
         const saveBtn = document.getElementById('saveMemberBtn');
-        const token = localStorage.getItem('token');
+        var token = localStorage.getItem('token');
 
         const selectedApplicant = approvedApplicantsForModal.find((item) => String(item.id) === String(companySelect?.value));
-        
+
         if (!selectedApplicant) return alert('Please select an eligible company first.');
         if (!inductionDateInput.value) return alert('Please select an induction date.');
 
@@ -699,7 +809,11 @@
 
             const response = await fetch(`${window.API_BASE_URL}/v1/members`, {
                 method: 'POST',
-                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({
                     applicant_id: selectedApplicant.id,
                     company_name: companyName,

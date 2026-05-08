@@ -31,7 +31,8 @@
         position: relative;
         background: #fff;
         margin-bottom: 24px;
-        display: none; /* Hidden until data loads */
+        display: none;
+        /* Hidden until data loads */
     }
 
     .loading-container {
@@ -53,62 +54,267 @@
         border-bottom: 1px solid #eee;
     }
 
-    .applicant-detail-card-header h3 { font-size: 1.25rem; font-weight: 700; color: #111; margin: 0; }
+    .applicant-detail-card-header h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111;
+        margin: 0;
+    }
 
     .btn-close-card {
-        width: 32px; height: 32px; border: 1px solid #ff0000; border-radius: 6px;
-        background: #fff; display: flex; align-items: center; justify-content: center;
-        cursor: pointer; color: #666; font-size: 1.1rem; transition: all 0.2s;
+        width: 32px;
+        height: 32px;
+        border: 1px solid #ff0000;
+        border-radius: 6px;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #666;
+        font-size: 1.1rem;
+        transition: all 0.2s;
     }
-    .btn-close-card:hover { background: #ffffff; border-color: #ff0000; }
+
+    .btn-close-card:hover {
+        background: #ffffff;
+        border-color: #ff0000;
+    }
 
     /* --- Scrollable Content Area --- */
-    .applicant-detail-body { padding: 20px 28px 28px; max-height: 480px; overflow-y: auto; }
-    .applicant-detail-body::-webkit-scrollbar { width: 6px; }
-    .applicant-detail-body::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 3px; }
-    .applicant-detail-body::-webkit-scrollbar-thumb { background: #c0c0c0; border-radius: 3px; }
-    .applicant-detail-body::-webkit-scrollbar-thumb:hover { background: #999; }
+    .applicant-detail-body {
+        padding: 20px 28px 28px;
+        max-height: 480px;
+        overflow-y: auto;
+    }
+
+    .applicant-detail-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .applicant-detail-body::-webkit-scrollbar-track {
+        background: #f0f0f0;
+        border-radius: 3px;
+    }
+
+    .applicant-detail-body::-webkit-scrollbar-thumb {
+        background: #c0c0c0;
+        border-radius: 3px;
+    }
+
+    .applicant-detail-body::-webkit-scrollbar-thumb:hover {
+        background: #999;
+    }
 
     /* --- Section Headings --- */
-    .detail-section-title { font-size: 0.95rem; font-weight: 700; color: #222; margin-top: 20px; margin-bottom: 12px; padding-bottom: 4px; }
-    .detail-section-title:first-child { margin-top: 0; }
+    .detail-section-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #222;
+        margin-top: 20px;
+        margin-bottom: 12px;
+        padding-bottom: 4px;
+    }
+
+    .detail-section-title:first-child {
+        margin-top: 0;
+    }
 
     /* --- Field Rows --- */
-    .detail-row { display: flex; flex-wrap: wrap; gap: 8px 40px; margin-bottom: 6px; }
-    .detail-field { flex: 1 1 45%; min-width: 220px; font-size: 0.9rem; color: #333; padding: 3px 0; line-height: 1.5; }
-    .detail-field strong { color: #555; font-weight: 600; }
-    
-    .detail-row-inline { display: flex; flex-wrap: wrap; gap: 8px 32px; margin-bottom: 6px; }
-    .detail-row-inline .detail-field { flex: 0 1 auto; min-width: auto; }
+    .detail-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 40px;
+        margin-bottom: 6px;
+    }
+
+    .detail-field {
+        flex: 1 1 45%;
+        min-width: 220px;
+        font-size: 0.9rem;
+        color: #333;
+        padding: 3px 0;
+        line-height: 1.5;
+    }
+
+    .detail-field strong {
+        color: #555;
+        font-weight: 600;
+    }
+
+    .detail-row-inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 32px;
+        margin-bottom: 6px;
+    }
+
+    .detail-row-inline .detail-field {
+        flex: 0 1 auto;
+        min-width: auto;
+    }
 
     /* --- Action Buttons --- */
-    .applicant-actions { display: none; gap: 16px; margin-top: 8px; } /* Hidden until data loads */
-    .btn-approve { background-color: #1a2744; color: #fff; border: none; padding: 12px 32px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; }
-    .btn-approve:hover { background-color: #0f1a30; transform: translateY(-1px); }
-    .btn-approve:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-reject { background-color: #7a1a2e; color: #fff; border: none; padding: 12px 32px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; }
-    .btn-reject:hover { background-color: #5c1020; transform: translateY(-1px); }
+    .applicant-actions {
+        display: none;
+        gap: 16px;
+        margin-top: 8px;
+    }
+
+    /* Hidden until data loads */
+    .btn-approve {
+        background-color: #1a2744;
+        color: #fff;
+        border: none;
+        padding: 12px 32px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-approve:hover {
+        background-color: #0f1a30;
+        transform: translateY(-1px);
+    }
+
+    .btn-approve:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-reject {
+        background-color: #7a1a2e;
+        color: #fff;
+        border: none;
+        padding: 12px 32px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-reject:hover {
+        background-color: #5c1020;
+        transform: translateY(-1px);
+    }
 
     /* --- Modal Styles (From Paul's branch) --- */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
-    .modal-content { background: #fff; padding: 30px; border-radius: 12px; border: 1px solid #ccc; width: 100%; max-width: 400px; color: #333; }
-    .modal-content h3 { margin-top: 0; color: var(--pcci-red, #be1e38); font-family: 'Poppins', sans-serif; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; margin-bottom: 5px; color: #555; font-size: 0.9rem; font-weight: bold;}
-    .form-group select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; background: #f9f9f9; color: #333; }
-    .btn-modal { padding: 10px 15px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
-    .btn-modal-primary { background: #28a745; color: white; transition: 0.3s; }
-    .btn-modal-secondary { background: #ccc; color: #333; transition: 0.3s; }
-    .alert-error { background: rgba(255,0,0,0.1); color: #ff6b6b; border: 1px solid #ff6b6b; padding: 10px; border-radius: 6px; margin-bottom: 15px; display: none; }
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        border: 1px solid #ccc;
+        width: 100%;
+        max-width: 400px;
+        color: #333;
+    }
+
+    .modal-content h3 {
+        margin-top: 0;
+        color: var(--pcci-red, #be1e38);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+        font-size: 0.9rem;
+        font-weight: bold;
+    }
+
+    .form-group select {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background: #f9f9f9;
+        color: #333;
+    }
+
+    .btn-modal {
+        padding: 10px 15px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .btn-modal-primary {
+        background: #28a745;
+        color: white;
+        transition: 0.3s;
+    }
+
+    .btn-modal-secondary {
+        background: #ccc;
+        color: #333;
+        transition: 0.3s;
+    }
+
+    .alert-error {
+        background: rgba(255, 0, 0, 0.1);
+        color: #ff6b6b;
+        border: 1px solid #ff6b6b;
+        padding: 10px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        display: none;
+    }
 
     /* --- Responsive --- */
     @media (max-width: 768px) {
-        .applicant-header-banner { padding: 36px 24px; font-size: 1.5rem; }
-        .applicant-detail-card-header { padding: 16px 20px 10px; }
-        .applicant-detail-body { padding: 16px 20px 20px; max-height: 400px; }
-        .detail-field { flex: 1 1 100%; min-width: unset; }
-        .detail-row-inline .detail-field { flex: 1 1 45%; min-width: 140px; }
-        .applicant-actions { flex-direction: column; }
+        .applicant-header-banner {
+            padding: 36px 24px;
+            font-size: 1.5rem;
+        }
+
+        .applicant-detail-card-header {
+            padding: 16px 20px 10px;
+        }
+
+        .applicant-detail-body {
+            padding: 16px 20px 20px;
+            max-height: 400px;
+        }
+
+        .detail-field {
+            flex: 1 1 100%;
+            min-width: unset;
+        }
+
+        .detail-row-inline .detail-field {
+            flex: 1 1 45%;
+            min-width: 140px;
+        }
+
+        .applicant-actions {
+            flex-direction: column;
+        }
     }
 
     @media (max-width: 576px) {
@@ -223,9 +429,9 @@
     <div class="modal-content">
         <h3>Approve Applicant</h3>
         <p style="color: #666; font-size: 0.9rem;">Assign a membership type to finalize the approval.</p>
-        
+
         <div id="approveError" class="alert-error"></div>
-        
+
         <form id="approveForm" onsubmit="submitApprove(event)">
             <div class="form-group">
                 <label>Membership Type</label>
@@ -244,17 +450,23 @@
 </div>
 
 <script>
-    const token = localStorage.getItem('token');
+    var token = localStorage.getItem('token');
     // Extract ID from the URL (e.g., /applicant/66 -> 66)
-    const applicantId = window.location.pathname.split('/').pop();
+    var applicantId = window.location.pathname.split('/').pop();
 
-    document.addEventListener('DOMContentLoaded', function() {
+    function initApplicantProfilePage() {
         if (!token) {
             window.location.href = '/login';
             return;
         }
         fetchApplicantData();
-    });
+    }
+
+    if (document.readyState !== 'loading') {
+        initApplicantProfilePage();
+    } else {
+        document.addEventListener('DOMContentLoaded', initApplicantProfilePage);
+    }
 
     // Helper function to force HTTPS for API requests
     function getSecureApiUrl() {
@@ -268,7 +480,10 @@
     async function fetchApplicantData() {
         try {
             const response = await fetch(`${getSecureApiUrl()}/v1/applicants`, {
-                headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
             });
 
             if (response.status === 401) {
@@ -280,7 +495,7 @@
             const result = await response.json();
             if (response.ok && result.data) {
                 const applicant = result.data.find(app => app.id == applicantId);
-                
+
                 if (applicant) {
                     populateUI(applicant);
                 } else {
@@ -313,7 +528,7 @@
         document.getElementById('val-email').innerText = safe(profile.email);
         document.getElementById('val-contact-no').innerText = safe(profile.telephone_no);
         document.getElementById('val-membership-type').innerText = safe(app.membership_type);
-        
+
         document.getElementById('val-address').innerText = safe(loc.business_address);
         document.getElementById('val-city').innerText = safe(loc.city_municipality);
         document.getElementById('val-province').innerText = safe(loc.province);
@@ -335,21 +550,21 @@
         const status = safe(app.status).toLowerCase();
         const statusEl = document.getElementById('val-status');
         statusEl.innerText = safe(app.status);
-        
+
         if (status === 'approved' || status === 'paid') {
-            statusEl.style.color = '#15803d'; 
+            statusEl.style.color = '#15803d';
             document.getElementById('btnApprove').style.display = 'none';
         } else if (status === 'rejected' || status === 'declined') {
-            statusEl.style.color = '#b91c1c'; 
+            statusEl.style.color = '#b91c1c';
             document.getElementById('btnReject').style.display = 'none';
         } else {
-            statusEl.style.color = '#c2410c'; 
+            statusEl.style.color = '#c2410c';
         }
 
         if (app.membership_type && app.membership_type !== 'N/A') {
             const select = document.getElementById('approveMembershipType');
-            for(let i=0; i < select.options.length; i++) {
-                if(select.options[i].value.toLowerCase() === app.membership_type.toLowerCase()) {
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value.toLowerCase() === app.membership_type.toLowerCase()) {
                     select.selectedIndex = i;
                     break;
                 }
@@ -374,21 +589,21 @@
     // --- DIRECT ADMIN APPROVE API CALL (PUT /v1/applicants/{id}) ---
     async function submitApprove(e) {
         e.preventDefault();
-        
+
         const membershipTypeString = document.getElementById('approveMembershipType').value;
         const btnApprove = document.getElementById('approveSubmitBtn');
         const errorDiv = document.getElementById('approveError');
-        
-        btnApprove.disabled = true; 
+
+        btnApprove.disabled = true;
         btnApprove.innerText = 'Approving...';
         errorDiv.style.display = 'none';
 
         try {
             const targetUrl = `${getSecureApiUrl()}/v1/applicants/${applicantId}`;
-            
+
             // Log exactly what we are sending for debugging
             console.log("Submitting Admin Approval to:", targetUrl);
-            
+
             const response = await fetch(targetUrl, {
                 method: 'PUT',
                 headers: {
@@ -405,7 +620,11 @@
             // Capture raw response to expose backend server errors
             const responseText = await response.text();
             let data = {};
-            try { data = JSON.parse(responseText); } catch(e) { console.error("Non-JSON API Response"); }
+            try {
+                data = JSON.parse(responseText);
+            } catch (e) {
+                console.error("Non-JSON API Response");
+            }
 
             if (response.ok) {
                 closeApproveModal();
@@ -421,7 +640,7 @@
             errorDiv.innerText = 'Network error: ' + err.message;
             errorDiv.style.display = 'block';
         } finally {
-            btnApprove.disabled = false; 
+            btnApprove.disabled = false;
             btnApprove.innerText = 'Confirm Approval';
         }
     }
@@ -433,14 +652,14 @@
         }
 
         const btnReject = document.getElementById('btnReject');
-        btnReject.disabled = true; 
+        btnReject.disabled = true;
         btnReject.innerText = 'Rejecting...';
 
         try {
             const targetUrl = `${getSecureApiUrl()}/v1/applicants/${applicantId}`;
-            
+
             console.log("Submitting Admin Rejection to:", targetUrl);
-            
+
             const response = await fetch(targetUrl, {
                 method: 'PUT',
                 headers: {
@@ -455,10 +674,12 @@
 
             const responseText = await response.text();
             let data = {};
-            try { data = JSON.parse(responseText); } catch(e) {}
+            try {
+                data = JSON.parse(responseText);
+            } catch (e) {}
 
             if (response.ok) {
-                fetchApplicantData(); 
+                fetchApplicantData();
             } else {
                 console.error("Backend Error:", response.status, data);
                 alert(`Backend API Error (${response.status}): \n\n${data.message || responseText || 'Unknown backend failure.'}`);
@@ -467,10 +688,10 @@
             console.error("Network Catch:", err);
             alert('Network error: ' + err.message);
         } finally {
-            btnReject.disabled = false; 
+            btnReject.disabled = false;
             btnReject.innerText = 'Reject';
         }
     }
-</script>   
+</script>
 
 @endsection
