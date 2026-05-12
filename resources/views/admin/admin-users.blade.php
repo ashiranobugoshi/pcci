@@ -376,7 +376,8 @@
     <table class="users-table">
         <thead>
             <tr>
-                <th>Name</th>
+                <th>First Name</th>
+                <th>Last Name</th>
                 <th>Email</th>
                 <th>Role</th>
                 <th>Created</th>
@@ -401,8 +402,12 @@
         <div id="registerError" class="alert-msg alert-error"></div>
         <form id="registerForm" onsubmit="handleRegister(event)">
             <div class="modal-form-group">
-                <label>Full Name</label>
-                <input type="text" id="regName" required placeholder="e.g. John Doe">
+                <label>First Name</label>
+                <input type="text" id="regFirstName" required placeholder="e.g. John">
+            </div>
+            <div class="modal-form-group">
+                <label>Last Name</label>
+                <input type="text" id="regLastName" required placeholder="e.g. Doe">
             </div>
             <div class="modal-form-group">
                 <label>Email Address</label>
@@ -501,10 +506,11 @@
 
         const filtered = allUsers.filter(user => {
             if (!search) return true;
-            const name = (user.name || '').toLowerCase();
+            const firstName = (user.first_name || '').toLowerCase();
+            const lastName = (user.last_name || '').toLowerCase();
             const email = (user.email || '').toLowerCase();
             const roles = (user.roles || []).join(' ').toLowerCase();
-            return name.includes(search) || email.includes(search) || roles.includes(search);
+            return firstName.includes(search) || lastName.includes(search) || email.includes(search) || roles.includes(search);
         });
 
         if (filtered.length === 0) {
@@ -537,7 +543,8 @@
 
             return `
                 <tr>
-                    <td style="font-weight: 600;">${user.name || 'N/A'}</td>
+                    <td style="font-weight: 600;">${user.first_name || 'N/A'}</td>
+                    <td style="font-weight: 600;">${user.last_name || 'N/A'}</td>
                     <td>${user.email || 'N/A'}</td>
                     <td>${roleBadges}</td>
                     <td>${created}</td>
@@ -564,7 +571,17 @@
         btn.innerText = 'Registering...';
         errorDiv.style.display = 'none';
 
+        const firstName = document.getElementById('regFirstName').value;
+        const lastName = document.getElementById('regLastName').value;
+        const email = document.getElementById('regEmail').value;
+        const role = document.getElementById('regRole').value;
+
+        // Generate a secure temporary password just in case the backend requires it!
+        const tempPassword = Math.random().toString(36).slice(-8) + "P@ss1!";
+
         try {
+            // Depending on your routes, this might need to be /v1/users instead of /register.
+            // But we will stick to /register with the bulletproof payload first.
             const response = await fetch(`${window.API_BASE_URL}/register`, {
                 method: 'POST',
                 headers: {
@@ -573,9 +590,15 @@
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    name: document.getElementById('regName').value,
-                    email: document.getElementById('regEmail').value,
-                    role: document.getElementById('regRole').value
+                    name: `${firstName} ${lastName}`,
+                    first_name: firstName,
+                    last_name: lastName,
+                    email: email,
+                    role: role,
+                    roles: [role],
+                    password: tempPassword,
+                    password_confirmation: tempPassword,
+                    requires_password_change: true // <--- ADD THIS LINE
                 })
             });
 
@@ -583,7 +606,12 @@
 
             if (response.ok || response.status === 201 || response.status === 202) {
                 closeRegisterModal();
-                showSuccessModal(data.user.email, data.password);
+
+                // If the backend generated a password, use it. Otherwise, use our temp password!
+                const finalPassword = (data.password) ? data.password : tempPassword;
+                const finalEmail = (data.user && data.user.email) ? data.user.email : email;
+
+                showSuccessModal(finalEmail, finalPassword);
                 fetchUsers(); // Refresh the table
             } else {
                 let msg = data.message || 'Registration failed.';
