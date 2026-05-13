@@ -1935,7 +1935,7 @@
     // ==========================================
     // INITIALIZATION & AUTHENTICATION
     // ==========================================
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
         if (!token) {
             window.location.href = '/login';
             return;
@@ -1959,6 +1959,10 @@
 
         seedUserFallbackUI();
         startLiveClock();
+
+        // Fetch initial data
+        await fetchRealDashboardData(token);
+        profileUiRendered = true;
 
         const hashTab = (window.location.hash || '').replace('#', '').trim();
         const savedTab = hashTab || localStorage.getItem('activeTab') || 'dashboard';
@@ -2362,6 +2366,7 @@
 
     function logout() {
         localStorage.removeItem('token');
+        localStorage.removeItem('activeTab');
         window.location.href = '/login';
     }
 

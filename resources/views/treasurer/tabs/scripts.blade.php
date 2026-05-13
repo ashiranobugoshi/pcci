@@ -295,9 +295,25 @@
             if (foundM) typeId = foundM.membership_type_id;
         }
 
+        // 1. Try to find the exact name from the database types
         if (typeId && globalMembershipTypes.length > 0) {
             const found = globalMembershipTypes.find(t => String(t.id) === String(typeId));
             if (found) return found.name;
+        }
+
+        // ==========================================
+        // 2. SMART FALLBACK (For Initial Registrations)
+        // ==========================================
+        // If the ID is missing, automatically infer the type from the amount paid!
+        const amt = parseFloat(record.amount || 0);
+        if (amt === 500) return 'Micro';
+        if (amt === 5000) return 'Small Enterprise'; // Matches your 5000 requirement
+        if (amt === 10000) return 'Medium';
+        if (amt === 15000) return 'Large';
+
+        // 3. Last resort: Check if there's a text-based company type in the applicant profile
+        if (record.applicant?.organization_membership?.type_of_company) {
+            return record.applicant.organization_membership.type_of_company;
         }
 
         return 'Unknown Type';
@@ -741,7 +757,7 @@
 
         const businessName = record.applicant?.basic_profile?.registered_business_name || record.basic_profile?.registered_business_name || 'Unknown';
         const paymentType = record.payment_type || 'GCash';
-        const membershipType = getMembershipLabel(record) === 'Small' ? 'Annual' : 'Annual';
+        const membershipType = getMembershipLabel(record) === 'Small Enterprise' ? 'Annual' : 'Annual';
         const paymentDate = (record.created_at || record.date_approved || '').split('T')[0] || '';
 
         document.getElementById('transactionMemberInput').value = businessName;
@@ -1882,21 +1898,7 @@
     }
 
 
-    // Initialize on page load and set up auto-refresh
-    document.addEventListener('DOMContentLoaded', () => {
-        if (typeof allApplicantsData !== 'undefined' &&
-            typeof allTransactionsData !== 'undefined' &&
-            typeof allMembersData !== 'undefined') {
-            updateNotificationsPanel();
 
-            // Auto-refresh notifications every 30 seconds
-            setInterval(() => {
-                if (typeof allApplicantsData !== 'undefined') {
-                    updateNotificationsPanel();
-                }
-            }, 30000);
-        }
-    });
 
     function openFullNotificationsModal() {
         document.getElementById('notificationPanel').style.display = 'none';
@@ -2494,6 +2496,16 @@
         renderRecentPayments();
         fetchTransactions();
 
+        // Initialize notifications panel
+        updateNotificationsPanel();
+
+        // Auto-refresh notifications every 30 seconds
+        setInterval(() => {
+            if (typeof allApplicantsData !== 'undefined') {
+                updateNotificationsPanel();
+            }
+        }, 30000);
+
         const searchInputs = [{
                 id: 'memberSearch',
                 func: applyMemberFilters
@@ -3076,133 +3088,6 @@
         updateReportsDashboard();
     }
 
-    async function refreshTabData(tabName) {
-        if (!token) return;
-
-        // FIX: Add "await" to everything so data loads in the exact right order.
-        // We must load Applicants and Members BEFORE Transactions so the fallback arrays are populated!
-        if (tabName === 'dashboard') {
-            await fetchApplicants();
-            await fetchMembers();
-            await renderRecentPayments();
-            await fetchTransactions();
-            initCharts();
-        } else if (tabName === 'members') {
-            await fetchMembers();
-            await fetchTreasurerApprovedApplicantsForModal();
-        } else if (tabName === 'applicants') {
-            await fetchApplicants();
-            await renderRecentPayments();
-        } else if (tabName === 'transactions') {
-            await fetchApplicants();
-            await fetchMembers();
-            await fetchTransactions();
-        } else if (tabName === 'reports') {
-            await fetchApplicants();
-            await fetchMembers();
-            await fetchTransactions();
-            initCharts();
-        }
-    }
-
-    // --- INITIALIZATION ---
-    document.addEventListener('DOMContentLoaded', async () => {
-        if (!token) {
-            window.location.href = '/login';
-            return;
-        }
-
-        sanitizeSearchAutofill();
-        setTimeout(sanitizeSearchAutofill, 120);
-
-        const loadedFromApi = await loadAccountSettingsFromApi();
-        if (!loadedFromApi) applyStoredAccountSettings();
-
-        // Fetch membership types first
-        await fetchMembershipTypes();
-
-        // 1. Fetch data
-        await fetchMembershipTypes();
-        await fetchApplicants();
-        await fetchMembers();
-        await fetchTransactions(); // Inside fetchTransactions, ensure you call initCharts() at the end
-
-        // 2. Initial UI setup
-        fetchWelcomeName();
-        initCharts();
-
-
-        const searchInputs = [{
-                id: 'memberSearch',
-                func: applyMemberFilters
-            },
-            {
-                id: 'memberSort',
-                func: applyMemberFilters
-            },
-            {
-                id: 'applicantSearch',
-                func: applyApplicantFilters
-            },
-            {
-                id: 'applicantSort',
-                func: applyApplicantFilters
-            },
-            {
-                id: 'applicantStatusFilter',
-                func: applyApplicantFilters
-            }
-        ];
-
-        searchInputs.forEach(input => {
-            const el = document.getElementById(input.id);
-            if (el) {
-                el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', input.func);
-            }
-        });
-
-        // Event listener for Add Member Dropdown
-        const companySelect = document.getElementById('addMemberCompanySelect');
-        if (companySelect) {
-            companySelect.addEventListener('change', function() {
-                const selectedId = this.value;
-                if (!selectedId) {
-                    populateAddMemberReadOnlyFields(null);
-                    return;
-                }
-                const selectedApplicant = approvedApplicantsForModal.find(app => String(app.id) === String(selectedId));
-                populateAddMemberReadOnlyFields(selectedApplicant);
-            });
-        }
-
-        const dashboardPaymentRangeEl = document.getElementById('dashboardPaymentRange');
-        if (dashboardPaymentRangeEl) {
-            dashboardPaymentRange = dashboardPaymentRangeEl.value || 'day';
-            dashboardPaymentRangeEl.addEventListener('change', (event) => {
-                dashboardPaymentRange = event.target.value;
-                updateDashboardPaymentSummary(allTransactionsData);
-            });
-        }
-
-        const dashboardRevenueRangeEl = document.getElementById('dashboardRevenueRange');
-        if (dashboardRevenueRangeEl) {
-            dashboardRevenueRange = dashboardRevenueRangeEl.value || 'month';
-            dashboardRevenueRangeEl.addEventListener('change', (event) => {
-                dashboardRevenueRange = event.target.value;
-                updateReportsDashboard();
-            });
-        }
-
-        const savedTab = localStorage.getItem('activeTab') || 'dashboard';
-        switchTab(savedTab, false);
-
-        setInterval(() => {
-            if (document.visibilityState !== 'visible') return;
-            if (!['members', 'dashboard', 'reports'].includes(currentActiveTab)) return;
-            fetchMembers();
-        }, TREASURER_MEMBERS_AUTO_REFRESH_MS);
-    });
-
     // Mobile Sidebar Toggle
     function toggleSidebar() {
         const sidebar = document.querySelector('.sidebar');
@@ -3259,17 +3144,19 @@
     async function refreshTabData(tabName) {
         if (!token) return;
 
-        const needsApplicants = allApplicantsData.length === 0;
-        const needsMembers = allMembersData.length === 0;
-        const needsTransactions = allTransactionsData.length === 0;
+        const hasMemberRows = document.getElementById('members-table-body')?.children.length > 0;
+        const hasApplicantRows = document.getElementById('applicant-table-body')?.children.length > 0;
+        const hasTransactionRows = document.getElementById('transaction-table-body')?.children.length > 0;
+
+        const needsApplicants = allApplicantsData.length === 0 || !hasApplicantRows;
+        const needsMembers = allMembersData.length === 0 || !hasMemberRows;
+        const needsTransactions = allTransactionsData.length === 0 || !hasTransactionRows;
 
         if (tabName === 'dashboard') {
             if (needsApplicants) await fetchApplicants();
             if (needsMembers) await fetchMembers();
             if (needsTransactions) await fetchTransactions();
 
-            // THE FIX: Only draw charts if they don't exist yet! 
-            // Stops the dashboard from resetting visually.
             if (!window.dashPieChartInstance) {
                 initCharts();
             }
@@ -3307,6 +3194,7 @@
 
     function logout() {
         localStorage.removeItem('token');
+        localStorage.removeItem('activeTab');
         window.location.href = '/login';
     }
 

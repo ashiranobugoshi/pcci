@@ -775,6 +775,7 @@
             adminMainContent.innerHTML = temp.innerHTML;
             document.title = pageTitle;
             runScripts(scripts, pageKey);
+
             adminMainContent.scrollTo({
                 top: 0,
                 behavior: 'auto'
@@ -843,7 +844,7 @@
                             'X-Requested-With': 'XMLHttpRequest',
                             'Accept': 'text/html'
                         },
-                        cache: 'force-cache'
+                        cache: 'no-store'
                     });
 
                     if (!response.ok) throw new Error(`Failed to fetch ${absoluteUrl}: ${response.status}`);
@@ -934,6 +935,7 @@
                 localStorage.removeItem('role');
                 localStorage.removeItem('userName');
                 localStorage.removeItem('userEmail');
+                localStorage.removeItem('activeTab');
 
                 window.location.href = '/login';
             }
