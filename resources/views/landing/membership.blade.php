@@ -3,256 +3,181 @@
 
 @section('content')
 
-{{-- THIS IS THE MAGIC LINE THAT FIXES "UNDEFINED" --}}
-@include('partials.api-config')
-
 {{-- HERO SECTION --}}
-<div class="w-100 mb-0 d-flex flex-column align-items-center" ... >
-
-{{-- HERO SECTION --}}
-<div class="w-100 mb-0 d-flex flex-column align-items-center" style="height: 623px; margin-top: -1px; background-color: var(--bg-hero); padding-top: 130px; transition: background-color 0.3s ease;">
+<div class="w-100 mb-0 d-flex flex-column align-items-center" style="height: 623px; margin-top: -1px; background-color: var(--bg-hero, #1a1a2e); padding-top: 130px; transition: background-color 0.3s ease;">
     <div class="container d-flex flex-column align-items-center text-center">
         <span class="mb-3 d-block" style="color: #ffffff !important; font-family: 'DM Sans', sans-serif; font-weight: 900; font-size: 24px; text-transform: uppercase;">JOIN PCCI - VALENZUELA</span>
         <h1 class="headline-text fw-bold mb-4 text-uppercase" style="color: #ffffff !important; font-family: 'DM Sans', sans-serif; font-size: 63px;">
             Discover Local <span style="color: #EB3223;">Businesses</span>
         </h1>
-        <p style="color: #ffffff !important; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 24px; max-width: 1262px; margin-bottom: 21px;">
-            Connect with our diverse community of innovative businesses and entrepreneurs driving economic growth and excellence in Valenzuela City.
+        <p style="color: #ffffff !important; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 24px; max-width: 1262px; margin-bottom: 40px;">
+            Explore our network of trusted local enterprises and connect with the best in Valenzuela City.
         </p>
-        <div style="width: 782px; max-width: 90%;">
-            <div class="input-group shadow-sm rounded overflow-hidden border-0 align-items-center" style="height: 62px; background-color: var(--bg-input);">
-                <span class="input-group-text border-0 ps-4" style="background-color: transparent;"><i class="bi bi-search text-secondary"></i></span>
-                <input type="text" class="form-control border-0 shadow-none text-secondary" style="background-color: transparent;" placeholder="Search businesses, services..." id="searchInput">
-                <button class="btn text-white px-5 fw-bold text-uppercase" style="background-color: #D40032; margin-right: 13px; height: 40px; border-radius: 6px;" onclick="handleSearch()">Search</button>
-            </div>
+
+        <div class="search-overlay bg-white p-3 rounded shadow d-flex align-items-center" style="max-width: 800px; width: 100%; margin-top: 20px;">
+            <i class="bi bi-search ms-3 me-2 fs-5 text-muted"></i>
+            <input type="text" id="searchInput" class="form-control border-0 shadow-none fs-5" placeholder="Search businesses, industries, or tags..." oninput="handleSearch()">
+            <select id="sortSelect" class="form-select border-0 bg-light ms-3 shadow-none w-auto" onchange="handleSearch()">
+                <option value="asc">A - Z</option>
+                <option value="desc">Z - A</option>
+            </select>
         </div>
     </div>
 </div>
 
-{{-- Filters & Listing Section --}}
-<div class="py-5" style="background-color: var(--bg-section); transition: background-color 0.3s ease;">
-    <div class="w-100 mb-5" style="border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
-        <div class="container px-4 px-lg-5">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 py-3">
-                
-                <div class="d-flex flex-wrap gap-2">
-                    <select class="form-select form-select-sm border-0 shadow-sm" style="width: auto; background-color: var(--bg-input); color: var(--text-main);">
-                        <option selected>All Categories</option>
-                    </select>
-
-                    <select class="form-select form-select-sm border-0 shadow-sm" style="width: auto; background-color: var(--bg-input); color: var(--text-main);">
-                        <option selected>All Locations</option>
-                    </select>
-
-                    <select class="form-select form-select-sm border-0 shadow-sm" style="width: auto; background-color: var(--bg-input); color: var(--text-main);" id="sortSelect" onchange="handleSort()">
-                        <option value="asc">Sort: A-Z</option>
-                        <option value="desc">Sort: Z-A</option>
-                    </select>
-                </div>
-
-                <div class="small fw-medium" style="color: var(--text-muted); font-family: 'DM Sans', sans-serif;" id="showingText">
-                    Loading results...
-                </div>
-            </div>
-        </div>
+{{-- ========================================== --}}
+{{-- MEMBERSHIP PLANS SECTION                   --}}
+{{-- ========================================== --}}
+<div class="container" style="padding-top: 80px; padding-bottom: 40px;">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold" style="font-family: 'DM Sans', sans-serif; font-size: 2.5rem; color: #111827; letter-spacing: -0.5px;">MEMBERSHIP PLANS</h2>
     </div>
 
-    {{-- CARD GRID --}}
-    <div class="container px-4 px-lg-5">
-        <div class="row g-4" id="businessGrid">
-            <div class="col-12 text-center py-5 text-muted">
-                <i class="bi bi-arrow-repeat" style="display:inline-block; animation: spin 1s linear infinite; font-size: 2rem;"></i>
-                <p class="mt-2">Fetching local businesses...</p>
+    <div class="row justify-content-center g-4">
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow text-center plan-card" style="border-radius: 12px; padding: 40px 20px;">
+                <div class="card-body d-flex flex-column align-items-center">
+                    <div class="mb-3" style="width: 70px; height: 70px; background-color: rgba(190, 30, 56, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-journal-bookmark-fill" style="font-size: 1.8rem; color: #be1e38;"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3" style="font-family: 'DM Sans', sans-serif; letter-spacing: 1px;">DIRECTORY MEMBER</h5>
+                    <div class="mb-4">
+                        <span style="font-family: 'DM Sans', sans-serif; font-size: 2rem; font-weight: 800; color: #be1e38;">P 1,500.00</span>
+                        <span class="text-muted fw-bold d-block mt-1" style="font-size: 0.8rem; letter-spacing: 2px;">/ ANNUALLY</span>
+                    </div>
+                    <a href="{{ route('signup') }}" class="btn btn-outline-dark fw-bold px-4 py-2 mt-auto" style="border-radius: 6px; letter-spacing: 1px; border-width: 2px; width: 80%;">READ MORE</a>
+                </div>
             </div>
         </div>
 
-        {{-- PAGINATION --}}
-        <div class="mt-5 d-flex justify-content-center">
-            <nav aria-label="Page navigation">
-                <ul class="pagination" id="paginationContainer"></ul>
-            </nav>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow text-center plan-card" style="border-radius: 12px; padding: 40px 20px; background-color: #be1e38; color: white;">
+                <div class="card-body d-flex flex-column align-items-center">
+                    <div class="mb-3" style="width: 70px; height: 70px; background-color: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-person-badge-fill" style="font-size: 1.8rem; color: white;"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3" style="font-family: 'DM Sans', sans-serif; letter-spacing: 1px;">REGULAR MEMBER</h5>
+                    <div class="mb-4">
+                        <span class="d-block fw-bold mb-1" style="font-size: 0.8rem; opacity: 0.9; letter-spacing: 1px;">STARTS AT</span>
+                        <span style="font-family: 'DM Sans', sans-serif; font-size: 2rem; font-weight: 800;">P 3,000.00</span>
+                        <span class="fw-bold d-block mt-1" style="font-size: 0.8rem; letter-spacing: 2px; opacity: 0.8;">/ ANNUALLY</span>
+                    </div>
+                    <a href="{{ route('signup') }}" class="btn btn-light fw-bold px-4 py-2 mt-auto" style="border-radius: 6px; color: #be1e38; letter-spacing: 1px; width: 80%;">APPLY NOW</a>
+                </div>
+            </div>
         </div>
+
     </div>
 </div>
 
-{{-- ======== DYNAMIC FETCH LOGIC ======== --}}
+{{-- ========================================== --}}
+{{-- BUSINESS DIRECTORY SECTION                 --}}
+{{-- ========================================== --}}
+<div class="container py-5" style="min-height: 500px; border-top: 1px solid #eee;">
+
+    <div class="text-center mb-5 mt-4">
+        <h2 class="fw-bold" style="font-family: 'DM Sans', sans-serif; font-size: 2.5rem; color: #111827; letter-spacing: -0.5px;">PCCI DIRECTORY</h2>
+    </div>
+
+    <div id="businessGrid" class="row g-4 mt-2">
+        <div class="col-12 text-center py-5">
+            <div class="spin fs-1" style="color: #be1e38;"><i class="bi bi-arrow-repeat"></i></div>
+            <h4 class="mt-3 text-muted">Loading Businesses...</h4>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-center mt-5" id="paginationControls"></div>
+</div>
+
 <script>
+    let masterBusinesses = [];
     let allBusinesses = [];
-    let masterBusinesses = []; // unfiltered copy
     let currentPage = 1;
-    const perPage = 12;
+    const itemsPerPage = 9;
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener("DOMContentLoaded", function() {
         fetchBusinesses();
-
-        // Allow pressing Enter in the search input
-        document.getElementById('searchInput').addEventListener('keyup', function(e) {
-            if (e.key === 'Enter') handleSearch();
-        });
     });
 
     async function fetchBusinesses() {
         try {
-            const token = localStorage.getItem('token');
-            const headers = { 'Accept': 'application/json' };
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-
+            // FIXED API ROUTE -> /v1/business
             const response = await fetch(`${window.API_BASE_URL}/v1/business`, {
-                method: 'GET',
-                headers: headers
+                headers: {
+                    'Accept': 'application/json'
+                }
             });
 
-            if (!response.ok) throw new Error("Failed to fetch");
-
-            const result = await response.json();
-            
-            let rawData = result.data || result || [];
-
-            // === FIX 1: Attach the permanent original database index ===
-            masterBusinesses = rawData.map((biz, index) => {
-                return { ...biz, original_index: index };
-            });
-
-            allBusinesses = [...masterBusinesses];
-
-            sortData('asc');
-            renderPage(1);
-
+            if (response.ok) {
+                const data = await response.json();
+                masterBusinesses = data.data || data;
+                allBusinesses = [...masterBusinesses];
+                sortData(document.getElementById('sortSelect').value);
+                renderPage(1);
+            } else {
+                document.getElementById('businessGrid').innerHTML = '<div class="col-12 text-center text-danger"><h5>Failed to load businesses.</h5></div>';
+            }
         } catch (error) {
-            console.error('Error fetching businesses:', error);
-            document.getElementById('businessGrid').innerHTML = `
-                <div class="col-12 text-center py-5" style="color: #D40032;">
-                    <h5><i class="bi bi-exclamation-triangle"></i> Failed to load businesses.</h5>
-                    <p>Make sure your server is running and connected to the internet!</p>
-                </div>
-            `;
-            document.getElementById('showingText').innerText = "0 results";
+            document.getElementById('businessGrid').innerHTML = '<div class="col-12 text-center text-muted"><h5>Network error. Please try again.</h5></div>';
         }
     }
 
     function renderPage(page) {
         currentPage = page;
-        const totalResults = allBusinesses.length;
-        const totalPages = Math.ceil(totalResults / perPage);
-        
-        if (currentPage < 1) currentPage = 1;
-        if (currentPage > totalPages) currentPage = totalPages;
-
-        const offset = (currentPage - 1) * perPage;
-        const pagedData = allBusinesses.slice(offset, offset + perPage);
-
-        const showingStart = totalResults === 0 ? 0 : offset + 1;
-        const showingEnd = Math.min(offset + perPage, totalResults);
-        document.getElementById('showingText').innerText = `Showing ${showingStart}-${showingEnd} of ${totalResults} results`;
-
         const grid = document.getElementById('businessGrid');
         grid.innerHTML = '';
 
-        if (totalResults === 0) {
-            grid.innerHTML = '<div class="col-12 text-center text-muted py-5">No businesses found.</div>';
+        if (allBusinesses.length === 0) {
+            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted"><h4>No businesses found matching your criteria.</h4></div>';
             renderPagination(0);
             return;
         }
 
-        pagedData.forEach((biz) => {
-            const name = biz.registered_business_name || 'Unknown Business';
-            const email = biz.email || 'N/A';
-            const phone = biz.telephone_no || 'N/A';
-            const industry = biz.industry || 'Business';
-            const tagline = biz.business_tagline || '';
-            const tags = (Array.isArray(biz.tags)) ? biz.tags : [];
-            
-            // === FIX 2: Use the permanent index for the URL instead of the sorted position ===
-            const profileUrl = `/business/${biz.original_index}`;
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const paginatedData = allBusinesses.slice(startIndex, endIndex);
 
-            let avatarHTML = '';
-            if (biz.photo_url && !biz.photo_url.includes('N/A') && !biz.photo_url.includes('null')) {
-                avatarHTML = `<img src="${biz.photo_url}" alt="${name}" style="width: 56px; height: 56px; object-fit: cover;" class="rounded-circle shadow-sm">`;
-            } else {
-                const words = name.split(' ');
-                let initials = name.substring(0, 2).toUpperCase();
-                if (words.length > 1) initials = (words[0][0] + words[1][0]).toUpperCase();
-                const colors = ['bg-primary', 'bg-success', 'bg-warning', 'bg-info', 'bg-danger'];
-                // Use the permanent index to keep colors consistent
-                const colorIndex = biz.original_index % colors.length;
-                avatarHTML = `<div class="rounded-circle ${colors[colorIndex]} d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" style="width: 56px; height: 56px; font-size: 1.2rem;">${initials}</div>`;
-            }
-
-            const cardHTML = `
-                <div class="col-12 col-md-6 col-lg-4">
-                    <div class="card h-100 border-0 shadow p-3" style="border-radius: 12px; background-color: var(--bg-card);">
-                        <div class="d-flex align-items-center gap-3 mb-3">
-                            ${avatarHTML}
-                            <div style="width: calc(100% - 70px);">
-                                <span class="d-inline-block rounded px-2 py-1 mb-1 fw-bold text-uppercase text-truncate" style="font-size: 0.65rem; background-color: #fdf2f2; color: #be1e38; max-width: 100%;">
-                                    ${industry}
-                                </span>
-                                <h5 class="fw-bold mb-1 text-truncate" style="color: var(--text-main);" title="${name}">${name}</h5>
-                                ${tagline ? `<small class="text-truncate d-block" style="color: #888; font-style: italic; font-size: 0.8rem;">"${tagline}"</small>` : ''}
-                            </div>
+        let html = '';
+        paginatedData.forEach(biz => {
+            html += `
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm border-0 business-card" style="border-radius: 12px; overflow: hidden; transition: transform 0.2s;">
+                        <div style="height: 160px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #eee;">
+                             <i class="bi bi-shop fs-1 text-muted"></i>
                         </div>
-                        <div class="card-body p-0 d-flex flex-column flex-grow-1">
-                            <div class="mb-3">
-                                <div class="d-flex gap-2 small flex-wrap">
-                                    ${tags.map(tag => `<span class="bg-body-secondary px-2 py-1 rounded text-capitalize" style="color: #1a1a2e !important; font-weight: 600;">${tag}</span>`).join('')}
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top" style="border-color: var(--border-color) !important;">
-                                <div class="small text-truncate" style="color: var(--text-muted); max-width: 60%;">
-                                    <i class="bi bi-envelope"></i> <span title="${email}">${email}</span><br>
-                                    <i class="bi bi-telephone"></i> ${phone}
-                                </div>
-                                <a href="${profileUrl}"
-                                   class="btn py-1 px-3 text-white fw-bold"
-                                   style="background-color: #D40032; border-radius: 6px; font-size: 0.8rem;">
-                                    View Details
-                                </a>
-                            </div>
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-1 text-truncate">${biz.registered_business_name || 'Unnamed Business'}</h5>
+                            <p class="small mb-3 text-uppercase fw-bold" style="color: #be1e38;">${biz.industry || 'General Industry'}</p>
+                            <p class="text-muted small text-truncate" style="font-family: 'Poppins', sans-serif;">${biz.business_tagline || biz.email || 'No additional details available.'}</p>
+                            <a href="/business/${biz.id}" class="btn btn-sm btn-outline-danger w-100 fw-bold mt-2" style="border-radius: 6px;">View Profile</a>
                         </div>
                     </div>
                 </div>
             `;
-            grid.insertAdjacentHTML('beforeend', cardHTML);
         });
 
-        renderPagination(totalPages);
+        grid.innerHTML = html;
+        renderPagination(Math.ceil(allBusinesses.length / itemsPerPage));
     }
 
     function renderPagination(totalPages) {
-        const pagContainer = document.getElementById('paginationContainer');
-        pagContainer.innerHTML = '';
-        if (totalPages <= 1) return;
+        const controls = document.getElementById('paginationControls');
+        if (totalPages <= 1) {
+            controls.innerHTML = '';
+            return;
+        }
 
-        pagContainer.innerHTML += `
-            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                <a class="page-link border-0" style="background-color: transparent; color: var(--text-muted); cursor: pointer;" onclick="renderPage(${currentPage - 1})">Previous</a>
-            </li>
-        `;
-
-        for (let p = 1; p <= totalPages; p++) {
-            const isActive = currentPage === p;
-            pagContainer.innerHTML += `
-                <li class="page-item ${isActive ? 'active' : ''}">
-                    <a class="page-link border-0 rounded mx-1 ${isActive ? 'bg-danger text-white shadow-sm' : ''}" 
-                       style="${!isActive ? 'background-color: transparent; color: var(--text-muted); cursor: pointer;' : 'cursor: default;'}"
-                       onclick="renderPage(${p})">
-                        ${p}
-                    </a>
+        let paginationHtml = '<ul class="pagination shadow-sm">';
+        for (let i = 1; i <= totalPages; i++) {
+            paginationHtml += `
+                <li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <button class="page-link" onclick="renderPage(${i})" style="${i === currentPage ? 'background-color: #be1e38; border-color: #be1e38; color: white;' : 'color: #333;'}">${i}</button>
                 </li>
             `;
         }
-
-        pagContainer.innerHTML += `
-            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                <a class="page-link border-0" style="background-color: transparent; color: var(--text-muted); cursor: pointer;" onclick="renderPage(${currentPage + 1})">Next</a>
-            </li>
-        `;
-    }
-
-    function handleSort() {
-        const order = document.getElementById('sortSelect').value;
-        sortData(order);
-        renderPage(1); 
+        paginationHtml += '</ul>';
+        controls.innerHTML = paginationHtml;
     }
 
     function sortData(order) {
@@ -280,7 +205,6 @@
             });
         }
 
-        // Re-apply current sort
         const order = document.getElementById('sortSelect').value;
         sortData(order);
         renderPage(1);
@@ -293,8 +217,27 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    @keyframes spin { 
-        100% { transform: rotate(360deg); } 
+
+    @keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .spin {
+        display: inline-block;
+        animation: spin 1s linear infinite;
+    }
+
+    .business-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .plan-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 15px 30px rgba(190, 30, 56, 0.15) !important;
+        transition: all 0.3s ease;
     }
 </style>
 

@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\TreasurerProxyController;
 | API Routes
 |--------------------------------------------------------------------------
 */
+
 Route::get('/v1/membership-types', function () {
     return response()->json([
         'data' => [
@@ -32,7 +33,7 @@ Route::get('/v1/membership-types', function () {
                 "duration_in_months" => 12,
                 "renewal_price" => "3000.00",
                 "notes" => "Initial fee P5,000, renewal P3,000",
-                "created_at" => "2026-03-17 06:10:18"   
+                "created_at" => "2026-03-17 06:10:18"
             ]
         ]
     ]);

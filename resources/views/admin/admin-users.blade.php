@@ -501,24 +501,27 @@
         }
     }
 
-    function renderUsers(search) {
+    // --- RENDER USERS GRID ---
+    function renderUsers() {
         const tbody = document.getElementById('usersTableBody');
+        const query = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
 
+        // Filter the users based on the search input
         const filtered = allUsers.filter(user => {
-            if (!search) return true;
-            const firstName = (user.first_name || '').toLowerCase();
-            const lastName = (user.last_name || '').toLowerCase();
-            const email = (user.email || '').toLowerCase();
-            const roles = (user.roles || []).join(' ').toLowerCase();
-            return firstName.includes(search) || lastName.includes(search) || email.includes(search) || roles.includes(search);
+            const n = (user.name || '').toLowerCase();
+            const f = (user.first_name || '').toLowerCase();
+            const l = (user.last_name || '').toLowerCase();
+            const e = (user.email || '').toLowerCase();
+            return n.includes(query) || f.includes(query) || l.includes(query) || e.includes(query);
         });
 
         if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><i class="bi bi-people"></i>No users found.</div></td></tr>`;
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-5">No admin users found.</td></tr>';
             return;
         }
 
         tbody.innerHTML = filtered.map(user => {
+            // Generate Role Badges
             const roles = user.roles || [];
             const roleBadges = roles.map(r => {
                 let cls = 'role-default';
@@ -528,6 +531,7 @@
                 return `<span class="role-badge ${cls}">${r}</span>`;
             }).join(' ') || '<span class="role-badge role-default">user</span>';
 
+            // Format Date
             const rawDate = user.created_at || user.date_created || user.registered_at || user.joined_at || null;
             const created = rawDate ?
                 new Date(rawDate).toLocaleDateString('en-US', {
@@ -541,13 +545,35 @@
                     day: 'numeric'
                 });
 
+            // ==========================================
+            // SMART NAME FALLBACK LOGIC
+            // ==========================================
+            let fName = user.first_name;
+            let lName = user.last_name;
+
+            // If the database has a blank first name, try to split it out of the old 'name' column!
+            if (!fName && user.name) {
+                const parts = user.name.split(' ');
+                fName = parts[0] || 'N/A';
+                lName = parts.slice(1).join(' ') || 'N/A';
+            }
+
+            // Draw the Table Row
             return `
                 <tr>
-                    <td style="font-weight: 600;">${user.first_name || 'N/A'}</td>
-                    <td style="font-weight: 600;">${user.last_name || 'N/A'}</td>
+                    <td style="font-weight: 600;">${fName || 'N/A'}</td>
+                    <td style="font-weight: 600;">${lName || 'N/A'}</td>
                     <td>${user.email || 'N/A'}</td>
                     <td>${roleBadges}</td>
                     <td>${created}</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-primary fw-bold me-1" onclick="editUser(${user.id})">
+                            <i class="bi bi-pencil-square"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger fw-bold" onclick="deleteUser(${user.id})">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </td>
                 </tr>`;
         }).join('');
     }
@@ -576,43 +602,40 @@
         const email = document.getElementById('regEmail').value;
         const role = document.getElementById('regRole').value;
 
-        // Generate a secure temporary password just in case the backend requires it!
-        const tempPassword = Math.random().toString(36).slice(-8) + "P@ss1!";
-
         try {
-            // Depending on your routes, this might need to be /v1/users instead of /register.
-            // But we will stick to /register with the bulletproof payload first.
-            const response = await fetch(`${window.API_BASE_URL}/register`, {
-                method: 'POST',
+            // If editing, hit the /v1/users/{id} route. If creating, hit /register.
+            const targetUrl = editUserId ? `${window.API_BASE_URL}/v1/users/${editUserId}` : `${window.API_BASE_URL}/register`;
+            const methodType = editUserId ? 'PUT' : 'POST';
+
+            const response = await fetch(targetUrl, {
+                method: methodType,
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    name: `${firstName} ${lastName}`,
                     first_name: firstName,
                     last_name: lastName,
                     email: email,
-                    role: role,
-                    roles: [role],
-                    password: tempPassword,
-                    password_confirmation: tempPassword,
-                    requires_password_change: true // <--- ADD THIS LINE
+                    role: role
                 })
             });
 
             const data = await response.json();
 
-            if (response.ok || response.status === 201 || response.status === 202) {
+            if (response.ok || response.status === 201) {
                 closeRegisterModal();
 
-                // If the backend generated a password, use it. Otherwise, use our temp password!
-                const finalPassword = (data.password) ? data.password : tempPassword;
-                const finalEmail = (data.user && data.user.email) ? data.user.email : email;
+                // Only show the success password modal if we CREATED a new user!
+                if (!editUserId) {
+                    showSuccessModal(email, data.generated_password);
+                } else {
+                    alert("User updated successfully!");
+                }
 
-                showSuccessModal(finalEmail, finalPassword);
-                fetchUsers(); // Refresh the table
+                fetchUsers(); // Refresh table
+                showSuccessModal(email, data.generated_password);
             } else {
                 let msg = data.message || 'Registration failed.';
                 if (data.errors) msg += ' ' + Object.values(data.errors).flat().join(' ');
@@ -625,6 +648,86 @@
         } finally {
             btn.disabled = false;
             btn.innerText = 'Register Account';
+        }
+    }
+
+    // Global variable to track if we are Editing or Creating
+    let editUserId = null;
+
+    // --- EDIT USER LOGIC ---
+    function editUser(id) {
+        // Find the user data from your existing list
+        const user = allUsers.find(u => Number(u.id) === Number(id));
+        if (!user) return;
+
+        editUserId = user.id; // Set global ID
+
+        // Populate the modal fields
+        document.getElementById('regFirstName').value = user.first_name || '';
+        document.getElementById('regLastName').value = user.last_name || '';
+        document.getElementById('regEmail').value = user.email || '';
+
+        // Try to set the role dropdown
+        const userRole = user.roles && user.roles.length > 0 ? user.roles[0] : 'admin';
+        const roleDropdown = document.getElementById('regRole');
+        if (roleDropdown) roleDropdown.value = userRole;
+
+        // Change Modal UI to "Edit Mode" (Smart Lookups that won't crash)
+        const titleEl = document.getElementById('registerModalTitle') || document.querySelector('#registerModal h2') || document.querySelector('#registerModal h3') || document.querySelector('#registerModal .modal-title');
+        if (titleEl) titleEl.innerHTML = '<i class="bi bi-pencil-square me-2"></i> Edit Admin User';
+
+        const btnEl = document.getElementById('regSubmitBtn') || document.querySelector('#registerModal button[type="submit"]');
+        if (btnEl) btnEl.innerHTML = '<i class="bi bi-save"></i> Save Changes';
+
+        const errEl = document.getElementById('registerError');
+        if (errEl) errEl.style.display = 'none';
+
+        document.getElementById('registerModal').style.display = 'flex';
+    }
+
+    // --- OVERRIDE OPEN MODAL (For fresh creations) ---
+    function openRegisterModal() {
+        editUserId = null; // Reset ID
+
+        const form = document.getElementById('registerForm') || document.querySelector('#registerModal form');
+        if (form) form.reset();
+
+        // Revert Modal UI back to "Register Mode"
+        const titleEl = document.getElementById('registerModalTitle') || document.querySelector('#registerModal h2') || document.querySelector('#registerModal h3') || document.querySelector('#registerModal .modal-title');
+        if (titleEl) titleEl.innerHTML = '<i class="bi bi-person-plus-fill me-2"></i> Register New Admin';
+
+        const btnEl = document.getElementById('regSubmitBtn') || document.querySelector('#registerModal button[type="submit"]');
+        if (btnEl) btnEl.innerHTML = 'Register Account';
+
+        const errEl = document.getElementById('registerError');
+        if (errEl) errEl.style.display = 'none';
+
+        document.getElementById('registerModal').style.display = 'flex';
+    }
+
+    // --- DELETE USER LOGIC ---
+    async function deleteUser(id) {
+        if (!confirm("Are you sure you want to permanently delete this user? This cannot be undone.")) return;
+
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch(`${window.API_BASE_URL}/v1/users/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                fetchUsers(); // Refresh the table instantly
+                alert("User deleted successfully.");
+            } else {
+                const data = await response.json();
+                alert('Delete failed: ' + (data.message || 'Unknown error'));
+            }
+        } catch (error) {
+            alert('Network error while trying to delete.');
         }
     }
 

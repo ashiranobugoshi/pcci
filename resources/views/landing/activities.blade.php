@@ -27,127 +27,7 @@
 
     {{-- Activity Grid --}}
     <div class="activity-grid" id="activityGrid">
-
-        <div class="activity-card selected">
-            <div class="card-image-wrap">
-                <img src="{{ asset('images/activities/activity1.jpg') }}" alt="One Town, Juan Opportunity Program">
-                <div class="card-title-overlay">One Town, Juan Opportunity Program</div>
-            </div>
-            <div class="card-actions">
-                <button class="btn-view" onclick="openViewModal({
-                    title: 'One Town, Juan Opportunity Program',
-                    category: 'General',
-                    date: 'Tuesday, December 9, 2025',
-                    time: '9:00 AM',
-                    location: 'Valenzuela City',
-                    description: 'A PURPOSEFUL MESSAGE TO BUSINESS OWNERS, from outgoing president, Jundio Salvador: The past four years of being entrusted with the privilege to serve...',
-                    image: '{{ asset('images/activities/activity1.jpg') }}'
-                })"><i class="bi bi-eye"></i> VIEW PROFILE</button>
-                <button class="btn-edit" onclick="openEditModal({
-                    id: 1,
-                    title: 'One Town, Juan Opportunity Program',
-                    description: '',
-                    image: '{{ asset('images/activities/activity1.jpg') }}'
-                })"><i class="bi bi-pencil"></i> EDIT</button>
-            </div>
-        </div>
-
-        <div class="activity-card">
-            <div class="card-image-wrap">
-                <img src="{{ asset('images/activities/activity2.jpg') }}" alt="Go Negosyo Youthpreneur Mentoring">
-                <div class="card-title-overlay">Go Negosyo Youthpreneur Mentoring</div>
-            </div>
-            <div class="card-actions">
-                <button class="btn-view" onclick="openViewModal({
-                    title: 'Go Negosyo Youthpreneur Mentoring',
-                    category: 'General',
-                    date: 'Tuesday, December 9, 2025',
-                    time: '9:00 AM',
-                    location: 'Valenzuela City',
-                    description: '',
-                    image: '{{ asset('images/activities/activity2.jpg') }}'
-                })"><i class="bi bi-eye"></i> VIEW PROFILE</button>
-                <button class="btn-edit" onclick="openEditModal({
-                    id: 2,
-                    title: 'Go Negosyo Youthpreneur Mentoring',
-                    description: '',
-                    image: '{{ asset('images/activities/activity2.jpg') }}'
-                })"><i class="bi bi-pencil"></i> EDIT</button>
-            </div>
-        </div>
-
-        <div class="activity-card">
-            <div class="card-image-wrap">
-                <img src="{{ asset('images/activities/activity3.jpg') }}" alt="Go Negosyo Youthpreneur Mentoring">
-                <div class="card-title-overlay">Go Negosyo Youthpreneur Mentoring</div>
-            </div>
-            <div class="card-actions">
-                <button class="btn-view" onclick="openViewModal({
-                    title: 'Go Negosyo Youthpreneur Mentoring',
-                    category: 'General',
-                    date: 'Tuesday, December 9, 2025',
-                    time: '9:00 AM',
-                    location: 'Valenzuela City',
-                    description: '',
-                    image: '{{ asset('images/activities/activity3.jpg') }}'
-                })"><i class="bi bi-eye"></i> VIEW PROFILE</button>
-                <button class="btn-edit" onclick="openEditModal({
-                    id: 3,
-                    title: 'Go Negosyo Youthpreneur Mentoring',
-                    description: '',
-                    image: '{{ asset('images/activities/activity3.jpg') }}'
-                })"><i class="bi bi-pencil"></i> EDIT</button>
-            </div>
-        </div>
-
-        <div class="activity-card">
-            <div class="card-image-wrap">
-                <img src="{{ asset('images/activities/activity4.jpg') }}" alt="Go Negosyo Youthpreneur Mentoring">
-                <div class="card-title-overlay">Go Negosyo Youthpreneur Mentoring</div>
-            </div>
-            <div class="card-actions">
-                <button class="btn-view" onclick="openViewModal({
-                    title: 'Go Negosyo Youthpreneur Mentoring',
-                    category: 'General',
-                    date: 'Tuesday, December 9, 2025',
-                    time: '9:00 AM',
-                    location: 'Valenzuela City',
-                    description: '',
-                    image: '{{ asset('images/activities/activity4.jpg') }}'
-                })"><i class="bi bi-eye"></i> VIEW PROFILE</button>
-                <button class="btn-edit" onclick="openEditModal({
-                    id: 4,
-                    title: 'Go Negosyo Youthpreneur Mentoring',
-                    description: '',
-                    image: '{{ asset('images/activities/activity4.jpg') }}'
-                })"><i class="bi bi-pencil"></i> EDIT</button>
-            </div>
-        </div>
-
-        <div class="activity-card">
-            <div class="card-image-wrap">
-                <img src="{{ asset('images/activities/activity5.jpg') }}" alt="Go Negosyo Youthpreneur Mentoring">
-                <div class="card-title-overlay">Go Negosyo Youthpreneur Mentoring</div>
-            </div>
-            <div class="card-actions">
-                <button class="btn-view" onclick="openViewModal({
-                    title: 'Go Negosyo Youthpreneur Mentoring',
-                    category: 'General',
-                    date: 'Tuesday, December 9, 2025',
-                    time: '9:00 AM',
-                    location: 'Valenzuela City',
-                    description: '',
-                    image: '{{ asset('images/activities/activity5.jpg') }}'
-                })"><i class="bi bi-eye"></i> VIEW PROFILE</button>
-                <button class="btn-edit" onclick="openEditModal({
-                    id: 5,
-                    title: 'Go Negosyo Youthpreneur Mentoring',
-                    description: '',
-                    image: '{{ asset('images/activities/activity5.jpg') }}'
-                })"><i class="bi bi-pencil"></i> EDIT</button>
-            </div>
-        </div>
-
+        <div class="text-center py-5 w-100 text-muted"><i class="fa fa-spinner fa-spin"></i> Loading activities...</div>
     </div>
 </div>
 
@@ -227,8 +107,7 @@
                 class="edit-description"
                 id="addDescription"
                 placeholder="DESCRIPTION"
-                rows="4"
-            ></textarea>
+                rows="4"></textarea>
 
             {{-- File Upload --}}
             <div class="file-upload-section">
@@ -276,8 +155,7 @@
                 class="edit-description"
                 id="editDescription"
                 placeholder="DESCRIPTION"
-                rows="4"
-            ></textarea>
+                rows="4"></textarea>
 
             {{-- File Upload --}}
             <div class="file-upload-section">
@@ -316,9 +194,11 @@
         margin-bottom: 28px;
         border-radius: 10px;
     }
+
     .page-banner h1 {
         color: #fff;
-        font-size: clamp(1.5rem, 4vw, 2rem); /* Fluid text */
+        font-size: clamp(1.5rem, 4vw, 2rem);
+        /* Fluid text */
         font-weight: 900;
         margin: 0;
         letter-spacing: 1px;
@@ -334,6 +214,7 @@
         gap: 16px;
         flex-wrap: wrap;
     }
+
     .toolbar-left {
         display: flex;
         align-items: center;
@@ -341,6 +222,7 @@
         flex: 1;
         flex-wrap: wrap;
     }
+
     .search-input {
         flex: 1;
         min-width: 250px;
@@ -357,7 +239,10 @@
         background: #fff;
         transition: border-color 0.2s;
     }
-    .search-input:focus { border-color: var(--pcci-red, #be1e38); }
+
+    .search-input:focus {
+        border-color: var(--pcci-red, #be1e38);
+    }
 
     .btn-filter {
         height: 46px;
@@ -376,7 +261,9 @@
         gap: 8px;
         transition: all 0.2s;
     }
-    .btn-filter:hover, .btn-filter.active {
+
+    .btn-filter:hover,
+    .btn-filter.active {
         border-color: var(--pcci-red, #be1e38);
         color: var(--pcci-red, #be1e38);
     }
@@ -398,7 +285,11 @@
         gap: 8px;
         transition: background 0.2s, transform 0.15s;
     }
-    .btn-add-activity:hover { background: #9a182d; transform: translateY(-1px); }
+
+    .btn-add-activity:hover {
+        background: #9a182d;
+        transform: translateY(-1px);
+    }
 
     /* Grid */
     .activity-grid {
@@ -407,21 +298,51 @@
         gap: 24px;
         padding: 0 40px;
     }
-    
+
     /* Responsive Fixes for Grid & Toolbar */
-    @media (max-width: 1100px) { 
-        .activity-grid { grid-template-columns: repeat(2, 1fr); } 
+    @media (max-width: 1100px) {
+        .activity-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
+
     @media (max-width: 768px) {
-        .page-banner { padding: 25px 20px; border-radius: 0; }
-        .toolbar { padding: 0 20px; flex-direction: column; align-items: stretch; }
-        .toolbar-left { flex-direction: column; align-items: stretch; }
-        .search-input { max-width: 100%; min-width: 100%; }
-        .btn-filter, .btn-add-activity { width: 100%; }
-        .activity-grid { padding: 0 20px; gap: 16px; }
+        .page-banner {
+            padding: 25px 20px;
+            border-radius: 0;
+        }
+
+        .toolbar {
+            padding: 0 20px;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .toolbar-left {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-input {
+            max-width: 100%;
+            min-width: 100%;
+        }
+
+        .btn-filter,
+        .btn-add-activity {
+            width: 100%;
+        }
+
+        .activity-grid {
+            padding: 0 20px;
+            gap: 16px;
+        }
     }
-    @media (max-width: 680px)  { 
-        .activity-grid { grid-template-columns: 1fr; } 
+
+    @media (max-width: 680px) {
+        .activity-grid {
+            grid-template-columns: 1fr;
+        }
     }
 
     /* Card */
@@ -434,15 +355,18 @@
         flex-direction: column;
         transition: box-shadow 0.25s, border-color 0.25s, transform 0.2s;
     }
+
     .activity-card:hover {
-        box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
         transform: translateY(-3px);
         border-color: var(--pcci-red, #be1e38);
     }
+
     .activity-card.selected {
         border-color: #1a73e8;
-        box-shadow: 0 0 0 2px rgba(26,115,232,0.25);
+        box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.25);
     }
+
     .card-image-wrap {
         position: relative;
         width: 100%;
@@ -450,6 +374,7 @@
         overflow: hidden;
         background: #ddd;
     }
+
     .card-image-wrap img {
         width: 100%;
         height: 100%;
@@ -457,25 +382,35 @@
         display: block;
         transition: transform 0.35s ease;
     }
-    .activity-card:hover .card-image-wrap img { transform: scale(1.04); }
+
+    .activity-card:hover .card-image-wrap img {
+        transform: scale(1.04);
+    }
+
     .card-title-overlay {
         position: absolute;
-        bottom: 0; left: 0; right: 0;
-        background: linear-gradient(transparent, rgba(0,0,0,0.72));
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.72));
         color: #fff;
         font-size: 0.9rem;
         font-weight: 700;
         padding: 32px 14px 12px;
         line-height: 1.3;
     }
+
     .card-actions {
         display: flex;
-        flex-wrap: wrap; /* Allows buttons to stack if completely squished */
+        flex-wrap: wrap;
+        /* Allows buttons to stack if completely squished */
         gap: 10px;
         padding: 14px 16px;
         border-top: 1px solid #f0f0f0;
     }
-    .btn-view, .btn-edit {
+
+    .btn-view,
+    .btn-edit {
         flex: 1;
         display: flex;
         align-items: center;
@@ -494,10 +429,27 @@
         font-family: 'Inter', sans-serif;
         min-width: 100px;
     }
-    .btn-view { color: var(--pcci-red, #be1e38); border-color: var(--pcci-red, #be1e38); }
-    .btn-view:hover { background: var(--pcci-red, #be1e38); color: #fff; }
-    .btn-edit { color: #666; border-color: #ccc; }
-    .btn-edit:hover { background: #f0f0f0; border-color: #999; color: #333; }
+
+    .btn-view {
+        color: var(--pcci-red, #be1e38);
+        border-color: var(--pcci-red, #be1e38);
+    }
+
+    .btn-view:hover {
+        background: var(--pcci-red, #be1e38);
+        color: #fff;
+    }
+
+    .btn-edit {
+        color: #666;
+        border-color: #ccc;
+    }
+
+    .btn-edit:hover {
+        background: #f0f0f0;
+        border-color: #999;
+        color: #333;
+    }
 
     /* =====================
        MODAL OVERLAY
@@ -506,14 +458,18 @@
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(0,0,0,0.45);
+        background: rgba(0, 0, 0, 0.45);
         z-index: 1000;
         align-items: center;
         justify-content: center;
         backdrop-filter: blur(2px);
-        padding: 15px; /* Prevents touching screen edges on mobile */
+        padding: 15px;
+        /* Prevents touching screen edges on mobile */
     }
-    .modal-overlay.active { display: flex; }
+
+    .modal-overlay.active {
+        display: flex;
+    }
 
     /* =====================
        EDIT MODAL
@@ -523,13 +479,21 @@
         border-radius: 14px;
         width: 100%;
         max-width: 420px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
         overflow: hidden;
         animation: modalIn 0.22s ease;
     }
+
     @keyframes modalIn {
-        from { transform: scale(0.94) translateY(10px); opacity: 0; }
-        to   { transform: scale(1) translateY(0); opacity: 1; }
+        from {
+            transform: scale(0.94) translateY(10px);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
     }
 
     .edit-modal .modal-header {
@@ -538,6 +502,7 @@
         justify-content: space-between;
         padding: 20px 24px 14px;
     }
+
     .edit-modal .modal-header h2 {
         font-size: 1.1rem;
         font-weight: 900;
@@ -545,6 +510,7 @@
         margin: 0;
         letter-spacing: 0.5px;
     }
+
     .modal-close {
         background: none;
         border: none;
@@ -555,7 +521,10 @@
         padding: 0;
         transition: color 0.2s;
     }
-    .modal-close:hover { color: #222; }
+
+    .modal-close:hover {
+        color: #222;
+    }
 
     .edit-modal .modal-body {
         padding: 0 24px 20px;
@@ -573,17 +542,19 @@
         background: #eee;
         aspect-ratio: 16 / 9;
     }
+
     .image-preview-wrap img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         display: block;
     }
+
     .btn-crop {
         position: absolute;
         bottom: 10px;
         right: 10px;
-        background: rgba(0,0,0,0.55);
+        background: rgba(0, 0, 0, 0.55);
         color: #fff;
         border: none;
         border-radius: 8px;
@@ -596,7 +567,10 @@
         cursor: pointer;
         transition: background 0.2s;
     }
-    .btn-crop:hover { background: rgba(0,0,0,0.80); }
+
+    .btn-crop:hover {
+        background: rgba(0, 0, 0, 0.80);
+    }
 
     /* Description */
     .edit-description {
@@ -612,7 +586,11 @@
         box-sizing: border-box;
         transition: border-color 0.2s;
     }
-    .edit-description:focus { border-color: #9a182d; }
+
+    .edit-description:focus {
+        border-color: #9a182d;
+    }
+
     .edit-description::placeholder {
         color: #bbb;
         letter-spacing: 0.5px;
@@ -621,13 +599,19 @@
     }
 
     /* File Upload */
-    .file-upload-section { display: flex; flex-direction: column; gap: 8px; }
+    .file-upload-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
     .file-upload-label {
         font-size: 0.82rem;
         font-weight: 800;
         color: #333;
         letter-spacing: 0.5px;
     }
+
     .file-upload-row {
         display: flex;
         align-items: center;
@@ -636,6 +620,7 @@
         overflow: hidden;
         height: 40px;
     }
+
     .btn-choose-file {
         background: #e0e0e0;
         color: #333;
@@ -652,7 +637,11 @@
         border-right: 1.5px solid var(--pcci-red, #be1e38);
         user-select: none;
     }
-    .btn-choose-file:hover { background: #ccc; }
+
+    .btn-choose-file:hover {
+        background: #ccc;
+    }
+
     .file-name-display {
         flex: 1;
         padding: 0 14px;
@@ -670,6 +659,7 @@
         gap: 12px;
         padding: 12px 24px 24px;
     }
+
     .btn-cancel {
         flex: 1;
         height: 44px;
@@ -684,7 +674,12 @@
         transition: all 0.2s;
         font-family: 'Inter', sans-serif;
     }
-    .btn-cancel:hover { background: #f5f5f5; border-color: #aaa; }
+
+    .btn-cancel:hover {
+        background: #f5f5f5;
+        border-color: #aaa;
+    }
+
     .btn-save {
         flex: 1;
         height: 44px;
@@ -699,8 +694,12 @@
         transition: background 0.2s, transform 0.15s;
         font-family: 'Inter', sans-serif;
     }
-    .btn-save:hover { background: #9a182d; transform: translateY(-1px); }
-    
+
+    .btn-save:hover {
+        background: #9a182d;
+        transform: translateY(-1px);
+    }
+
     /* =====================
        VIEW ACTIVITY MODAL
     ===================== */
@@ -736,7 +735,12 @@
         transition: all 0.2s;
         line-height: 1;
     }
-    .view-modal-close:hover { background: #f0f0f0; border-color: #aaa; color: #222; }
+
+    .view-modal-close:hover {
+        background: #f0f0f0;
+        border-color: #aaa;
+        color: #222;
+    }
 
     .view-modal-inner {
         padding: 32px;
@@ -778,6 +782,7 @@
         overflow: hidden;
         border: 3px solid #e8e8e8;
     }
+
     .view-photo-wrap img {
         width: 100%;
         display: block;
@@ -800,6 +805,7 @@
         flex-direction: column;
         gap: 10px;
     }
+
     .view-meta-item {
         display: flex;
         align-items: center;
@@ -808,6 +814,7 @@
         color: #222;
         font-weight: 500;
     }
+
     .view-meta-item i {
         font-size: 1.25rem;
         color: #333;
@@ -824,9 +831,20 @@
         border-left: 3px solid var(--pcci-red, #be1e38);
         padding-left: 12px;
     }
-    .view-description-wrap::-webkit-scrollbar { width: 5px; }
-    .view-description-wrap::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 4px; }
-    .view-description-wrap::-webkit-scrollbar-thumb { background: var(--pcci-red, #be1e38); border-radius: 4px; }
+
+    .view-description-wrap::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .view-description-wrap::-webkit-scrollbar-track {
+        background: #f0f0f0;
+        border-radius: 4px;
+    }
+
+    .view-description-wrap::-webkit-scrollbar-thumb {
+        background: var(--pcci-red, #be1e38);
+        border-radius: 4px;
+    }
 
     .view-description {
         font-size: 0.9rem;
@@ -837,157 +855,279 @@
 
     /* Stack Image on top of text on small screens */
     @media (max-width: 768px) {
-        .view-content-row { flex-direction: column; }
-        .view-photo-wrap { width: 100%; aspect-ratio: 16/9;}
-        .view-photo-wrap img { aspect-ratio: auto; }
-        .view-modal-inner { padding: 24px 20px; }
+        .view-content-row {
+            flex-direction: column;
+        }
+
+        .view-photo-wrap {
+            width: 100%;
+            aspect-ratio: 16/9;
+        }
+
+        .view-photo-wrap img {
+            aspect-ratio: auto;
+        }
+
+        .view-modal-inner {
+            padding: 24px 20px;
+        }
     }
 </style>
 
 <script>
-    function openEditModal(activity) {
-        document.getElementById('editActivityId').value          = activity.id;
-        document.getElementById('editDescription').value         = activity.description || '';
-        document.getElementById('editImagePreview').src          = activity.image || '';
-        document.getElementById('fileNameDisplay').textContent   = 'CHANGE FILE';
-        document.getElementById('editImageFile').value           = '';
-        document.getElementById('editModalOverlay').classList.add('active');
-    }
+    let allActivities = [];
 
-    function closeEditModal() {
-        document.getElementById('editModalOverlay').classList.remove('active');
-    }
+    // --- 1. FETCH ACTIVITIES ---
+    async function fetchActivities() {
+        const token = localStorage.getItem('token');
+        if (!token) return;
 
-    document.getElementById('closeEditModal').addEventListener('click', closeEditModal);
-    document.getElementById('cancelEditModal').addEventListener('click', closeEditModal);
-
-    // Close on backdrop click
-    document.getElementById('editModalOverlay').addEventListener('click', function (e) {
-        if (e.target === this) closeEditModal();
-    });
-
-    // Image preview on file select
-    document.getElementById('editImageFile').addEventListener('change', function () {
-        const file = this.files[0];
-        if (!file) return;
-        document.getElementById('fileNameDisplay').textContent = file.name;
-        const reader = new FileReader();
-        reader.onload = (e) => { document.getElementById('editImagePreview').src = e.target.result; };
-        reader.readAsDataURL(file);
-    });
-
-    // Save — wire to your Laravel route
-    document.getElementById('saveActivity').addEventListener('click', function () {
-        const id          = document.getElementById('editActivityId').value;
-        const description = document.getElementById('editDescription').value;
-        const imageFile   = document.getElementById('editImageFile').files[0];
-
-        const formData = new FormData();
-        formData.append('_method', 'PUT');
-        formData.append('_token', '{{ csrf_token() }}');
-        formData.append('description', description);
-        if (imageFile) formData.append('image', imageFile);
-
-        fetch(`/activities/${id}`, { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    closeEditModal();
-                    location.reload();
+        try {
+            const response = await fetch(`${window.API_BASE_URL}/v1/activities`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 }
-            })
-            .catch(err => console.error('Save failed:', err));
-    });
-
-    // ── VIEW MODAL ──────────────────────────────────────
-    function openViewModal(activity) {
-        document.getElementById('viewTitle').textContent       = activity.title || 'Event Details';
-        document.getElementById('viewCategory').textContent    = activity.category || 'General';
-        document.getElementById('viewDate').textContent        = activity.date || '';
-        document.getElementById('viewTime').textContent        = activity.time || '';
-        document.getElementById('viewLocation').textContent    = activity.location || '';
-        document.getElementById('viewDescription').textContent = activity.description || '';
-        document.getElementById('viewImage').src               = activity.image || '';
-        document.getElementById('viewImage').alt               = activity.title || '';
-        document.getElementById('viewModalOverlay').classList.add('active');
+            });
+            const result = await response.json();
+            allActivities = result.data?.data || result.data || result || [];
+            renderActivities();
+        } catch (error) {
+            console.error('Error loading activities:', error);
+            document.getElementById('activityGrid').innerHTML = '<div class="text-center py-5 w-100 text-danger">Failed to load activities.</div>';
+        }
     }
 
-    function closeViewModal() {
-        document.getElementById('viewModalOverlay').classList.remove('active');
+    // --- 2. RENDER GRID (Added Edit & Delete Buttons) ---
+    function renderActivities() {
+        const grid = document.getElementById('activityGrid');
+        const query = document.getElementById('searchInput')?.value.toLowerCase() || '';
+
+        const filtered = allActivities.filter(act =>
+            (act.title || '').toLowerCase().includes(query) ||
+            (act.description || '').toLowerCase().includes(query)
+        );
+
+        if (filtered.length === 0) {
+            grid.innerHTML = '<div class="text-center py-5 w-100 text-muted" style="grid-column: 1 / -1;">No activities found.</div>';
+            return;
+        }
+
+        grid.innerHTML = filtered.map(act => {
+            const imageUrl = act.image_url || (act.image_path ? `${window.API_BASE_URL.replace('/api', '')}/storage/${act.image_path}` : 'https://placehold.co/600x400?text=No+Image');
+
+            return `
+            <div class="activity-card">
+                <div class="card-image-wrap">
+                    <img src="${imageUrl}" alt="Activity">
+                    <div class="card-title-overlay">${act.title || 'PCCI Activity'}</div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-view" onclick="openViewModal(${act.id})">VIEW</button>
+                    <button class="btn-edit" onclick="openEditModal(${act.id})"><i class="bi bi-pencil"></i> EDIT</button>
+                    <button class="btn-edit" onclick="deleteActivity(${act.id})" style="color: #be1e38; border-color: #be1e38; min-width: 40px; flex: 0.2;"><i class="bi bi-trash"></i></button>
+                </div>
+            </div>`;
+        }).join('');
     }
 
-    document.getElementById('closeViewModal').addEventListener('click', closeViewModal);
-    document.getElementById('viewModalOverlay').addEventListener('click', function (e) {
-        if (e.target === this) closeViewModal();
-    });
-
-    // ── ADD MODAL ──────────────────────────────────────
+    // --- 3. ADD MODAL LOGIC ---
     function openAddModal() {
-        document.getElementById('addDescription').value          = '';
-        document.getElementById('addImageFile').value            = '';
-        document.getElementById('addFileNameDisplay').textContent = 'NO FILE CHOSEN';
-        document.getElementById('addImagePreview').src           = '';
+        // Reset the exact IDs from your HTML
+        document.getElementById('addDescription').value = '';
+        document.getElementById('addImageFile').value = '';
+        document.getElementById('addFileNameDisplay').innerText = 'NO FILE CHOSEN';
         document.getElementById('addImagePreviewWrap').style.display = 'none';
-        document.getElementById('addModalOverlay').classList.add('active');
+        document.getElementById('addImagePreview').src = '';
+
+        document.getElementById('addModalOverlay')?.classList.add('active');
     }
 
-    function closeAddModal() {
+    document.getElementById('closeAddModal')?.addEventListener('click', () => {
         document.getElementById('addModalOverlay').classList.remove('active');
+    });
+    document.getElementById('cancelAddModal')?.addEventListener('click', () => {
+        document.getElementById('addModalOverlay').classList.remove('active');
+    });
+
+    // --- 4. EDIT MODAL LOGIC ---
+    function openEditModal(id) {
+        const act = allActivities.find(a => a.id === id);
+        if (!act) return;
+
+        document.getElementById('editActivityId').value = act.id;
+        document.getElementById('editDescription').value = act.description || '';
+        document.getElementById('fileNameDisplay').innerText = 'CHANGE FILE';
+        document.getElementById('editImageFile').value = '';
+
+        const imageUrl = act.image_url || (act.image_path ? `${window.API_BASE_URL.replace('/api', '')}/storage/${act.image_path}` : '');
+        document.getElementById('editImagePreview').src = imageUrl;
+
+        document.getElementById('editModalOverlay')?.classList.add('active');
     }
 
-    document.getElementById('closeAddModal').addEventListener('click', closeAddModal);
-    document.getElementById('cancelAddModal').addEventListener('click', closeAddModal);
-
-    document.getElementById('addModalOverlay').addEventListener('click', function (e) {
-        if (e.target === this) closeAddModal();
+    document.getElementById('closeEditModal')?.addEventListener('click', () => {
+        document.getElementById('editModalOverlay').classList.remove('active');
+    });
+    document.getElementById('cancelEditModal')?.addEventListener('click', () => {
+        document.getElementById('editModalOverlay').classList.remove('active');
     });
 
-    // Image preview on file select for Add modal
-    document.getElementById('addImageFile').addEventListener('change', function () {
-        const file = this.files[0];
-        if (!file) return;
-        document.getElementById('addFileNameDisplay').textContent = file.name;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            document.getElementById('addImagePreview').src = e.target.result;
-            document.getElementById('addImagePreviewWrap').style.display = 'block';
-        };
-        reader.readAsDataURL(file);
+    // --- 5. VIEW MODAL LOGIC ---
+    function openViewModal(id) {
+        const act = allActivities.find(a => a.id === id);
+        if (!act) return;
+
+        const imageUrl = act.image_url || (act.image_path ? `${window.API_BASE_URL.replace('/api', '')}/storage/${act.image_path}` : '');
+        document.getElementById('viewImage').src = imageUrl;
+        document.getElementById('viewTitle').innerText = act.title || 'PCCI Activity';
+        document.getElementById('viewDescription').innerText = act.description || '';
+
+        // Optional fallbacks if the fields exist in DB
+        if (document.getElementById('viewDate')) document.getElementById('viewDate').innerText = act.date || 'N/A';
+        if (document.getElementById('viewLocation')) document.getElementById('viewLocation').innerText = act.location || 'N/A';
+
+        document.getElementById('viewModalOverlay')?.classList.add('active');
+    }
+
+    document.getElementById('closeViewModal')?.addEventListener('click', () => {
+        document.getElementById('viewModalOverlay').classList.remove('active');
     });
 
-    // Save new activity — wire to your Laravel store route
-    document.getElementById('saveNewActivity').addEventListener('click', function () {
-        const description = document.getElementById('addDescription').value;
-        const imageFile   = document.getElementById('addImageFile').files[0];
+    // --- 6. IMAGE PREVIEWS ---
+    document.getElementById('addImageFile')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            document.getElementById('addFileNameDisplay').innerText = file.name;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                document.getElementById('addImagePreview').src = evt.target.result;
+                document.getElementById('addImagePreviewWrap').style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.getElementById('editImageFile')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            document.getElementById('fileNameDisplay').innerText = file.name;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                document.getElementById('editImagePreview').src = evt.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // --- 7. SAVE NEW ACTIVITY API ---
+    document.getElementById('saveNewActivity')?.addEventListener('click', async function() {
+        const token = localStorage.getItem('token');
+        const btn = this;
+        btn.disabled = true;
+        btn.innerText = 'SAVING...';
 
         const formData = new FormData();
-        formData.append('_token', '{{ csrf_token() }}');
-        formData.append('description', description);
+        formData.append('description', document.getElementById('addDescription').value);
+        formData.append('title', 'PCCI Activity'); // Backend failsafe requirement
+
+        const imageFile = document.getElementById('addImageFile').files[0];
         if (imageFile) formData.append('image', imageFile);
 
-        fetch('/activities', { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    closeAddModal();
-                    location.reload();
+        try {
+            const res = await fetch(`${window.API_BASE_URL}/v1/activities`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+            if (res.ok) {
+                document.getElementById('addModalOverlay').classList.remove('active');
+                fetchActivities();
+            } else {
+                const data = await res.json();
+                alert('Save failed: ' + (data.message || 'Validation Error'));
+            }
+        } catch (err) {
+            alert('Network Error');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'SAVE';
+        }
+    });
+
+    // --- 8. SAVE EDITED ACTIVITY API ---
+    document.getElementById('saveActivity')?.addEventListener('click', async function() {
+        const token = localStorage.getItem('token');
+        const id = document.getElementById('editActivityId').value;
+        const btn = this;
+        btn.disabled = true;
+        btn.innerText = 'SAVING...';
+
+        const formData = new FormData();
+        formData.append('_method', 'PUT'); // Laravel requirement to process file updates
+        formData.append('description', document.getElementById('editDescription').value);
+
+        const imageFile = document.getElementById('editImageFile').files[0];
+        if (imageFile) formData.append('image', imageFile);
+
+        try {
+            const res = await fetch(`${window.API_BASE_URL}/v1/activities/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+            if (res.ok) {
+                document.getElementById('editModalOverlay').classList.remove('active');
+                fetchActivities();
+            } else {
+                const data = await res.json();
+                alert('Save failed: ' + (data.message || 'Validation Error'));
+            }
+        } catch (err) {
+            alert('Network Error');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'SAVE';
+        }
+    });
+
+    // --- 9. DELETE ACTIVITY API ---
+    async function deleteActivity(id) {
+        if (!confirm('Are you sure you want to delete this activity?')) return;
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`${window.API_BASE_URL}/v1/activities/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
                 }
-            })
-            .catch(err => console.error('Save failed:', err));
-    });
+            });
+            if (res.ok) fetchActivities();
+            else alert('Delete failed.');
+        } catch (err) {
+            alert('Network Error');
+        }
+    }
 
-    // Live search
-    document.getElementById('searchInput').addEventListener('input', function () {
-        const q = this.value.toLowerCase();
-        document.querySelectorAll('.activity-card').forEach(card => {
-            card.style.display = card.querySelector('.card-title-overlay').textContent.toLowerCase().includes(q) ? '' : 'none';
-        });
-    });
-
-    // Filter toggle
-    document.getElementById('filterToggle').addEventListener('click', function () {
+    // --- SEARCH ---
+    document.getElementById('searchInput')?.addEventListener('input', renderActivities);
+    document.getElementById('filterToggle')?.addEventListener('click', function() {
         this.classList.toggle('active');
     });
+
+    // --- INIT ---
+    if (document.readyState !== 'loading') {
+        fetchActivities();
+    } else {
+        document.addEventListener('DOMContentLoaded', fetchActivities);
+    }
 </script>
 
 @endsection
