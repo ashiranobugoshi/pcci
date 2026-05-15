@@ -170,7 +170,7 @@
         <div class="col-xl-4 col-lg-5">
             <div class="notif-card shadow-sm h-100 d-flex flex-column" style="max-height: 500px;">
                 <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-light rounded-top" style="border-top-left-radius: 8px; border-top-right-radius: 8px;">
-                    <h6 class="mb-0 fw-bold text-dark"><i class="fa fa-bell me-2" style="color: var(--pcci-red, #be1e38);"></i>System Activity</h6>
+                    <h6 class="mb-0 fw-bold text-dark"><i class="fa fa-bell me-2" style="color: var(--pcci-red, #be1e38);"></i>Notification</h6>
                     <span class="badge notif-badge-pill rounded-pill px-2" id="adminNotifCount">0 New</span>
                 </div>
 

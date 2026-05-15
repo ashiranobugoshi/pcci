@@ -287,28 +287,45 @@
     <button class="btn-save" id="btnSaveProfile" onclick="saveProfile()">Save Changes</button>
 </div>
 
-{{-- Change Password Card --}}
+{{-- Change Password Card (OTP Flow) --}}
 <div class="profile-card">
     <h5><i class="bi bi-shield-lock"></i> Change Password</h5>
-    <div id="passwordAlert" class="alert-box"></div>
+    <div id="pwdAlertMsg" class="alert-box"></div>
 
-    <div class="form-group">
-        <label>Current Password</label>
-        <input type="password" id="currentPassword" placeholder="Enter current password">
+    <div id="step1SendOtp">
+        <p style="color: #666; font-size: 0.9rem; margin-bottom: 16px;">To securely change your password, we must first verify your identity. Click the button below to send a 6-digit OTP to your registered email.</p>
+        <button type="button" class="btn-save" id="btnRequestOtp" onclick="requestPasswordOtp()">
+            Request OTP via Email
+        </button>
     </div>
 
-    <div class="profile-row">
-        <div class="form-group">
-            <label>New Password</label>
-            <input type="password" id="newPassword" placeholder="Enter new password">
-        </div>
-        <div class="form-group">
-            <label>Confirm New Password</label>
-            <input type="password" id="confirmPassword" placeholder="Confirm new password">
-        </div>
-    </div>
+    <form id="step2ChangeForm" style="display: none;" onsubmit="submitNewPassword(event)">
 
-    <button class="btn-save" id="btnChangePassword" onclick="changePassword()">Change Password</button>
+        <div class="form-group" style="max-width: 350px;">
+            <label>Enter 6-Digit OTP</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="changeOtpInput" placeholder="123456" required maxlength="6" style="letter-spacing: 4px; font-size: 1.1rem; text-align: center; font-weight: bold; flex: 1;">
+                <button type="button" class="btn-save" id="btnVerifyOtp" onclick="lockOtpField()" style="padding: 10px 20px;">Verify</button>
+            </div>
+            <small style="color: #888; font-size: 0.8rem; margin-top: 6px; display: block;" id="otpHelpText">Please check your email for the code.</small>
+        </div>
+
+        <div id="newPasswordSection" style="display: none; border-top: 1px solid #eee; padding-top: 20px; margin-top: 20px;">
+            <div class="profile-row">
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="newPasswordInput" placeholder="Enter new password" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" id="confirmNewPasswordInput" placeholder="Confirm new password" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-save" id="btnSavePassword">
+                <i class="bi bi-save"></i> Save New Password
+            </button>
+        </div>
+    </form>
 </div>
 
 <script>
@@ -348,7 +365,6 @@
         avatarChanged = true;
         localStorage.removeItem('adminAvatar');
 
-        // Update sidebar avatar
         const sidebarAvatar = document.querySelector('.sidebar .avatar');
         if (sidebarAvatar) sidebarAvatar.src = 'https://i.pravatar.cc/150?u=default';
     }
@@ -357,7 +373,6 @@
         const savedAvatar = localStorage.getItem('adminAvatar');
         if (savedAvatar) {
             document.getElementById('avatarPreview').innerHTML = `<img src="${savedAvatar}" alt="Avatar">`;
-            // Also update sidebar
             const sidebarAvatar = document.querySelector('.sidebar .avatar');
             if (sidebarAvatar) sidebarAvatar.src = savedAvatar;
         } else {
@@ -370,7 +385,6 @@
         const words = name.split(' ');
         let initials = name.substring(0, 2).toUpperCase();
         if (words.length > 1) initials = (words[0][0] + words[1][0]).toUpperCase();
-        document.getElementById('avatarInitials')?.replaceWith();
         const preview = document.getElementById('avatarPreview');
         if (!preview.querySelector('img')) {
             preview.innerHTML = `<span class="initials">${initials}</span>`;
@@ -391,10 +405,8 @@
         const storedName = localStorage.getItem('userName') || '';
         document.getElementById('profileName').value = storedName;
 
-        // Load saved avatar
         loadAvatarFromStorage();
 
-        // Fetch user data from API
         try {
             const response = await fetch(`${window.API_BASE_URL}/v1/user`, {
                 headers: {
@@ -417,7 +429,6 @@
                     }) :
                     'N/A';
 
-                // Load avatar from API if available
                 if (user.avatar || user.photo_url) {
                     const avatarUrl = user.avatar || user.photo_url;
                     document.getElementById('avatarPreview').innerHTML = `<img src="${avatarUrl}" alt="Avatar">`;
@@ -453,12 +464,10 @@
         btn.textContent = 'Saving...';
         alertBox.style.display = 'none';
 
-        // Save avatar to localStorage if changed
         if (avatarChanged && avatarFile) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 localStorage.setItem('adminAvatar', e.target.result);
-                // Update sidebar avatar immediately
                 const sidebarAvatar = document.querySelector('.sidebar .avatar');
                 if (sidebarAvatar) sidebarAvatar.src = e.target.result;
             };
@@ -466,14 +475,13 @@
         }
 
         try {
-            // Try sending as FormData to support avatar upload
             const formData = new FormData();
             formData.append('name', name);
             formData.append('email', email);
             formData.append('_method', 'PUT');
             if (avatarFile) formData.append('avatar', avatarFile);
 
-            const response = await fetch(`${window.API_BASE_URL}/v1/user`, {
+            const response = await fetch(`${window.API_BASE_URL}/v1/user/change-info`, {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -486,14 +494,12 @@
 
             if (response.ok) {
                 localStorage.setItem('userName', name);
-                // Update sidebar name
                 const sidebarName = document.getElementById('sidebarAdminName');
                 if (sidebarName) sidebarName.textContent = name.toUpperCase();
 
                 avatarChanged = false;
                 showAlert(alertBox, 'Profile updated successfully!', 'success');
             } else {
-                // Even if API fails, save locally
                 localStorage.setItem('userName', name);
                 const sidebarName = document.getElementById('sidebarAdminName');
                 if (sidebarName) sidebarName.textContent = name.toUpperCase();
@@ -501,7 +507,6 @@
                 showAlert(alertBox, 'Profile saved locally. API: ' + (data.message || 'Could not sync to server.'), 'success');
             }
         } catch (err) {
-            // Save locally even on network error
             localStorage.setItem('userName', name);
             showAlert(alertBox, 'Profile saved locally. Could not reach server.', 'success');
         } finally {
@@ -510,33 +515,83 @@
         }
     }
 
-    async function changePassword() {
-        const btn = document.getElementById('btnChangePassword');
-        const alertBox = document.getElementById('passwordAlert');
-        const currentPassword = document.getElementById('currentPassword').value;
-        const newPassword = document.getElementById('newPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
+    // --- STEP 1: Trigger the OTP Email ---
+    async function requestPasswordOtp() {
+        const btn = document.getElementById('btnRequestOtp');
+        const alertBox = document.getElementById('pwdAlertMsg');
 
+        btn.disabled = true;
+        btn.textContent = 'Sending...';
         alertBox.style.display = 'none';
 
-        if (!currentPassword || !newPassword || !confirmPassword) {
-            showAlert(alertBox, 'All password fields are required.', 'error');
-            return;
+        try {
+            const response = await fetch(`${window.API_BASE_URL}/user/confirm-password-change`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                document.getElementById('step1SendOtp').style.display = 'none';
+                document.getElementById('step2ChangeForm').style.display = 'block';
+                showAlert(alertBox, 'OTP sent! Please check your email for the 6-digit code.', 'success');
+            } else {
+                const data = await response.json().catch(() => ({}));
+                showAlert(alertBox, data.message || 'Failed to send OTP.', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Request OTP via Email';
+            }
+        } catch (error) {
+            showAlert(alertBox, 'Network error. Please try again later.', 'error');
+            btn.disabled = false;
+            btn.textContent = 'Request OTP via Email';
         }
-        if (newPassword.length < 8) {
-            showAlert(alertBox, 'New password must be at least 8 characters.', 'error');
-            return;
+    }
+
+    // --- STEP 2: Lock the OTP Field & Reveal Passwords ---
+    function lockOtpField() {
+        const otpInput = document.getElementById('changeOtpInput');
+        const alertBox = document.getElementById('pwdAlertMsg');
+
+        if (otpInput.value.trim().length === 6) {
+            otpInput.setAttribute('readonly', true);
+            otpInput.style.backgroundColor = '#e9ecef';
+            otpInput.style.cursor = 'not-allowed';
+            otpInput.style.color = '#6c757d';
+
+            document.getElementById('btnVerifyOtp').style.display = 'none';
+            document.getElementById('otpHelpText').innerText = 'OTP Locked.';
+            document.getElementById('newPasswordSection').style.display = 'block';
+
+            alertBox.style.display = 'none';
+        } else {
+            showAlert(alertBox, 'Please enter a valid 6-digit OTP code.', 'error');
         }
+    }
+
+    // --- STEP 3: Submit the Final Request ---
+    async function submitNewPassword(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSavePassword');
+        const alertBox = document.getElementById('pwdAlertMsg');
+
+        const otp = document.getElementById('changeOtpInput').value.trim();
+        const newPassword = document.getElementById('newPasswordInput').value;
+        const confirmPassword = document.getElementById('confirmNewPasswordInput').value;
+
         if (newPassword !== confirmPassword) {
-            showAlert(alertBox, 'New password and confirmation do not match.', 'error');
+            showAlert(alertBox, 'Passwords do not match!', 'error');
             return;
         }
 
         btn.disabled = true;
-        btn.textContent = 'Changing...';
+        btn.textContent = 'Saving...';
+        alertBox.style.display = 'none';
 
         try {
-            const response = await fetch(`${window.API_BASE_URL}/v1/change-password`, {
+            const response = await fetch(`${window.API_BASE_URL}/user/request-password-change`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -544,34 +599,36 @@
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    current_password: currentPassword,
-                    password: newPassword,
-                    password_confirmation: confirmPassword
+                    otp: otp,
+                    new_password: newPassword,
+                    new_password_confirmation: confirmPassword
                 })
             });
 
             const data = await response.json().catch(() => ({}));
 
             if (response.ok) {
-                showAlert(alertBox, 'Password changed successfully!', 'success');
-                document.getElementById('currentPassword').value = '';
-                document.getElementById('newPassword').value = '';
-                document.getElementById('confirmPassword').value = '';
+                showAlert(alertBox, 'Password successfully changed!', 'success');
+                document.getElementById('step2ChangeForm').style.display = 'none';
             } else {
-                const msg = data.message || 'Failed to change password.';
-                const errors = data.errors ? '\n' + Object.values(data.errors).flat().join('\n') : '';
-                showAlert(alertBox, msg + errors, 'error');
+                let errorHtml = data.message || 'Validation failed.';
+                if (data.errors) {
+                    errorHtml += '\n' + Object.values(data.errors).flat().join('\n');
+                }
+                showAlert(alertBox, errorHtml, 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-save"></i> Save New Password';
             }
-        } catch (err) {
+        } catch (error) {
             showAlert(alertBox, 'Network error. Please try again.', 'error');
-        } finally {
             btn.disabled = false;
-            btn.textContent = 'Change Password';
+            btn.innerHTML = '<i class="bi bi-save"></i> Save New Password';
         }
     }
 
+    // --- UTILITY: Show Alerts ---
     function showAlert(el, msg, type) {
-        el.textContent = msg;
+        el.innerText = msg;
         el.className = 'alert-box ' + (type === 'success' ? 'alert-success' : 'alert-error');
         el.style.whiteSpace = 'pre-line';
         el.style.display = 'block';

@@ -1,288 +1,333 @@
 @extends('layouts.app')
-@include('partials.api-config')
-@section('title', 'Secure Account - PCCI')
+
+@section('title', 'Secure Account Setup - PCCI')
 
 @section('content')
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;700&family=Poppins:wght@600;700;800&display=swap');
+@include('partials.api-config')
 
+<style>
     body {
-        background-color: #f3f4f6;
-        /* Switched to light gray background for a cleaner PCCI feel */
-        color: #333333;
-        font-family: 'DM Sans', sans-serif;
+        background-color: #f4f6f9;
+        font-family: 'Inter', sans-serif;
     }
 
-    .setup-container {
+    .setup-wrapper {
         min-height: 100vh;
         display: flex;
         align-items: center;
-        padding-top: 60px;
-        padding-bottom: 40px;
+        justify-content: center;
+        padding: 20px;
     }
 
-    .glass-card {
-        background: #ffffff;
-        border-radius: 16px;
-        padding: 40px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        border: 1px solid #e5e7eb;
-    }
-
-    .form-control-custom {
-        background-color: #f9fafb !important;
-        border: 1px solid #e5e7eb !important;
-        color: #111827 !important;
+    .setup-card {
+        background: #fff;
         border-radius: 8px;
-        padding: 12px;
-        transition: all 0.2s;
-    }
-
-    .form-control-custom:focus {
-        border-color: #b61b2a !important;
-        box-shadow: 0 0 0 0.25rem rgba(182, 27, 42, 0.15);
-        outline: none;
-        background-color: #ffffff !important;
-    }
-
-    .input-group-text-custom {
-        background-color: #f9fafb;
-        border: 1px solid #e5e7eb;
-        border-left: none;
-        cursor: pointer;
-        color: #6b7280;
-        border-radius: 0 8px 8px 0;
-    }
-
-    .form-control-custom:focus+.input-group-text-custom {
-        border-color: #b61b2a;
-    }
-
-    .btn-red-custom {
-        background-color: #b61b2a;
-        color: white;
-        border: none;
-        padding: 12px;
-        border-radius: 8px;
-        font-weight: 700;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
         width: 100%;
-        transition: all 0.3s;
+        max-width: 900px;
+        display: flex;
+        flex-direction: row;
     }
 
-    .btn-red-custom:hover:not(:disabled) {
-        background-color: #8f1521;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(182, 27, 42, 0.2);
+    /* Left Side - Branding */
+    .setup-left {
+        background-color: var(--pcci-red, #be1e38);
+        color: white;
+        padding: 50px 40px;
+        width: 45%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
     }
 
-    .btn-red-custom:disabled {
+    .setup-left i {
+        font-size: 5rem;
+        margin-bottom: 20px;
+    }
+
+    .setup-left h2 {
+        font-weight: 700;
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+        letter-spacing: 1px;
+    }
+
+    .setup-left p {
+        font-size: 0.95rem;
+        opacity: 0.9;
+    }
+
+    /* Right Side - Form */
+    .setup-right {
+        padding: 50px 40px;
+        width: 55%;
+        background: #ffffff;
+    }
+
+    .setup-right h4 {
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .setup-right p.subtitle {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 30px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #555;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .input-group-text {
+        background: transparent;
+        cursor: pointer;
+        border-left: none;
+    }
+
+    .form-control {
+        border-right: none;
+        padding: 12px 16px;
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        border-color: var(--pcci-red, #be1e38);
+    }
+
+    .form-control:focus+.input-group-text {
+        border-color: var(--pcci-red, #be1e38);
+        color: var(--pcci-red, #be1e38);
+    }
+
+    .btn-submit {
+        background-color: var(--pcci-red, #be1e38);
+        color: white;
+        font-weight: 700;
+        padding: 12px;
+        border-radius: 6px;
+        width: 100%;
+        border: none;
+        transition: 0.2s;
+    }
+
+    .btn-submit:hover {
+        background-color: #a01a30;
+        color: white;
+    }
+
+    .btn-submit:disabled {
         background-color: #d1d5db;
         cursor: not-allowed;
     }
 
-    /* Validation Checklist Styles */
-    .validation-list {
-        list-style: none;
-        padding: 0;
-        margin: 10px 0 0 0;
-        font-size: 0.8rem;
-        color: #6b7280;
+    /* Checklist Styles */
+    .validation-checklist {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 25px;
+        display: block;
+        /* Always visible to prevent UI stretching */
     }
 
-    .validation-list li {
-        margin-bottom: 4px;
+    .validation-checklist p {
+        margin: 0 0 8px 0;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #333;
+        text-transform: uppercase;
+    }
+
+    .check-item {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 5px;
         display: flex;
         align-items: center;
-        gap: 6px;
+        transition: color 0.2s;
     }
 
-    .validation-list li i {
-        font-size: 0.9rem;
+    .check-item i {
+        margin-right: 8px;
+        font-size: 1rem;
+        transition: transform 0.2s;
     }
 
-    .val-invalid i {
-        color: #ef4444;
-    }
-
-    /* Red cross */
-    .val-valid {
+    .check-item.valid {
         color: #10b981;
     }
 
-    /* Green check */
-    .val-valid i {
-        color: #10b981;
+    .check-item.invalid {
+        color: #be1e38;
     }
 
-    @keyframes spin {
-        100% {
-            transform: rotate(360deg);
+    @media (max-width: 768px) {
+        .setup-card {
+            flex-direction: column;
         }
-    }
 
-    .spin {
-        display: inline-block;
-        animation: spin 1s linear infinite;
+        .setup-left,
+        .setup-right {
+            width: 100%;
+            padding: 30px 20px;
+        }
+
+        .setup-left {
+            padding: 40px 20px;
+        }
     }
 </style>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<div class="setup-wrapper">
+    <div class="setup-card">
 
-<div class="setup-container">
-    <div class="container">
-        <div class="row align-items-center justify-content-center">
+        <div class="setup-left">
+            <i class="bi bi-shield-lock-fill"></i>
+            <h2>PCCI SECURE</h2>
+            <p>ACCOUNT SETUP</p>
+        </div>
 
-            <div class="col-lg-5">
-                <div class="glass-card">
-                    <div class="text-center mb-4">
-                        <img src="{{ asset('images/PCCI-Logo.png') }}" alt="PCCI Logo" style="width: 75px; height: 75px; margin-bottom: 15px;">
-                        <h4 class="fw-bold mb-2" style="color: #111827; font-family: 'Poppins', sans-serif;">
-                            Secure Your Account
-                        </h4>
-                        <p class="text-muted" style="font-size: 0.9rem;">Since this is your newly made account, you must set a personal, secure password before accessing the dashboard.</p>
+        <div class="setup-right">
+            <h4>Setup Your Password</h4>
+            <p class="subtitle">Please choose a strong password to secure your new account before accessing the dashboard.</p>
+
+            <div id="setupAlert" class="alert alert-danger d-none" style="font-size: 0.9rem;"></div>
+
+            <form id="setupForm" onsubmit="handleSetup(event)">
+
+                <div class="form-group mb-3">
+                    <label>New Password</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="newPassword" placeholder="Minimum 8 characters" required>
+                        <span class="input-group-text" onclick="togglePassword('newPassword', 'eyeIcon1')">
+                            <i class="bi bi-eye" id="eyeIcon1"></i>
+                        </span>
                     </div>
-
-                    <form id="setupPasswordForm" onsubmit="submitFirstTimePassword(event)">
-
-                        <div class="mb-3">
-                            <label class="form-label" style="color: #4b5563; font-weight: 600; font-size: 0.85rem;">New Password <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <input type="password" id="new_password" class="form-control form-control-custom border-end-0" placeholder="Enter new password" required oninput="validatePassword()">
-                                <span class="input-group-text input-group-text-custom" onclick="togglePasswordVisibility('new_password', 'toggleIcon1')">
-                                    <i class="bi bi-eye-slash" id="toggleIcon1"></i>
-                                </span>
-                            </div>
-
-                            <ul class="validation-list" id="password-validation">
-                                <li id="req-len" class="val-invalid"><i class="bi bi-x-circle-fill"></i> At least 8 characters</li>
-                                <li id="req-upper" class="val-invalid"><i class="bi bi-x-circle-fill"></i> One uppercase letter</li>
-                                <li id="req-lower" class="val-invalid"><i class="bi bi-x-circle-fill"></i> One lowercase letter</li>
-                                <li id="req-num" class="val-invalid"><i class="bi bi-x-circle-fill"></i> One number</li>
-                            </ul>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label" style="color: #4b5563; font-weight: 600; font-size: 0.85rem;">Confirm Password <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <input type="password" id="new_password_confirmation" class="form-control form-control-custom border-end-0" placeholder="Re-type password" required oninput="checkMatch()">
-                                <span class="input-group-text input-group-text-custom" onclick="togglePasswordVisibility('new_password_confirmation', 'toggleIcon2')">
-                                    <i class="bi bi-eye-slash" id="toggleIcon2"></i>
-                                </span>
-                            </div>
-                            <small id="match-text" class="d-none mt-1 fw-bold" style="font-size: 0.8rem;"></small>
-                        </div>
-
-                        <div id="setupError" class="alert alert-danger d-none mt-3" style="font-size: 0.85rem; padding: 10px; background-color: #fef2f2; color: #ef4444; border: 1px solid #fca5a5;"></div>
-
-                        <button type="submit" id="btnSetup" class="btn-red-custom mt-2" disabled>
-                            Update Password & Continue
-                        </button>
-                    </form>
                 </div>
-            </div>
 
+                <div class="form-group mb-4">
+                    <label>Confirm Password</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your password" required>
+                        <span class="input-group-text" onclick="togglePassword('confirmPassword', 'eyeIcon2')">
+                            <i class="bi bi-eye" id="eyeIcon2"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div id="checklistContainer" class="validation-checklist">
+                    <p>Password Requirements:</p>
+                    <div class="check-item" id="ruleLength"><i class="bi bi-circle"></i> At least 8 characters long</div>
+                    <div class="check-item" id="ruleMatch"><i class="bi bi-circle"></i> Passwords match</div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="setupBtn" disabled>
+                    Save & Continue <i class="bi bi-arrow-right ms-1"></i>
+                </button>
+            </form>
         </div>
     </div>
 </div>
 
 <script>
-    let isPasswordValid = false;
-    let doPasswordsMatch = false;
+    const token = localStorage.getItem('token');
 
-    document.addEventListener('DOMContentLoaded', () => {
-        if (!localStorage.getItem('token')) {
-            window.location.href = '/login';
-        }
-    });
+    // Kick out unauthenticated users trying to bypass login
+    if (!token) {
+        window.location.href = '/login';
+    }
 
-    // 1. Show/Hide Password Toggle
-    function togglePasswordVisibility(inputId, iconId) {
+    // --- Toggle Password Visibility ---
+    function togglePassword(inputId, iconId) {
         const input = document.getElementById(inputId);
         const icon = document.getElementById(iconId);
-        if (input.type === "password") {
-            input.type = "text";
-            icon.classList.replace("bi-eye-slash", "bi-eye");
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('bi-eye', 'bi-eye-slash');
         } else {
-            input.type = "password";
-            icon.classList.replace("bi-eye", "bi-eye-slash");
+            input.type = 'password';
+            icon.classList.replace('bi-eye-slash', 'bi-eye');
         }
     }
 
-    // 2. Real-time Password Validation
-    function validatePassword() {
-        const pw = document.getElementById('new_password').value;
-        let validCount = 0;
+    // --- REAL-TIME VALIDATION UI ---
+    const newPasswordInput = document.getElementById('newPassword');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const setupBtn = document.getElementById('setupBtn');
+    const alertBox = document.getElementById('setupAlert');
+    const ruleLength = document.getElementById('ruleLength');
+    const ruleMatch = document.getElementById('ruleMatch');
 
-        const setValid = (elementId) => {
-            const el = document.getElementById(elementId);
-            el.className = 'val-valid';
-            el.querySelector('i').className = 'bi bi-check-circle-fill';
-            validCount++;
-        };
-        const setInvalid = (elementId) => {
-            const el = document.getElementById(elementId);
-            el.className = 'val-invalid';
-            el.querySelector('i').className = 'bi bi-x-circle-fill';
-        };
+    function validatePasswords() {
+        const p1 = newPasswordInput.value;
+        const p2 = confirmPasswordInput.value;
 
-        if (pw.length >= 8) setValid('req-len');
-        else setInvalid('req-len');
-        if (/[A-Z]/.test(pw)) setValid('req-upper');
-        else setInvalid('req-upper');
-        if (/[a-z]/.test(pw)) setValid('req-lower');
-        else setInvalid('req-lower');
-        if (/[0-9]/.test(pw)) setValid('req-num');
-        else setInvalid('req-num');
+        const isLengthValid = p1.length >= 8;
+        const isMatchValid = p1.length > 0 && p1 === p2;
 
-        isPasswordValid = (validCount === 4);
-        checkMatch();
-    }
-
-    // 3. Confirm Password Match Checker
-    function checkMatch() {
-        const pw1 = document.getElementById('new_password').value;
-        const pw2 = document.getElementById('new_password_confirmation').value;
-        const matchText = document.getElementById('match-text');
-        const btn = document.getElementById('btnSetup');
-
-        if (pw2.length > 0) {
-            matchText.classList.remove('d-none');
-            if (pw1 === pw2) {
-                matchText.className = 'mt-1 fw-bold text-success';
-                matchText.innerHTML = '<i class="bi bi-check-circle-fill"></i> Passwords match';
-                doPasswordsMatch = true;
-            } else {
-                matchText.className = 'mt-1 fw-bold text-danger';
-                matchText.innerHTML = '<i class="bi bi-x-circle-fill"></i> Passwords do not match';
-                doPasswordsMatch = false;
-            }
+        // Update Length UI (Gray if empty, Red if under 8, Green if 8+)
+        if (isLengthValid) {
+            ruleLength.className = 'check-item valid';
+            ruleLength.innerHTML = '<i class="bi bi-check-circle-fill"></i> At least 8 characters long';
+        } else if (p1.length > 0) {
+            ruleLength.className = 'check-item invalid';
+            ruleLength.innerHTML = '<i class="bi bi-x-circle-fill"></i> At least 8 characters long';
         } else {
-            matchText.classList.add('d-none');
-            doPasswordsMatch = false;
+            ruleLength.className = 'check-item';
+            ruleLength.innerHTML = '<i class="bi bi-circle"></i> At least 8 characters long';
         }
 
-        // Enable button only if everything is perfect
-        btn.disabled = !(isPasswordValid && doPasswordsMatch);
+        // Update Match UI (Gray if empty, Red if mistyped, Green if matching)
+        if (isMatchValid) {
+            ruleMatch.className = 'check-item valid';
+            ruleMatch.innerHTML = '<i class="bi bi-check-circle-fill"></i> Passwords match';
+        } else if (p2.length > 0) {
+            ruleMatch.className = 'check-item invalid';
+            ruleMatch.innerHTML = '<i class="bi bi-x-circle-fill"></i> Passwords match';
+        } else {
+            ruleMatch.className = 'check-item';
+            ruleMatch.innerHTML = '<i class="bi bi-circle"></i> Passwords match';
+        }
+
+        // Lock button until rules are met
+        if (isLengthValid && isMatchValid) {
+            setupBtn.disabled = false;
+            return true;
+        } else {
+            setupBtn.disabled = true;
+            return false;
+        }
     }
 
-    // 4. Submission & Smart Redirection
-    async function submitFirstTimePassword(event) {
-        event.preventDefault();
+    // Listen as the user types
+    newPasswordInput.addEventListener('input', validatePasswords);
+    confirmPasswordInput.addEventListener('input', validatePasswords);
 
-        const token = localStorage.getItem('token');
-        const pass = document.getElementById('new_password').value;
-        const passConfirm = document.getElementById('new_password_confirmation').value;
-        const errorBox = document.getElementById('setupError');
-        const btn = document.getElementById('btnSetup');
 
-        errorBox.classList.add('d-none');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Securing Account...';
+    // --- Handle Setup Form Submission & Smart Routing ---
+    async function handleSetup(e) {
+        e.preventDefault();
+
+        if (!validatePasswords()) return;
+
+        alertBox.classList.add('d-none');
+        setupBtn.disabled = true;
+        setupBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i> Updating...';
 
         try {
-            const apiUrl = `${window.API_BASE_URL}/v1/user/first-time-password-change`;
-
-            const response = await fetch(apiUrl, {
+            // 1. Submit Password
+            const response = await fetch(`${window.API_BASE_URL}/v1/user/first-time-password-change`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -290,19 +335,18 @@
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    new_password: pass,
-                    new_password_confirmation: passConfirm
+                    new_password: newPasswordInput.value,
+                    new_password_confirmation: confirmPasswordInput.value
                 })
             });
 
-            const data = await response.json();
+            const data = await response.json().catch(() => ({}));
 
             if (response.ok) {
-                btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Success! Redirecting...';
-                btn.classList.replace('btn-red-custom', 'btn-success');
+                setupBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i> Loading Dashboard...';
 
-                // Smart Redirection: Fetch user role to send them to the correct dashboard
                 try {
+                    // 2. Fetch Explicit User Roles
                     const userRes = await fetch(`${window.API_BASE_URL}/v1/user`, {
                         headers: {
                             'Accept': 'application/json',
@@ -312,15 +356,20 @@
 
                     if (userRes.ok) {
                         const userData = await userRes.json();
-                        const user = userData.data || userData;
-                        const roles = user.roles ? user.roles.map(r => r.name) : [];
+                        const user = userData.user || userData.data || userData;
 
-                        if (roles.includes('super_admin') || roles.includes('admin')) {
-                            window.location.href = '/admin/dashboard';
+                        let roles = [];
+                        if (user.roles && Array.isArray(user.roles)) {
+                            roles = user.roles.map(r => typeof r === 'string' ? r.toLowerCase() : (r.name ? r.name.toLowerCase() : ''));
+                        }
+
+                        // 3. Smart Redirection! Map explicitly to your routes in web.php
+                        if (roles.includes('super_admin') || roles.includes('superadmin') || roles.includes('admin')) {
+                            window.location.href = '/dashboard'; // Admin Route
                         } else if (roles.includes('treasurer')) {
-                            window.location.href = '/treasurer/dashboard';
+                            window.location.href = '/treasurer-dashboard'; // Treasurer Route
                         } else {
-                            window.location.href = '/member-dashboard';
+                            window.location.href = '/member-dashboard'; // Member Route
                         }
                     } else {
                         window.location.href = '/member-dashboard'; // Safe fallback
@@ -332,22 +381,23 @@
             } else {
                 let errorHtml = `<b>Update Failed:</b> ${data.message || 'Invalid data.'}`;
                 if (data.errors) {
-                    errorHtml += '<ul style="margin-bottom:0; padding-left:20px; margin-top:5px;">';
+                    errorHtml += '<ul class="mb-0 ps-3 mt-1">';
                     for (const [field, messages] of Object.entries(data.errors)) {
                         errorHtml += `<li>${messages.join(', ')}</li>`;
                     }
                     errorHtml += '</ul>';
                 }
-                errorBox.innerHTML = errorHtml;
-                errorBox.classList.remove('d-none');
-                btn.disabled = false;
-                btn.innerHTML = 'Update Password & Continue';
+
+                alertBox.innerHTML = errorHtml;
+                alertBox.classList.remove('d-none');
+                setupBtn.disabled = false;
+                setupBtn.innerHTML = 'Save & Continue <i class="bi bi-arrow-right ms-1"></i>';
             }
         } catch (error) {
-            errorBox.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> Network error. Please try again.';
-            errorBox.classList.remove('d-none');
-            btn.disabled = false;
-            btn.innerHTML = 'Update Password & Continue';
+            alertBox.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> Network error. Please try again.';
+            alertBox.classList.remove('d-none');
+            setupBtn.disabled = false;
+            setupBtn.innerHTML = 'Save & Continue <i class="bi bi-arrow-right ms-1"></i>';
         }
     }
 </script>

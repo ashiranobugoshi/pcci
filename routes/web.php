@@ -13,7 +13,7 @@ Route::get('/membership', function () {
 Route::get('/about', function () {
     return view('landing.about');
 })->name('about');
-    
+
 Route::get('/contact', function () {
     return view('landing.contact');
 })->name('contact');
@@ -31,7 +31,7 @@ Route::get('/event', function () {
 })->name('event');
 
 Route::get('/signup', function () {
-    return view('auth.signup'); 
+    return view('auth.signup');
 })->name('signup');
 
 Route::get('/login', function () {
@@ -112,7 +112,7 @@ Route::get('/content/activities', function () {
 
 Route::get('/content/event-admin', function () {
     return view('admin.events');
-    })->name('content.event-admin');
+})->name('content.event-admin');
 
 Route::post('/logout', function () {
     Auth::logout();
