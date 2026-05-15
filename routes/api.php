@@ -63,6 +63,7 @@ Route::prefix('v1')->group(function () {
     // --> NEW MEMBERS ROUTE <--
     Route::get('/members', [MemberController::class, 'index']);
     Route::post('/members', [MemberController::class, 'store']);
+    Route::put('/members/{id}', [MemberController::class, 'update']);
 
     // Add this to allow Admin to Approve/Reject via the Proxy Controller
     Route::put('/applicants/{id}', [TreasurerProxyController::class, 'updateTransaction']);

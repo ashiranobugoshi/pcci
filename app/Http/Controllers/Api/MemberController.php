@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Schema;
 
@@ -120,5 +121,42 @@ class MemberController extends Controller
                 'induction_date' => $validated['induction_date'],
             ],
         ], 201);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'company_name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($user->id),
+            ],
+            'induction_date' => ['nullable', 'date'],
+        ]);
+
+        $user->name = $validated['company_name'];
+        $user->email = strtolower($validated['email']);
+        if (!empty($validated['induction_date'])) {
+            try {
+                $user->created_at = Carbon::parse($validated['induction_date'])->startOfDay();
+            } catch (\Throwable $e) {
+                // Ignore invalid date parse issues and keep the existing created_at.
+            }
+        }
+        $user->save();
+
+        return response()->json([
+            'message' => 'Member updated successfully.',
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'induction_date' => optional($user->created_at)?->toIso8601String(),
+            ],
+        ]);
     }
 }

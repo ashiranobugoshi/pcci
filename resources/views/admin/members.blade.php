@@ -365,11 +365,12 @@
                 <th>Contact No. <i class="bi bi-arrow-down-up sort-icon"></i></th>
                 <th>Registered Member</th>
                 <th>Registration date <i class="bi bi-arrow-down sort-icon"></i></th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody id="membersTableBody">
             <tr>
-                <td colspan="8" style="text-align: center; padding: 30px; color: #888;">
+                <td colspan="9" style="text-align: center; padding: 30px; color: #888;">
                     <i class="bi bi-arrow-repeat" style="display:inline-block; animation: spin 1s linear infinite;"></i> Loading members...
                 </td>
             </tr>
@@ -446,7 +447,147 @@
     </div>
 </div>
 
+{{-- ======== EDIT MEMBER MODAL ======== --}}
+
+<div class="modal-overlay" id="editMemberModal">
+    <div class="modal-card" style="max-width: 550px;">
+        <div class="modal-header">
+            <h4><i class="bi bi-pencil-square text-primary me-2"></i>Edit Member Profile</h4>
+            <button class="btn-close" onclick="closeEditMemberModal()"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body p-4">
+            <div id="editMemberError" class="alert alert-danger d-none mt-2 mb-3"></div>
+
+            <input type="hidden" id="editMemberId">
+
+            <div class="mb-4">
+                <label class="form-label fw-bold text-muted small text-uppercase mb-1">Business Name / Company</label>
+                <input type="text" class="form-control form-control-lg border-2 shadow-none" id="editCompanyName" placeholder="Enter company name">
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold text-muted small text-uppercase mb-1">Email Address</label>
+                <input type="email" class="form-control form-control-lg border-2 shadow-none" id="editEmail" placeholder="Enter email address">
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6 mb-4">
+                    <label class="form-label fw-bold text-muted small text-uppercase mb-1">Induction Date</label>
+                    <input type="date" class="form-control form-control-lg border-2 shadow-none" id="editInductionDate">
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <label class="form-label fw-bold text-muted small text-uppercase mb-1">Membership Status</label>
+                    <select class="form-select form-control-lg border-2 shadow-none" id="editStatus">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="expired">Expired</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-lg w-100 fw-bold py-3 mt-2" id="updateMemberBtn" onclick="submitEditMember()" style="border-radius: 8px;">
+                <i class="bi bi-save me-2"></i> Save Changes
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
+    // --- EDIT MEMBER LOGIC ---
+    function openEditMemberModal(id) {
+        const member = allMembersData.find(m => m.id === id);
+        if (!member) return;
+
+        document.getElementById('editMemberId').value = member.id;
+        document.getElementById('editCompanyName').value = member.company_name || (member.applicant?.basic_profile?.registered_business_name || '');
+        document.getElementById('editEmail').value = member.email || (member.applicant?.basic_profile?.email || '');
+        document.getElementById('editInductionDate').value = member.induction_date ? member.induction_date.split('T')[0] : '';
+        document.getElementById('editStatus').value = member.status || 'active';
+
+        document.getElementById('editMemberError').classList.add('d-none');
+        document.getElementById('editMemberModal').classList.add('active');
+    }
+
+    function closeEditMemberModal() {
+        document.getElementById('editMemberModal').classList.remove('active');
+    }
+
+    async function submitEditMember() {
+        const id = document.getElementById('editMemberId').value;
+        const companyName = document.getElementById('editCompanyName').value;
+        const email = document.getElementById('editEmail').value;
+        const inductionDate = document.getElementById('editInductionDate').value;
+        const status = document.getElementById('editStatus').value;
+        const token = localStorage.getItem('token');
+
+        const btn = document.getElementById('updateMemberBtn');
+        const errorBox = document.getElementById('editMemberError');
+
+        if (!token) {
+            errorBox.innerText = 'Authentication missing. Please log in again and refresh the page.';
+            errorBox.classList.remove('d-none');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i> Saving...';
+        errorBox.classList.add('d-none');
+
+        try {
+            console.log('Member edit submit:', {
+                id,
+                companyName,
+                email,
+                inductionDate,
+                status,
+                url: `${window.API_BASE_URL}/v1/members/${id}`
+            });
+
+            const response = await fetch(`${window.API_BASE_URL}/v1/members/${id}`, {
+                method: 'PUT',
+                cache: 'no-store',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    company_name: companyName,
+                    email: email,
+                    induction_date: inductionDate,
+                    status: status
+                })
+            });
+
+            const payload = await response.text();
+            console.log('Member edit response:', response.status, payload);
+
+            if (response.ok) {
+                alert('Member profile updated successfully!');
+                closeEditMemberModal();
+                await fetchMembers(); // Refresh the grid with fresh data
+            } else {
+                let errorMsg = `Failed to update member. (${response.status})`;
+                try {
+                    const data = JSON.parse(payload || '{}');
+                    errorMsg = data.message || errorMsg;
+                } catch (parseError) {
+                    // ignore parse errors, payload may be empty or HTML
+                }
+                errorBox.innerText = errorMsg;
+                errorBox.classList.remove('d-none');
+            }
+        } catch (error) {
+            errorBox.innerText = 'Network error. Please try again.';
+            errorBox.classList.remove('d-none');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-save me-2"></i> Save Changes';
+        }
+    }
+
     // ==============================================
     // MODAL UI LOGIC 
     // ==============================================
@@ -578,8 +719,9 @@
         var token = localStorage.getItem('token');
 
         try {
-            const response = await fetch(`${window.API_BASE_URL}/v1/members`, {
+            const response = await fetch(`${window.API_BASE_URL}/v1/members?noCache=${Date.now()}`, {
                 method: 'GET',
+                cache: 'no-store',
                 headers: {
                     'Accept': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -603,7 +745,7 @@
 
         } catch (error) {
             console.error("Error loading members:", error);
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: red; padding: 20px;">Failed to load members from database.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: red; padding: 20px;">Failed to load members from database.</td></tr>`;
         }
     }
 
@@ -625,7 +767,7 @@
         updatePaginationUI(filtered.length, totalPages);
 
         if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 20px;">No members found matching your criteria.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 20px;">No members found matching your criteria.</td></tr>`;
             return;
         }
 
@@ -666,7 +808,7 @@
             }
 
             tbody.innerHTML += `
-                <tr class="align-middle">
+                <tr class="align-middle" onclick="openEditMemberModal(${member.id})" style="cursor: pointer;">
                     <td class="fw-bold text-start text-dark">${companyName}</td>
                     <td class="text-secondary text-capitalize">${memberType}</td>
                     <td>${statusBadge}</td>
@@ -675,6 +817,11 @@
                     <td class="text-secondary">${contactContent}</td>
                     <td class="text-secondary text-capitalize">${registeredMemberContent}</td>
                     <td class="text-secondary">${regDateContent}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary fw-bold me-1" onclick="event.stopPropagation(); openEditMemberModal(${member.id})">
+                            <i class="bi bi-pencil-square"></i> Edit
+                        </button>
+                    </td>
                 </tr>
             `;
         });

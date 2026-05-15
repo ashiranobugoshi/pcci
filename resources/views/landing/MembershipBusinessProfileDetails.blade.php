@@ -18,7 +18,7 @@
 
 {{-- MAIN CONTENT WRAPPER --}}
 <div id="main-content" style="display: none;">
-    
+
     {{-- HERO SECTION --}}
     <div class="w-100" style="background:#1f2330; min-height: 420px; transition: all 0.3s ease;">
         <div class="container">
@@ -27,7 +27,7 @@
                 {{-- LOGO / INITIALS --}}
                 <div class="col-auto">
                     <div class="rounded-4 bg-light d-flex align-items-center justify-content-center overflow-hidden shadow-lg"
-                         style="width:130px; height:130px; border: 4px solid rgba(255,255,255,0.1);" id="biz-avatar-container">
+                        style="width:130px; height:130px; border: 4px solid rgba(255,255,255,0.1);" id="biz-avatar-container">
                         <span class="fw-bold text-danger" style="font-size: 2.5rem;" id="biz-initials">...</span>
                     </div>
                 </div>
@@ -37,7 +37,7 @@
                     <h1 class="fw-bold text-white mb-2" style="font-family: 'DM Sans', sans-serif; font-size: 2.5rem;" id="biz-name-main">
                         Loading...
                     </h1>
-                    
+
                     <span class="badge rounded-pill mb-3 px-3 py-2 fw-bold text-uppercase" style="background:#2e5aac; font-size: 0.85rem;" id="biz-industry">
                         Industry
                     </span>
@@ -178,8 +178,17 @@
 </div>
 
 <style>
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-    .service-box:hover { transform: translateY(-3px); transition: all 0.3s ease; box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; }
+    @keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .service-box:hover {
+        transform: translateY(-3px);
+        transition: all 0.3s ease;
+        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+    }
 </style>
 
 {{-- ========================================= --}}
@@ -187,27 +196,32 @@
 {{-- ========================================= --}}
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
-        const targetId = {{ $id }};
-        
-        try {
-            const token = localStorage.getItem('token');
-            const headers = { 'Accept': 'application/json' };
-            if (token) headers['Authorization'] = `Bearer ${token}`;
+        const targetId = @json($id);
 
-            // 2. Fetch from your Render API
-            const response = await fetch(`${window.API_BASE_URL}/v1/business`, {
+        try {
+            const headers = {
+                'Accept': 'application/json'
+            };
+
+            const response = await fetch(`${window.API_BASE_URL}/v1/business/${encodeURIComponent(targetId)}`, {
                 method: 'GET',
                 headers: headers
             });
 
-            if (!response.ok) throw new Error("Failed to connect to the business directory API.");
+            if (!response.ok) {
+                throw new Error("Failed to connect to the business directory API.");
+            }
 
-            // ONLY DECLARE THIS ONCE!
             const result = await response.json();
-            const allBusinesses = result.data || result || [];
-            
-            // 🚨 THE FIX: Treat the targetId as an Array Index!
-            const biz = allBusinesses[targetId];
+            let biz;
+
+            if (Array.isArray(result)) {
+                biz = result.find(b => String(b.id) === String(targetId) || String(b._idx) === String(targetId));
+            } else if (Array.isArray(result.data)) {
+                biz = result.data.find(b => String(b.id) === String(targetId) || String(b._idx) === String(targetId));
+            } else {
+                biz = result.data || result;
+            }
 
             document.getElementById('loading-spinner').style.display = 'none';
 
@@ -224,18 +238,18 @@
             const industry = biz.industry || 'Business';
             const tagline = biz.business_tagline || '';
             const description = biz.description || tagline || 'No detailed description provided.';
-            
+
             // Handle Nested Location Object
             // Handle Nested Location Object
             let address = 'Valenzuela City';
             let mapQuery = name;
-            
+
             if (biz.business_location) {
                 const loc = biz.business_location;
-                
+
                 // If location_link exists, use it for BOTH the visible text AND the Google Map!
                 if (loc.location_link && loc.location_link !== 'N/A') {
-                    address = loc.location_link; 
+                    address = loc.location_link;
                     mapQuery = loc.location_link; // <-- This tells the map to point exactly here!
                 } else {
                     // Fallback just in case location_link is empty
@@ -262,14 +276,14 @@
 
             // 3. DYNAMIC PHOTO URL
             if (biz.photo_url && biz.photo_url !== 'N/A' && biz.photo_url !== 'null') {
-                const activeOrigin = new URL(baseUrl).origin; 
+                const activeOrigin = new URL(baseUrl).origin;
                 let finalPhotoUrl = biz.photo_url.replace('http://127.0.0.1:8000', activeOrigin).replace('http://localhost:8000', activeOrigin);
-                
+
                 document.getElementById('biz-avatar-container').innerHTML = `<img src="${finalPhotoUrl}" alt="${name}" class="w-100 h-100" style="object-fit: cover;">`;
             } else {
                 let initials = name.substring(0, 2).toUpperCase();
                 const words = name.split(' ');
-                if(words.length > 1 && words[1].length > 0) {
+                if (words.length > 1 && words[1].length > 0) {
                     initials = (words[0][0] + words[1][0]).toUpperCase();
                 }
                 document.getElementById('biz-initials').innerText = initials;
@@ -279,7 +293,7 @@
             const servicesContainer = document.getElementById('biz-services');
             servicesContainer.innerHTML = '';
             const tags = Array.isArray(biz.tags) && biz.tags.length > 0 ? biz.tags : ['General Services'];
-            
+
             tags.forEach(tag => {
                 servicesContainer.innerHTML += `
                     <div class="col-md-6 col-lg-4">

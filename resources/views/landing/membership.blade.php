@@ -33,41 +33,17 @@
         <h2 class="fw-bold" style="font-family: 'DM Sans', sans-serif; font-size: 2.5rem; color: #111827; letter-spacing: -0.5px;">MEMBERSHIP PLANS</h2>
     </div>
 
-    <div class="row justify-content-center g-4">
-
+    <div id="membershipPlans" class="row justify-content-center g-4">
         <div class="col-md-4">
             <div class="card h-100 border-0 shadow text-center plan-card" style="border-radius: 12px; padding: 40px 20px;">
-                <div class="card-body d-flex flex-column align-items-center">
-                    <div class="mb-3" style="width: 70px; height: 70px; background-color: rgba(190, 30, 56, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="bi bi-journal-bookmark-fill" style="font-size: 1.8rem; color: #be1e38;"></i>
+                <div class="card-body d-flex flex-column align-items-center justify-content-center" style="min-height: 320px;">
+                    <div class="spinner-border text-danger" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Loading...</span>
                     </div>
-                    <h5 class="fw-bold mb-3" style="font-family: 'DM Sans', sans-serif; letter-spacing: 1px;">DIRECTORY MEMBER</h5>
-                    <div class="mb-4">
-                        <span style="font-family: 'DM Sans', sans-serif; font-size: 2rem; font-weight: 800; color: #be1e38;">P 1,500.00</span>
-                        <span class="text-muted fw-bold d-block mt-1" style="font-size: 0.8rem; letter-spacing: 2px;">/ ANNUALLY</span>
-                    </div>
-                    <a href="{{ route('signup') }}" class="btn btn-outline-dark fw-bold px-4 py-2 mt-auto" style="border-radius: 6px; letter-spacing: 1px; border-width: 2px; width: 80%;">READ MORE</a>
+                    <p class="mt-4 mb-0 fw-bold text-muted">Loading membership plans...</p>
                 </div>
             </div>
         </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow text-center plan-card" style="border-radius: 12px; padding: 40px 20px; background-color: #be1e38; color: white;">
-                <div class="card-body d-flex flex-column align-items-center">
-                    <div class="mb-3" style="width: 70px; height: 70px; background-color: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="bi bi-person-badge-fill" style="font-size: 1.8rem; color: white;"></i>
-                    </div>
-                    <h5 class="fw-bold mb-3" style="font-family: 'DM Sans', sans-serif; letter-spacing: 1px;">REGULAR MEMBER</h5>
-                    <div class="mb-4">
-                        <span class="d-block fw-bold mb-1" style="font-size: 0.8rem; opacity: 0.9; letter-spacing: 1px;">STARTS AT</span>
-                        <span style="font-family: 'DM Sans', sans-serif; font-size: 2rem; font-weight: 800;">P 3,000.00</span>
-                        <span class="fw-bold d-block mt-1" style="font-size: 0.8rem; letter-spacing: 2px; opacity: 0.8;">/ ANNUALLY</span>
-                    </div>
-                    <a href="{{ route('signup') }}" class="btn btn-light fw-bold px-4 py-2 mt-auto" style="border-radius: 6px; color: #be1e38; letter-spacing: 1px; width: 80%;">APPLY NOW</a>
-                </div>
-            </div>
-        </div>
-
     </div>
 </div>
 
@@ -97,8 +73,69 @@
     const itemsPerPage = 9;
 
     document.addEventListener("DOMContentLoaded", function() {
+        fetchMembershipPlans();
         fetchBusinesses();
     });
+
+    async function fetchMembershipPlans() {
+        const container = document.getElementById('membershipPlans');
+        try {
+            const response = await fetch(`${window.API_BASE_URL}/v1/membership-types`, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to load membership plans');
+            }
+
+            const data = await response.json();
+            const plans = data.data || data || [];
+
+            if (!Array.isArray(plans) || plans.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center text-muted"><p>No membership plan information is available at this time.</p></div>';
+                return;
+            }
+
+            container.innerHTML = plans.map((plan, index) => {
+                const price = parseFloat(plan.price || 0).toLocaleString('en-PH', {
+                    style: 'currency',
+                    currency: 'PHP',
+                    minimumFractionDigits: 2
+                });
+                const renewalText = plan.renewal_price ? `Renewal: ₱${parseFloat(plan.renewal_price).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '';
+                const noteText = plan.notes ? plan.notes : `Membership duration: ${plan.duration_in_months || 12} months.`;
+                const isPrimary = index === 0;
+                const cardBg = isPrimary ? '#be1e38' : '#ffffff';
+                const cardColor = isPrimary ? 'white' : '#111827';
+                const btnClass = isPrimary ? 'btn btn-light text-danger' : 'btn btn-outline-dark';
+
+                return `
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow text-center plan-card" style="border-radius: 12px; padding: 40px 20px; background-color: ${cardBg}; color: ${cardColor};">
+                            <div class="card-body d-flex flex-column align-items-center">
+                                <div class="mb-3" style="width: 70px; height: 70px; background-color: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi ${isPrimary ? 'bi-person-badge-fill' : 'bi-journal-bookmark-fill'}" style="font-size: 1.8rem; color: ${isPrimary ? 'white' : '#be1e38'};"></i>
+                                </div>
+                                <h5 class="fw-bold mb-3" style="font-family: 'DM Sans', sans-serif; letter-spacing: 1px;">${plan.name || 'Membership Plan'}</h5>
+                                <div class="mb-4">
+                                    <span class="d-block fw-bold mb-1" style="font-size: 0.8rem; opacity: 0.9; letter-spacing: 1px;">STARTS AT</span>
+                                    <span style="font-family: 'DM Sans', sans-serif; font-size: 2rem; font-weight: 800;">${price}</span>
+                                    <span class="fw-bold d-block mt-1" style="font-size: 0.8rem; letter-spacing: 2px; opacity: 0.8;">/ ANNUALLY</span>
+                                </div>
+                                <p class="small mb-3" style="opacity: 0.85;">${noteText}</p>
+                                <a href="{{ route('signup') }}" class="${btnClass} fw-bold px-4 py-2 mt-auto" style="border-radius: 6px; letter-spacing: 1px; border-width: 2px; width: 80%;">APPLY NOW</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (error) {
+            console.error('Membership plans load failed:', error);
+            container.innerHTML = '<div class="col-12 text-center text-danger"><p>Unable to load membership plans. Please try again later.</p></div>';
+        }
+    }
 
     async function fetchBusinesses() {
         try {
@@ -111,7 +148,14 @@
 
             if (response.ok) {
                 const data = await response.json();
-                masterBusinesses = data.data || data;
+                masterBusinesses = (data.data || data || []).map((biz, idx) => {
+                    const businessId = biz.id || biz.user_id || biz.member_id || biz.applicant_id || (biz.applicant && biz.applicant.id) || idx;
+                    return {
+                        ...biz,
+                        _idx: idx,
+                        id: businessId
+                    };
+                });
                 allBusinesses = [...masterBusinesses];
                 sortData(document.getElementById('sortSelect').value);
                 renderPage(1);

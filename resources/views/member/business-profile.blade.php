@@ -4,31 +4,31 @@
 
 @php
 $business = $business ?? [
-    'name' => isset($id) ? ('Member Business #' . $id) : 'Member Business',
-    'about' => 'Business details are currently unavailable. Please check back later for updated profile information.',
-    'services' => ['Business Service 1', 'Business Service 2', 'Business Service 3'],
-    'phone' => 'Not available',
-    'email' => 'Not available',
-    'address' => 'Address not available',
-    'hours' => [
-        'Monday - Friday' => 'Not available',
-        'Saturday' => 'Not available',
-        'Sunday' => 'Not available',
-    ],
-    'map' => 'Valenzuela+City',
+'name' => isset($id) ? ('Member Business #' . $id) : 'Member Business',
+'about' => 'Business details are currently unavailable. Please check back later for updated profile information.',
+'services' => ['Business Service 1', 'Business Service 2', 'Business Service 3'],
+'phone' => 'Not available',
+'email' => 'Not available',
+'address' => 'Address not available',
+'hours' => [
+'Monday - Friday' => 'Not available',
+'Saturday' => 'Not available',
+'Sunday' => 'Not available',
+],
+'map' => 'Valenzuela+City',
 ];
 @endphp
 
 {{-- HERO SECTION --}}
 <div class="w-100" style="background:#1f2330; min-height: 350px;">
     <div class="container">
-        <div class="row align-items-center justify-content-center justify-content-md-start g-4" 
-             style="padding-top:60px; padding-bottom:60px; @media (min-width: 768px) { padding-top:120px; padding-bottom:80px; }">
+        <div class="row align-items-center justify-content-center justify-content-md-start g-4"
+            style="padding-top:60px; padding-bottom:60px; @media (min-width: 768px) { padding-top:120px; padding-bottom:80px; }">
 
             {{-- LOGO --}}
             <div class="col-12 col-md-auto d-flex justify-content-center">
                 <div class="rounded-4 bg-light d-flex align-items-center justify-content-center shadow-lg"
-                     style="width:120px;height:120px;">
+                    style="width:120px;height:120px;">
                     <span class="fw-bold fs-2 text-danger">
                         {{ strtoupper(substr($business['name'], 0, 3)) }}
                     </span>
@@ -85,17 +85,17 @@ $business = $business ?? [
 
                 <div class="row g-3">
                     @foreach ($business['services'] as $service)
-                        <div class="col-12 col-sm-6 col-xl-4">
-                            <div class="service-box bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-4 p-3 h-100 shadow-sm">
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <i class="bi bi-check-circle-fill text-danger"></i>
-                                    <h6 class="fw-bold mb-0 text-danger">{{ $service }}</h6>
-                                </div>
-                                <p class="small mb-0 opacity-75">
-                                    Reliable solutions tailored to meet your business goals.
-                                </p>
+                    <div class="col-12 col-sm-6 col-xl-4">
+                        <div class="service-box bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-4 p-3 h-100 shadow-sm">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="bi bi-check-circle-fill text-danger"></i>
+                                <h6 class="fw-bold mb-0 text-danger">{{ $service }}</h6>
                             </div>
+                            <p class="small mb-0 opacity-75">
+                                Reliable solutions tailored to meet your business goals.
+                            </p>
                         </div>
+                    </div>
                     @endforeach
                 </div>
             </div>
@@ -121,7 +121,7 @@ $business = $business ?? [
 
         {{-- RIGHT SIDEBAR --}}
         <div class="col-lg-4">
-            
+
             {{-- CONTACT INFO --}}
             <div class="card border border-danger shadow-sm p-4 rounded-4 mb-4">
                 <h5 class="fw-bold text-danger mb-4">Contact Information</h5>
@@ -156,10 +156,10 @@ $business = $business ?? [
                     <h5 class="fw-bold text-danger mb-0">Business Hours</h5>
                 </div>
                 @foreach ($business['hours'] as $day => $time)
-                    <div class="d-flex justify-content-between py-1 border-bottom border-light">
-                        <span>{{ $day }}</span>
-                        <span class="fw-bold">{{ $time }}</span>
-                    </div>
+                <div class="d-flex justify-content-between py-1 border-bottom border-light">
+                    <span>{{ $day }}</span>
+                    <span class="fw-bold">{{ $time }}</span>
+                </div>
                 @endforeach
             </div>
 
