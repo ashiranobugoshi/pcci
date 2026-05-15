@@ -29,7 +29,8 @@
             gap: 60px 40px; 
             max-width: 1100px; 
             margin: 0 auto 80px auto; 
-            padding: 0 20px; 
+            padding: 0 20px;
+            transition: all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         @media (max-width: 900px) { .card-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -42,12 +43,19 @@
             position: relative; 
             width: 100%; 
             max-width: 320px; 
-            margin: 0 auto; 
-            transition: max-width 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
+            margin: 0; 
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
         /* 1. Spanning Class instantly claims the grid space */
         .card-container.is-spanning {
+            grid-column: span 2;
+            max-width: 100%;
+            margin: 0;
+        }
+
+        /* Also span when expanded */
+        .card-container.is-expanded {
             grid-column: span 2;
             max-width: 100%;
         }
@@ -62,7 +70,8 @@
             overflow: hidden; 
             z-index: 2; 
             height: 420px; /* Fixed default height */
-            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform-origin: left;
         }
         
         /* 2. Expanded Class triggers the smooth visual changes */
@@ -82,8 +91,8 @@
             display: flex; 
             justify-content: center; 
             align-items: flex-end; 
-            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
             border-right: 0px solid transparent;
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
         .card-container.is-expanded .card-image-wrapper { 
@@ -108,7 +117,7 @@
             flex-direction: column; 
             justify-content: space-between; 
             box-sizing: border-box;
-            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
         .card-container.is-expanded .card-info { 
@@ -126,31 +135,33 @@
         }
 
         .card-text-group { margin-bottom: 20px; }
-        .card-name { font-size: 1.4rem; font-weight: 800; margin: 0 0 8px 0; letter-spacing: 0.5px; transition: color 0.6s ease; }
-        .card-role { font-size: 0.9rem; font-weight: 700; font-style: italic; margin: 0; transition: color 0.6s ease; }
+        .card-name { font-size: 0.8rem; font-weight: 800; margin: 0 0 5px 0; letter-spacing: 0.5px; line-height: 1.2; text-align: center; }
+        .card-title { font-size: 0.65rem; font-weight: 700; margin: 0 0 8px 0; letter-spacing: 0.5px; background-color: #666; color: #fff; padding: 4px 10px; border-radius: 15px; display: inline-block; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        .card-container.is-expanded .card-title { max-height: 25px; opacity: 1; }
+        .card-role { font-size: 0.9rem; font-weight: 700; font-style: italic; margin: 0; line-height: 1.3; word-wrap: break-word; }
 
         .card-bio {
             display: block;
             max-height: 0;
             opacity: 0;
             overflow: hidden;
-            font-size: 0.95rem;
-            line-height: 1.6;
+            font-size: 0.75rem;
+            line-height: 1.4;
             margin-top: 0;
             color: #333;
             font-weight: 500;
-            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         .card-container.is-expanded .card-bio {
-            max-height: 500px;
+            max-height: 250px;
             opacity: 1;
-            margin-top: 15px;
+            margin-top: 10px;
         }
         .card-container.is-expanded .card-role { color: #be212b; }
 
-        .card-btn { background-color: #be212b; color: #ffffff; border: none; padding: 10px 24px; font-family: inherit; font-size: 0.9rem; font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; width: 100%; margin-top: auto; z-index: 10; position: relative;}
+        .card-btn { background-color: #be212b; color: #ffffff; border: none; padding: 10px 24px; font-family: inherit; font-size: 0.9rem; font-weight: 700; border-radius: 6px; cursor: pointer; width: 100%; margin-top: auto; z-index: 10; position: relative;}
         .card-btn:hover { background-color: #9e1a22; }
-        .card-container.is-expanded .card-btn { width: auto; background-color: #be212b; color: #ffffff; padding: 10px 24px; align-self: flex-start; margin-top: 20px; }
+        .card-container.is-expanded .card-btn { width: auto; background-color: #be212b; color: #ffffff; padding: 10px 24px; align-self: flex-start; margin-top: 2px; }
 
         /* Mobile specific overrides to prevent horizontal gliding on small screens */
         @media (max-width: 600px) { 
@@ -175,7 +186,7 @@
         .committee-photo-wrapper { width: 200px; height: 200px; background-color: #e5e5e5; border-radius: 12px; padding: 6px; display: flex; justify-content: center; align-items: center; z-index: 5; flex-shrink: 0; box-shadow: 0 8px 20px rgba(0,0,0,0.6); position: relative; transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); align-self: center; backface-visibility: hidden; will-change: margin, transform; }
         .committee-row:nth-child(odd) .committee-photo-wrapper { margin-right: -100px; } 
         .committee-row:nth-child(even) .committee-photo-wrapper { margin-left: -100px; } 
-        .committee-photo { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+        .committee-photo { width: 100%; height: 100%; object-fit: cover; object-position: center top; border-radius: 8px; }
 
         .committee-text-group { display: flex; flex-direction: column; width: 100%; position: relative; z-index: 2; transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); justify-content: center; }
         .committee-row:nth-child(odd) .committee-text-group { align-items: flex-start; text-align: left; }
@@ -256,175 +267,29 @@
 
     <!-- Board of Directors Section -->
     <div class="card-grid" id="cardGrid">
-        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
-            <div class="card">
-                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Gemma" alt="Gemma Ong"></div>
-                <div class="card-info">
-                    <div class="card-text-group">
-                        <h3 class="card-name">Gemma Ong</h3>
-                        <p class="card-role">Board of Directors/Officer</p>
-                        <p class="card-bio">Gemma Ong is the President of PCCI Valenzuela (2026-2027). A Mapua-trained industrial engineer (Batch '89), she owns Food Grade Trading and founded the Blue Dragon Cooking Oil brand. She now leads the chamber in serving over 20,000 local enterprises through V-Link and advocating for business-friendly policies in Valenzuela City.</p>
-                    </div>
-                    <button class="card-btn">Show Less</button>
-                </div>
+        
+         
             </div>
         </div>
-        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
-            <div class="card">
-                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Gimelle" alt="Gimelle Sy"></div>
-                <div class="card-info">
-                    <div class="card-text-group">
-                        <h3 class="card-name">Gimelle Sy</h3>
-                        <p class="card-role">Board of Directors/Officer</p>
-                        <p class="card-bio">Biography and details for Gimelle Sy go here. This information will appear when the card is expanded horizontally across the grid rows.</p>
-                    </div>
-                    <button class="card-btn">Show Less</button>
-                </div>
-            </div>
+        
         </div>
-        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
-            <div class="card">
-                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Anna" alt="Anna Diego"></div>
-                <div class="card-info">
-                    <div class="card-text-group">
-                        <h3 class="card-name">Anna Cherry D. San Diego</h3>
-                        <p class="card-role">Board of Directors/Officer</p>
-                        <p class="card-bio">Biography and details for Anna Cherry D. San Diego go here.</p>
-                    </div>
-                    <button class="card-btn">Show Less</button>
-                </div>
-            </div>
+        
         </div>
-        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
-            <div class="card">
-                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Dianne" alt="Dianne Leon"></div>
-                <div class="card-info">
-                    <div class="card-text-group">
-                        <h3 class="card-name">Dianne Phoebe Kaye L. De Leon</h3>
-                        <p class="card-role">Board of Directors/Officer</p>
-                        <p class="card-bio">Biography and details for Dianne De Leon go here.</p>
-                    </div>
-                    <button class="card-btn">Show Less</button>
-                </div>
-            </div>
+
+            
         </div>
-        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
-            <div class="card">
-                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Ofelia" alt="Ofelia Oliveros"></div>
-                <div class="card-info">
-                    <div class="card-text-group">
-                        <h3 class="card-name">Ofelia Oliveros</h3>
-                        <p class="card-role">Board of Directors/Officer</p>
-                        <p class="card-bio">Biography and details for Ofelia Oliveros go here.</p>
-                    </div>
-                    <button class="card-btn">Show Less</button>
-                </div>
-            </div>
+    
+            
         </div>
-        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
-            <div class="card">
-                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Alicia" alt="Alicia Gavino"></div>
-                <div class="card-info">
-                    <div class="card-text-group">
-                        <h3 class="card-name">Alicia S. Gavino</h3>
-                        <p class="card-role">Officer</p>
-                        <p class="card-bio">Biography and details for Alicia S. Gavino go here.</p>
-                    </div>
-                    <button class="card-btn">Show Less</button>
-                </div>
-            </div>
+        
         </div>
-        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
-            <div class="card">
-                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Officer+7" alt="Board Member 7"></div>
-                <div class="card-info">
-                    <div class="card-text-group">
-                        <h3 class="card-name">Board Member 7</h3>
-                        <p class="card-role">Board of Directors/Officer</p>
-                        <p class="card-bio">Biography and details for this board member go here.</p>
-                    </div>
-                    <button class="card-btn">Show Less</button>
-                </div>
-            </div>
-        </div>
-        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
-            <div class="card">
-                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Officer+8" alt="Board Member 8"></div>
-                <div class="card-info">
-                    <div class="card-text-group">
-                        <h3 class="card-name">Board Member 8</h3>
-                        <p class="card-role">Board of Directors/Officer</p>
-                        <p class="card-bio">Biography and details for this board member go here.</p>
-                    </div>
-                    <button class="card-btn">Show Less</button>
-                </div>
-            </div>
-        </div>
-        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
-            <div class="card">
-                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Officer+9" alt="Board Member 9"></div>
-                <div class="card-info">
-                    <div class="card-text-group">
-                        <h3 class="card-name">Board Member 9</h3>
-                        <p class="card-role">Board of Directors/Officer</p>
-                        <p class="card-bio">Biography and details for this board member go here.</p>
-                    </div>
-                    <button class="card-btn">Show Less</button>
-                </div>
-            </div>
-        </div>
-        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
-            <div class="card">
-                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Officer+10" alt="Board Member 10"></div>
-                <div class="card-info">
-                    <div class="card-text-group">
-                        <h3 class="card-name">Board Member 10</h3>
-                        <p class="card-role">Board of Directors/Officer</p>
-                        <p class="card-bio">Biography and details for this board member go here.</p>
-                    </div>
-                    <button class="card-btn">Show Less</button>
-                </div>
-            </div>
-        </div>
-        <div class="card-container is-expanded is-spanning" onclick="toggleDirector(this)">
-            <div class="card">
-                <div class="card-image-wrapper"><img class="card-photo" src="https://placehold.co/300x300/ffffff/cccccc?text=Officer+11" alt="Board Member 11"></div>
-                <div class="card-info">
-                    <div class="card-text-group">
-                        <h3 class="card-name">Board Member 11</h3>
-                        <p class="card-role">Board of Directors/Officer</p>
-                        <p class="card-bio">Biography and details for this board member go here.</p>
-                    </div>
-                    <button class="card-btn">Show Less</button>
-                </div>
-            </div>
-        </div>
+        
     </div>
 
     <!-- Committees Section -->
     <section class="committees-section">
         <h2 class="section-title">List of Committees</h2>
-        <div class="committee-list">
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Anna+Marie" alt="Anna Marie Escober"></div><div class="committee-text-group"><div class="committee-tab">Anna Marie Escober</div><div class="committee-box"><div class="box-title">Ease of Doing Business and Documentation</div><div class="committee-description">Anna Marie leads the effort to streamline local business permits and documentation.</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Elisa" alt="Elisa Cabalquinto"></div><div class="committee-text-group"><div class="committee-tab">Elisa Cabalquinto</div><div class="committee-box"><div class="box-title">Education, Training, and Capacity Building</div><div class="committee-description">Description goes here...</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Jonalyn" alt="Jonalyn Valencia"></div><div class="committee-text-group"><div class="committee-tab">Jonalyn Domanog Valencia</div><div class="committee-box"><div class="box-title">Education, Training - Youth Entrepreneurship</div><div class="committee-description">Description goes here...</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Sonia" alt="Sonia Sy"></div><div class="committee-text-group"><div class="committee-tab">Sonia Sy</div><div class="committee-box"><div class="box-title">Micro Entrepreneurship</div><div class="committee-description">Description goes here...</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Jan+Nigel" alt="Jan Nigel Santos"></div><div class="committee-text-group"><div class="committee-tab">Jan Nigel Santos</div><div class="committee-box"><div class="box-title">Branding, Culture, and Communications</div><div class="committee-description">Description goes here...</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Jodel" alt="Jodel Valenzuela"></div><div class="committee-text-group"><div class="committee-tab">Jodel Valenzuela</div><div class="committee-box"><div class="box-title">Branding, Culture, and Communications</div><div class="committee-description">Description goes here...</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Renier" alt="Renier Espinosa"></div><div class="committee-text-group"><div class="committee-tab">Renier Espinosa</div><div class="committee-box"><div class="box-title">Technical Services and Innovation</div><div class="committee-description">Bio details go here...</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Geovey" alt="Geovey Submadito"></div><div class="committee-text-group"><div class="committee-tab">Geovey Submadito</div><div class="committee-box"><div class="box-title">Programs and Events</div><div class="committee-description">Description goes here...</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Allan" alt="Allan Ostonal"></div><div class="committee-text-group"><div class="committee-tab">Allan Ostonal</div><div class="committee-box"><div class="box-title">Programs and Events</div><div class="committee-description">Description goes here...</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Eugene" alt="Eugene Arevalazo"></div><div class="committee-text-group"><div class="committee-tab">Eugene "Jun" Arevalazo</div><div class="committee-box"><div class="box-title">Membership</div><div class="committee-description">Description goes here...</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Lynlyn" alt="Lynlyn Bato"></div><div class="committee-text-group"><div class="committee-tab">Lynlyn Bato</div><div class="committee-box"><div class="box-title">Membership</div><div class="committee-description">Description goes here...</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Lovely" alt="Lovely Cajucom"></div><div class="committee-text-group"><div class="committee-tab">Lovely Cajucom</div><div class="committee-box"><div class="box-title">Youth Entrepreneurship</div><div class="committee-description">Description goes here...</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Vincent" alt="Vincent Francisco"></div><div class="committee-text-group"><div class="committee-tab">Vincent Francisco</div><div class="committee-box"><div class="box-title">Youth Entrepreneurship</div><div class="committee-description">Description goes here...</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Pamela" alt="Pamela Salanguste"></div><div class="committee-text-group"><div class="committee-tab">Pamela Salanguste</div><div class="committee-box"><div class="box-title">Youth Entrepreneurship</div><div class="committee-description">Description goes here...</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Emil" alt="Emil Manaloto"></div><div class="committee-text-group"><div class="committee-tab">Emil Manaloto</div><div class="committee-box"><div class="box-title">Ways and Means</div><div class="committee-description">Description goes here...</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Judith" alt="Judith Gozarin"></div><div class="committee-text-group"><div class="committee-tab">Judith Gozarin</div><div class="committee-box"><div class="box-title">Ways and Means</div><div class="committee-description">Description goes here...</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Imelda" alt="Imelda Matusan"></div><div class="committee-text-group"><div class="committee-tab">Imelda "Emy" Matusan</div><div class="committee-box"><div class="box-title">Special Projects</div><div class="committee-description">Description goes here...</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Marc" alt="Marc Eason"></div><div class="committee-text-group"><div class="committee-tab">Marc Philip Eason</div><div class="committee-box"><div class="box-title">Special Projects</div><div class="committee-description">Description goes here...</div></div></div></div>
-            <div class="committee-row" onclick="toggleExpand(this)"><div class="committee-photo-wrapper"><img class="committee-photo" src="https://placehold.co/200x200/cccccc/ffffff?text=Atty+Julius" alt="Atty Julius"></div><div class="committee-text-group"><div class="committee-tab">Atty. Julius Munez</div><div class="committee-box"><div class="box-title">Policy, Advocacy, and Governance</div><div class="committee-description">Description goes here...</div></div></div></div>
-        </div>
+        <div class="committee-list" id="committeeList"></div>
 
         <div class="committees-footer-container">
             <div class="footer-tab"></div>
@@ -444,8 +309,8 @@
             <h2 class="cta-title">Leadership with Purpose</h2>
             <p class="cta-desc">Our board members bring decades of business experience and unwavering commitment to advancing the interests of Valenzuela's business community.</p>
             <div class="cta-buttons">
-                <button class="cta-btn">Join our Community</button>
-                <button class="cta-btn">Contact Leadership</button>
+                <a onclick="window.location.href='/signup'" class="cta-btn">Join our Community</a>
+                <a onclick="window.location.href='/contact'" class="cta-btn">Contact Leadership</a>
             </div>
         </div>
     </section>
@@ -494,8 +359,7 @@
                 
                 data.directors.forEach(director => {
                     const cardContainer = document.createElement('div');
-                    cardContainer.className = 'card-container is-expanded is-spanning';
-                    cardContainer.onclick = function() { toggleDirector(this); };
+                    cardContainer.className = 'card-container';
                     
                     cardContainer.innerHTML = `
                         <div class="card">
@@ -505,15 +369,23 @@
                             <div class="card-info">
                                 <div class="card-text-group">
                                     <h3 class="card-name">${director.name}</h3>
+                                    <p class="card-title">${director.title}</p>
                                     <p class="card-role">${director.role}</p>
                                     <p class="card-bio">${director.bio}</p>
                                 </div>
-                                <button class="card-btn">Show Less</button>
+                                <button class="card-btn">Read More</button>
                             </div>
                         </div>
                     `;
                     
                     cardGrid.appendChild(cardContainer);
+                    
+                    // Add expansion/collapse toggle with button text change
+                    const button = cardContainer.querySelector('.card-btn');
+                    cardContainer.addEventListener('click', function() {
+                        this.classList.toggle('is-expanded');
+                        button.textContent = this.classList.contains('is-expanded') ? 'Show Less' : 'Read More';
+                    });
                 });
             } catch (error) {
                 console.error('Error loading directors:', error);
@@ -522,53 +394,37 @@
 
         // Load directors when page loads
         document.addEventListener('DOMContentLoaded', loadDirectors);
+        document.addEventListener('DOMContentLoaded', loadCommittees);
 
-        function toggleDirector(button) {
-            const container = button.closest('.card-container');
-            const isExpanded = container.classList.contains('is-expanded');
-            
-            // Close any currently open director cards
-            document.querySelectorAll('.card-grid .card-container').forEach(card => {
-                if (card !== container && card.classList.contains('is-expanded')) {
-                    // 1. Remove visual expansion
-                    card.classList.remove('is-expanded');
-                    const btn = card.querySelector('.card-btn');
-                    if (btn) btn.innerText = "Read More";
+        // Load committees from JSON
+        async function loadCommittees() {
+            try {
+                const response = await fetch('data.json');
+                const data = await response.json();
+                const committeeList = document.getElementById('committeeList');
+                
+                data.committees.forEach((member, index) => {
+                    const committeeRow = document.createElement('div');
+                    committeeRow.className = 'committee-row';
+                    committeeRow.setAttribute('onclick', 'toggleExpand(this)');
                     
-                    // 2. Wait exactly 0.6 seconds (the CSS transition time) before dropping the grid space
-                    setTimeout(() => {
-                        if (!card.classList.contains('is-expanded')) {
-                            card.classList.remove('is-spanning');
-                        }
-                    }, 600);
-                }
-            });
-
-            if (!isExpanded) {
-                // OPENING SEQUENCE
-                // 1. Instantly reserve the wide grid space
-                container.classList.add('is-spanning');
-                
-                // 2. Give the browser 10ms to paint the space, then trigger the visual glide
-                setTimeout(() => {
-                    container.classList.add('is-expanded');
-                }, 10);
-                
-                const btn = container.querySelector('.card-btn');
-                if(btn) btn.innerText = "Show Less";
-            } else {
-                // CLOSING SEQUENCE
-                // 1. Start the visual CSS collapse glide
-                container.classList.remove('is-expanded');
-                const btn = container.querySelector('.card-btn');
-                if(btn) btn.innerText = "Read More";
-                
-                // 2. Wait exactly 0.6 seconds before removing the wide grid space so it doesn't snap!
-                setTimeout(() => {
-                    if (!container.classList.contains('is-expanded')) {
-                        container.classList.remove('is-spanning');
-                    }
-                }, 600);
+                    committeeRow.innerHTML = `
+                        <div class="committee-photo-wrapper">
+                            <img class="committee-photo" src="${member.image}" alt="${member.name}">
+                        </div>
+                        <div class="committee-text-group">
+                            <div class="committee-tab">${member.name}</div>
+                            <div class="committee-box">
+                                <div class="box-title">${member.committee}</div>
+                                <div class="committee-description">${member.description}</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    committeeList.appendChild(committeeRow);
+                });
+            } catch (error) {
+                console.error('Error loading committees:', error);
             }
         }
 

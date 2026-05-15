@@ -231,6 +231,10 @@
                style="font-family: 'DM Sans', sans-serif; font-size: 16px; letter-spacing: 0.05em; border-radius: 6px; font-weight: 900;">
                 Discover our Impact
             </a>
+            <a onclick="window.location.href='/picture-page/index.html'" class="btn btn-light px-4 py-3 fw-bold text-uppercase w-100 w-sm-auto" 
+               style="font-family: 'DM Sans', sans-serif; font-size: 16px; letter-spacing: 0.05em; border-radius: 6px; color: #EB3223; font-weight: 900;">
+                Leadership and Committees
+            </a>
         </div>
     </div>
 </div>
