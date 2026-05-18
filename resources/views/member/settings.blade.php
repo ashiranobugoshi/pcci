@@ -568,7 +568,7 @@
                 const typeId = String(profile.membership_type_id || profile.applicant?.membership_type_id || profile.member?.membership_type_id || '');
 
                 // CHANGED TO 5000 AS REQUESTED
-                amountInput.value = (typeId === '2' || profile.membershipType?.name === 'Small Enterprise') ? 5000 : 500;
+                amountInput.value = (typeId === '2' || profile.membershipType?.name === 'Small Enterprise') ? 3000 : 500;
             }
         } catch (error) {
             amountInput.value = 500;

@@ -302,28 +302,10 @@
         openModal();
     }
 
-    // --- CHANNEL ACTIONS --- //
+    // --- SMART SET ACTIVE LOGIC --- //
     async function setActiveChannel(id) {
-        const channel = paymentChannels.find(c => Number(c.id) === Number(id));
-        if (!channel) return;
-
         try {
-            await Promise.all(paymentChannels.map(async otherChannel => {
-                if (Number(otherChannel.id) !== Number(id) && otherChannel.is_active) {
-                    await fetch(`${window.API_BASE_URL}/v1/payment-channels/${otherChannel.id}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify({
-                            is_active: false
-                        })
-                    });
-                }
-            }));
-
+            // Send exactly ONE request to the backend. The backend will handle deactivating the rest!
             const response = await fetch(`${window.API_BASE_URL}/v1/payment-channels/${id}`, {
                 method: 'PUT',
                 headers: {
@@ -339,7 +321,7 @@
             if (!response.ok) throw new Error('Toggle failed');
 
             await fetchPaymentChannels();
-            showGlobalAlert('success', `<i class="bi bi-check-circle-fill"></i> ${channel.payment_method} is now the active default channel!`);
+            showGlobalAlert('success', `<i class="bi bi-check-circle-fill"></i> Channel is now the active default!`);
         } catch (error) {
             console.error('Error setting active channel:', error);
             showGlobalAlert('danger', '<i class="bi bi-exclamation-triangle-fill"></i> Failed to update active channel.');
