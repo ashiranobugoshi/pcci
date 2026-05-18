@@ -1,0 +1,228 @@
+{
+  "directors": [
+    {
+      "id": 1,
+      "name": "Gemma Ong",
+      "title": "President",
+      "role": "Board of Directors",
+      "image": "images/Gemma Ong.jpg",
+      "bio": "Gemma Ong is the President of PCCI Valenzuela (2026-2027). A Mapua-trained industrial engineer (Batch '89), she owns Food Grade Trading and founded the Blue Dragon Cooking Oil brand. She now leads the chamber in serving over 20,000 local enterprises through V-Link and advocating for business-friendly policies in Valenzuela City."
+    },
+    {
+      "id": 2,
+      "name": "Gimelle Sy",
+      "title": "Vp-internal",
+      "role": "Board of Directors CSR & Community Development",
+      "image": "images/Gimelle Sy.png",
+      "bio": "Gimelle Sy is a key representative of ORS Foodservice and Senyong's Bakery, where she oversees daily operations, supply chain coordination, and client relationships. As the eldest in her family, she plays a pivotal role in sustaining the growth of these two established food industry businesses."
+    },
+    {
+      "id": 3,
+      "name": "Anna Cherry D. San Diego",
+      "title": "Vp-External",
+      "role": "Board of Directors  CSR & Community Development",
+      "image": "images/Anna Cherry D. San Diego.png",
+      "bio": "Anna Cherry D. San Diego – Entrepreneur, distributor, and founder of DM-Pack Labelling and Packaging Supplies, a company dedicated to helping businesses elevate their brand presentation, streamline packaging solutions, and ensure efficient operations. She serves as Vice President for External & Membership and Head of the Recruitment Committee at PCCI Valenzuela, actively supporting initiatives that foster business growth and empower MSMEs."
+    },
+    {
+      "id": 4,
+      "name": "Dianne Phoebe Kaye De Leon",
+      "title": "Secretary",
+      "role": "Board of Directors  CSR & Community Development",
+      "image": "images/Dianne Phoebe Kaye De Leon.png",
+      "bio": "Phoebe Ms. Phoebe De Leon is the Director and Owner of Little Lions Learning and Development Center. A passionate advocate for Autism Awareness, she was inspired by her own child diagnosed with ASD to deepen her understanding of Special Education. She is currently pursuing a Professional Master's in Special Education at Miriam College. She is committed to creating an inclusive environment where every child is given the opportunity to grow and succeed."
+    },
+    {
+      "id": 5,
+      "name": "Ofelia Oliveros",
+      "title": "treasurer",
+      "role": "Board of Directors  Ease of Doing Business & Documentation",
+      "image": "images/Ofelia Oliveros.png",
+      "bio": "Ofelia T. Oliveros, CPA is a Certified Public Accountant with over 40 years of experience in accounting, audit, and financial management. She served as Chief Accountant of Valle Verde Country Club for 25 years. She is currently Managing Partner of O.T. Oliveros & Co. for 23 years. She is an active member of PICPA."
+    },
+    {
+      "id": 6,
+      "name": "Alicia S. Gavino",
+      "title": "Auditor",
+      "role": "Policy, Advocacy, and Governance",
+      "image": "images/Alicia S. Gavino.png",
+      "bio": "Gemma Ong is the President of PCCI Valenzuela (2026-2027). A Mapua-trained industrial engineer (Batch '89), she owns Food Grade Trading and founded the Blue Dragon Cooking Oil brand. She now leads the chamber in serving over 20,000 local enterprises through V-Link and advocating for business-friendly policies in Valenzuela City."
+    },
+    {
+      "id": 7,
+      "name": "Ma. Cristina Agbuya",
+      "title": "Executive Director",
+      "role": "Board of Directors  CSR & Community Development",
+      "image": "images/Ma. Cristina Agbuya.png",
+      "bio": "Kristine Tin Agbuya is a dedicated entrepreneur and the supportive wife behind The Red Meat Shawarma. A devoted mother of three, she plays a vital role in strategic planning and business development. She actively participates in government seminars on business management. She is also a Rotarian passionate about community service and a sought-after speaker for aspiring entrepreneurs."
+    },
+    {
+      "id": 8,
+      "name": "Allaine Chester Sy",
+      "title": "",
+      "role": "Board of Directors  Trade & Industry Development",
+      "image": "images/Allaine Chester Sy.png",
+      "bio": "Allaine Chester Sy is the CEO of BilisBenta, an e-commerce platform helping Filipinos start online businesses with minimal capital. He is also the founder of FoodifyPH, a social commerce platform connecting food suppliers and resellers. As Chairperson of the Trade & Industry Development Committee, he focuses on fostering partnerships and driving business growth for PCCI Valenzuela members."
+    },
+    {
+      "id": 9,
+      "name": "Delfin Florencio Gutierrez",
+      "title": "Vice President",
+      "role": "Board of Directors  Micro Entrepreneurship",
+      "image": "images/Delfin Florencio Gutierrez.jpg",
+      "bio": "Delfin F. Gutierrez Jr. is a Board Director and Chairman of the Micro Entrepreneurship Committee at PCCI Valenzuela. He owns Mang Delfin's Putong Polo, Pancit Malabon, and Native Kakanin. He holds a Bachelor of Business Administration in Marketing from Lyceum of the Philippines. He is a Gawad Pio Valenzuela Awardee (2021) for Cultural Heritage. He successfully grew his micro enterprise into a profitable venture while mentoring fellow entrepreneurs."
+    },
+    {
+      "id": 10,
+      "name": "Helen Lising",
+      "title": "",
+      "role": "Board of Directors/Officer",
+      "image": "images/Helen Lising.png",
+      "bio": "Phoebe Ms. Phoebe De Leon is the Director and Owner of Little Lions Learning and Development Center. A passionate advocate for Autism Awareness, she was inspired by her own child diagnosed with ASD to deepen her understanding of Special Education. She is currently pursuing a Professional Master's in Special Education at Miriam College. She is committed to creating an inclusive environment where every child is given the opportunity to grow and succeed."
+    },
+    {
+      "id": 11,
+      "name": "Eleanor Olegario",
+      "title": "Vice President",
+      "role": "Board of DirectorsEducation, Training, & Capacity Building",
+      "image": "images/Eleanor Olegario.png",
+      "bio": "Eleanor M. Olegario is the Founder and CEO of LITHOS Manufacturing, a climate tech company pioneering mineral-based solutions for water, energy, and agriculture. A multi-awarded technopreneur, she holds 7 utility models and 10 trademarks recognized globally. She has over 28 scientific publications and serves on the boards of INZA, VSP, and PCCI Valenzuela."
+    },
+    {
+      "id": 12,
+      "name": "Yolly Dela Cruz",
+      "title": "",
+      "role": "Board of Directors",
+      "image": "images/Yolly Dela Cruz.png",
+      "bio": "Yolly Dela Cruz is the President of PCCI Valenzuela (2026-2027). A Mapua-trained industrial engineer (Batch '89), she owns Food Grade Trading and founded the Blue Dragon Cooking Oil brand. She now leads the chamber in serving over 20,000 local enterprises through V-Link and advocating for business-friendly policies in Valenzuela City."
+    } 
+ ],
+  "committees": [
+    {
+      "id": 1,
+      "name": "Anna Marie Escober",
+      "image": "images/Anna Marie Escober.png",
+      "committee": "Ease of Doing Business and Documentation",
+      "description": "Anna Marie M. Escober is the General Manager and Owner of Power House Pest Control Services. She is an FDA and FPA licensed exterminator and fumigator, serving as PCO Managing Head and Pollution Control Officer. She is also the President of KAPESTCOPI, the national association of pest control operators in the Philippines. She is a graduate of UST AB Literature and holds an MA in SPED Education from MLQU."
+    },
+    {
+      "id": 2,
+      "name": "Elisa Cabalquinto",
+      "image": "images/Elisa Cabalquinto.png",
+      "committee": "Education, Training, and Capacity Building",
+      "description": "Elisa Cabalquinto is the President of Elisachem Industries OPC, a drug, cosmetic, and home care products manufacturer. With over 20 years of experience in manufacturing, quality control, and product development, she has worked internationally in New Zealand as a Technical Writer for Fisher & Paykel Healthcare and Quality Manager for ES Plastics Ltd. She also worked with SGS New Zealand in product inspection and certification."
+    },
+    {
+      "id": 3,
+      "name": "Jonalyn Domanog Valencia",
+      "image": "images/Jonalyn Domanog Valencia.png",
+      "committee": "Education, Training - Youth Entrepreneurship",
+      "description": "Jonalyn Domanog-Valencia is the Chief Operating Officer of Metropolitan Electrical Panels Inc., a company specializing in the manufacturing of electrical panel boards. She leads with a strong focus on operational excellence and quality standards. She earned her BSBA in Economics from UST and her Executive MBA from the Asian Institute of Management, graduating with distinction."
+    },
+    {
+      "id": 4,
+      "name": "Sonia Sy",
+      "image": "images/Sonia Sy.png",
+      "committee": "Micro Entrepreneurship",
+      "description": "Sonia Onet Reyes-Sy is a homemaker and entrepreneur who started her journey by cooking and selling meals at a factory. She later established ORS Foodservice, a family-owned catering business that evolved from a simple canteen. Through short business courses and continuous training, she grew the company into a full-service provider offering food, decorations, flowers, and music. Her belief: success lies in active involvement in every aspect of operations."
+    },
+    {
+      "id": 5,
+      "name": "Jan Nigel Santos",
+      "image": "images/Jan Nigel Santos.png",
+      "committee": "Branding, Culture, and Communications",
+      "description": "Jan Nigel Santos Bo is a business development leader with over 10 years of experience spanning Big 4 consulting, corporate transformation, and social enterprises. He is a former Senior Associate at EY and currently serves as Director of Business Development at Marketplace Chaplaincy Cooperative and 8Con Academy. He is also Committee Chair for Branding, Culture & Communications at PCCI Valenzuela. He specializes in revenue modeling, strategic partnerships, and digital transformation."
+    },
+    {
+      "id": 6,
+      "name": "Jairah Sebastian",
+      "image": "images/Jairah Sebastian.png",
+      "committee": "Branding, Culture, and Communications",
+      "description": "Elisa Cabalquinto is the President of Elisachem Industries OPC, a drug, cosmetic, and home care products manufacturer. With over 20 years of experience in manufacturing, quality control, and product development, she has worked internationally in New Zealand as a Technical Writer for Fisher & Paykel Healthcare and Quality Manager for ES Plastics Ltd. She also worked with SGS New Zealand in product inspection and certification."
+    },
+    {
+      "id": 7,
+      "name": "Grenny Gumaltico",
+      "image": "images/Grenny Gumaltico.png",
+      "committee": "Technical Services and Innovation",
+      "description": "Grenny C. Gulmatico is the Founder and Owner of Grenny's Food and Beverage Stall, offering burgers, pizza, fried chicken, fries, and signature beverages. With over 20 years of international experience in the cruise line industry as a bartender, barista, and hospitality professional, he brings world-class service into his business. He is also building Set Apart by Grenny, a faith-driven platform focused on hope, leadership, and purpose."
+    },
+    {
+      "id": 8,
+      "name": "Allen Duevo",
+      "image": "images/Allen Duevo.png",
+      "committee": "Programs and Events",
+      "description": "Allen Alfred Duevo is an experienced Marketing Associate in the export industry with nine years of expertise in customer relations and export documentation. He oversees end-to-end coordination of client requirements and shipment processes, ensuring efficiency, compliance, and customer satisfaction. He serves on the Programs and Events Committee of PCCI Valenzuela."
+    },
+    {
+      "id": 9,
+      "name": "Eugene “Jim” Francisco",
+      "image": "images/Eugene “Jim” Francisco.png",
+      "committee": "Membership",
+      "description": "Eugene “Jim” Francisco is a dedicated member of PCCI Valenzuela, actively contributing to the organization's mission and initiatives. His commitment to the community and entrepreneurial development drives his involvement in various membership activities."
+    },
+    {
+      "id": 10,
+      "name": "Lysyia Gatoc",
+      "image": "images/Lysyia Gatoc.jpg",
+      "committee": "Membership",
+      "description": "Lysia \"Lhay\" S. Gatoc is the owner of El Biko Kakanin, a home-based food business in Valenzuela City established in 2019. She holds a BS in Psychology from FEU and a BS in Nursing from OLFU, with formal culinary training from MIHCA Manila. She has participated in DTI's KMME-MME program and various business seminars. Her business offers authentic Filipino delicacies including biko, sapin-sapin, kutsinta, puto, cassava cake, and pichi-pichi."
+    },
+    {
+      "id": 12,
+      "name": "Lovely Cajucom",
+      "image": "images/Lovely Cajucom.jpg",
+      "committee": "Youth Entrepreneurship",
+      "description": "Lovely Cajucom is the Co-Founder of Jhamae's Food & Beverages, the company behind the Mangoloco Mango Shake brand. Her entrepreneurial journey began in 2018 at the Valenzuela Christmas Bazaar with just a 2-liter blender. A PCCI Valenzuela member since 2022, she has expanded the business from local bazaars to nationwide trade fairs. The company now operates a 20-liter production machine for its signature frozen mango shake."
+    },
+    {
+      "id": 13,
+      "name": "Vincent Francisco",
+      "image": "images/Vincent Francisco.png",
+      "committee": "Youth Entrepreneurship",
+      "description": "Vincent Francisco is the founder of Macchiato Bar, a beverage brand established in 2023 known for its innovative drink concepts and quality. He holds a BS in Information Technology from Adamson University. He became a PCCI member in 2024. As a young entrepreneur, he is passionate about building scalable ventures, identifying market trends, and turning ideas into profitable businesses in the food and beverage industry."
+    },
+    {
+      "id": 14,
+      "name": "Patricia Velasquez",
+      "image": "images/Patricia Velasquez.png",
+      "committee": "Youth Entrepreneurship",
+      "description": "Patricia Velasquez is a Magna Cum Laude graduate of Lyceum of the Philippines University Manila, with a BS in International Hospitality Management major in Cruise Line Operations and Culinary Arts. In 2024, she established Siomai Rush, a food business that expanded to four branches in Valenzuela. She also became a PCCI member in 2024."
+    },
+    {
+      "id": 15,
+      "name": "Red Manchos",
+      "image": "images/Red Manchos.png",
+      "committee": "Ways and Means",
+      "description": "Reden G. Manchos – Entrepreneur and founder of Red Amber Enterprise, a packaging supply company serving variuos businesses. Red Amber Enterprise helps clients protect their products, enhance brand presentation, and ensure smooth operations. He is the Ways and Means Committee head of PCCI Valenzuela, supporting initiatives that promote business growth and MSME development"
+    },
+    {
+      "id": 16,
+      "name": "Judith Oranga",
+      "image": "images/Judith Oranga.png",
+      "committee": "Ways and Means",
+      "description": "Judith Oranga is the Founder and Managing Director of Mabest Food, a Valenzuela-based frozen food manufacturing company. Under her leadership, Mabest has evolved from a small-scale operation into a growing supply partner for resellers and provincial distributors across Luzon. She remains committed to strengthening local enterprise development and contributing to the growth of the MSME sector."
+    },
+    {
+      "id": 17,
+      "name": "Imelda “Emy” Ramos",
+      "image": "images/Imelda “Emy” Ramos.png",
+      "committee": "Special Projects",
+      "description": "Imelda \"Emy\" Ramos is the Committee Head for Special Projects at PCCI Valenzuela. She is currently working on the chamber's Bake Off and Cook Off project, in line with the promotion of One Barangay One Product (OBOP). She is committed to showcasing local products and supporting micro-entrepreneurs in Valenzuela City."
+    },
+    {
+      "id": 18,
+      "name": "Glenn Philip  Beason",
+      "image": "images/Glenn Philip  Beason.png",
+      "committee": "Special Projects",
+      "description": "Glen Philip L. Beason is the owner of Toyang's House of Paminto, a pasalubong store based in Valenzuela that proudly offers homemade pasalubong products. The brand shares the nostalgia of classic pasalubong, one story at a time."
+    },
+    {
+      "id": 19,
+      "name": "Atty. Julius Munez",
+      "image": "images/Atty. Julius Banez.png",
+      "committee": "Policy, Advocacy, and Governance",
+      "description": "Atty. Julius Carmelo J. Banez is the Legal Counsel and Chairman of the Committee on Policy, Advocacy, and Governance of PCCI Valenzuela. He has served as Legal Counsel since the chapter was established in 2013. He has been in legal practice since 1998, handling civil, criminal, labor, and commercial cases. He is also an Accredited Mediator for Court Referred Cases since 2001."
+    }
+  ]
+}
