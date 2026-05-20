@@ -42,33 +42,44 @@
     let dashPieChartInstance = null;
     let dashBarChartInstance = null;
 
+    function destroyChart(canvasId) {
+        const chart = Chart.getChart(canvasId);
+        if (chart) {
+            chart.destroy();
+        }
+    }
+
     // ==========================================
     // 1. DATA & CHART CALCULATIONS
     // ==========================================
     function renderRealDashboardCharts() {
-        if (!allTransactionsData || allTransactionsData.length === 0) return;
+        // Destroy existing
+        destroyChart('pieChart');
+        destroyChart('barChart');
 
-        // A. Pie Chart Logic (Approved vs Pending vs Rejected)
-        let approved = 0,
-            pending = 0,
-            rejected = 0;
-        allTransactionsData.forEach(t => {
-            const stat = String(t.status || '').toLowerCase();
-            if (['approved', 'paid', 'completed'].includes(stat)) approved++;
-            else if (['pending', 'pending_review'].includes(stat)) pending++;
-            else rejected++;
-        });
-
+        // A. Pie Chart Logic (COUNTING ACTIVE MEMBERS)
         const pieCanvas = document.getElementById('pieChart');
         if (pieCanvas) {
-            if (dashPieChartInstance) dashPieChartInstance.destroy(); // Fix: Destroy old chart
-            dashPieChartInstance = new Chart(pieCanvas, {
+            destroyChart('pieChart');
+
+            // Count based on MEMBER status
+            let active = 0,
+                inactive = 0,
+                pending = 0;
+            allMembersData.forEach(m => {
+                const stat = String(m.status || 'pending').toLowerCase();
+                if (stat === 'active') active++;
+                else if (stat === 'inactive') inactive++;
+                else pending++;
+            });
+
+            new Chart(pieCanvas.getContext('2d'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Approved', 'Pending', 'Rejected'],
+                    labels: ['Active Members', 'Inactive Members', 'Pending'],
                     datasets: [{
-                        data: [approved, pending, rejected],
-                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                        data: [active, inactive, pending],
+                        backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
                         borderWidth: 0
                     }]
                 },
@@ -79,39 +90,38 @@
             });
         }
 
-        // B. Bar Chart Logic (Revenue by Month)
-        const currentYear = new Date().getFullYear();
-        const monthlyRev = {
-            'Jan': 0,
-            'Feb': 0,
-            'Mar': 0,
-            'Apr': 0,
-            'May': 0,
-            'Jun': 0,
-            'Jul': 0,
-            'Aug': 0,
-            'Sep': 0,
-            'Oct': 0,
-            'Nov': 0,
-            'Dec': 0
-        };
-        const monthNames = Object.keys(monthlyRev);
-
-        allTransactionsData.forEach(t => {
-            const stat = String(t.status || '').toLowerCase();
-            if (['paid', 'completed', 'approved'].includes(stat)) {
-                const d = new Date(t.created_at);
-                if (d.getFullYear() === currentYear) {
-                    const amt = typeof getTransactionAmount === 'function' ? getTransactionAmount(t) : parseFloat(t.amount || 0);
-                    monthlyRev[monthNames[d.getMonth()]] += amt;
-                }
-            }
-        });
-
+        // B. Bar Chart Logic
         const barCanvas = document.getElementById('barChart');
         if (barCanvas) {
-            if (dashBarChartInstance) dashBarChartInstance.destroy(); // Fix: Destroy old chart
-            dashBarChartInstance = new Chart(barCanvas, {
+            const currentYear = new Date().getFullYear();
+            const monthlyRev = {
+                'Jan': 0,
+                'Feb': 0,
+                'Mar': 0,
+                'Apr': 0,
+                'May': 0,
+                'Jun': 0,
+                'Jul': 0,
+                'Aug': 0,
+                'Sep': 0,
+                'Oct': 0,
+                'Nov': 0,
+                'Dec': 0
+            };
+            const monthNames = Object.keys(monthlyRev);
+
+            allTransactionsData.forEach(t => {
+                const stat = String(t.status || '').toLowerCase();
+                if (['paid', 'completed', 'approved'].includes(stat)) {
+                    const d = new Date(t.created_at);
+                    if (d.getFullYear() === currentYear) {
+                        const amt = typeof getTransactionAmount === 'function' ? getTransactionAmount(t) : parseFloat(t.amount || 0);
+                        monthlyRev[monthNames[d.getMonth()]] += amt;
+                    }
+                }
+            });
+
+            new Chart(barCanvas.getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: monthNames,
@@ -124,7 +134,12 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
                 }
             });
         }
@@ -157,26 +172,27 @@
         if (!tbody) return;
         tbody.innerHTML = '';
 
-        const now = new Date();
-        const todayStr = now.toISOString().split('T')[0];
-        const yesterday = new Date(now);
-        yesterday.setDate(now.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        // Calculate cutoff: 48 hours ago
+        const twoDaysAgo = new Date();
+        twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
 
-        const recentTxns = allTransactionsData.filter(txn => {
-            const txnDate = (txn.created_at || '').split('T')[0];
-            return txnDate === todayStr || txnDate === yesterdayStr;
-        });
+        // Only transactions within last 48 hours, sorted newest first
+        const recentTxns = allTransactionsData
+            .filter(txn => new Date(txn.created_at) >= twoDaysAgo)
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
         if (recentTxns.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted fw-bold">No payments received today or yesterday.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted fw-bold">No payments in the last 48 hours.</td></tr>`;
             return;
         }
 
         recentTxns.forEach(txn => {
             const status = String(txn.status || 'pending').toLowerCase();
-            const amt = typeof getTransactionAmount === 'function' ? getTransactionAmount(txn) : parseFloat(txn.amount || 0);
-            let bName = txn.registered_business_name || txn.member?.applicant?.registered_business_name || 'Business';
+            const amt = parseFloat(txn.amount || 0);
+
+            // This logic handles flat business names as per your database structure
+            const applicant = txn.applicant || txn.member?.applicant;
+            const bName = applicant?.registered_business_name || 'Business Name';
 
             tbody.insertAdjacentHTML('beforeend', `
             <tr class="align-middle">
@@ -202,19 +218,36 @@
     }
 
     async function fetchWelcomeName() {
+        const welcomeEl = document.getElementById('dashWelcomeName');
+        const sidebarName = document.getElementById('sidebarName');
+        const sidebarEmail = document.getElementById('sidebarEmail');
+
         try {
-            const res = await fetch(`${window.API_BASE_URL}/v1/user`, {
+            const response = await fetch(`${window.API_BASE_URL}/v1/user`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
                 }
             });
-            if (res.ok) {
-                const data = await res.json();
-                const welcomeEl = document.getElementById('dashWelcomeName');
-                if (welcomeEl) welcomeEl.innerText = data.first_name || data.name || 'Treasurer';
+
+            if (!response.ok) return;
+
+            const responseData = await response.json();
+
+            // Correctly handle the API response structure {data: {...}}
+            const user = responseData.data || responseData;
+
+            if (user) {
+                if (welcomeEl) welcomeEl.innerText = user.first_name || user.name || 'Treasurer';
+                if (sidebarName) {
+                    sidebarName.innerText = user.first_name ? `${user.first_name} ${user.last_name || ''}` : (user.name || 'Treasurer');
+                }
+                if (sidebarEmail) {
+                    sidebarEmail.innerText = user.email || 'No email';
+                }
             }
         } catch (e) {
-            console.error(e);
+            console.error("Profile Fetch Failed:", e);
         }
     }
 
@@ -565,11 +598,22 @@
 
         const fmt = val => `₱${val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
-        document.getElementById('trans-total-amt').innerText = fmt(total);
-        document.getElementById('trans-pending-amt').innerText = fmt(pending);
-        document.getElementById('trans-complete-amt').innerText = fmt(complete);
-        document.getElementById('trans-failed-amt').innerText = fmt(failed);
-        updateDashboardPaymentSummary(rows);
+        // SAFELY check if element exists before setting text
+        const setSafe = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.innerText = val;
+            }
+        };
+
+        setSafe('trans-total-amt', fmt(total));
+        setSafe('trans-pending-amt', fmt(pending));
+        setSafe('trans-complete-amt', fmt(complete));
+        setSafe('trans-failed-amt', fmt(failed));
+
+        if (typeof updateDashboardPaymentSummary === 'function') {
+            updateDashboardPaymentSummary(rows);
+        }
     }
 
     function updateTransactionPagination(totalPages) {
@@ -939,16 +983,21 @@
         }
 
         // ==========================================
-        // FIX 2: BROWSER-SAFE GLOBAL CHART INSTANCES
+        // FIX: CLEANUP BEFORE REDRAWING CHARTS
         // ==========================================
+        const existingBar = Chart.getChart('reportBarChart');
+        if (existingBar) existingBar.destroy();
+
+        const existingPie = Chart.getChart('reportPieChart');
+        if (existingPie) existingPie.destroy();
+
         const reportBar = document.getElementById('reportBarChart');
         if (reportBar) {
             const barLabels = monthKeys.map(getMonthLabel);
             const microData = monthKeys.map(key => monthBuckets[key].micro);
             const smallData = monthKeys.map(key => monthBuckets[key].small);
 
-            if (window.reportBarChartInstance) window.reportBarChartInstance.destroy();
-            window.reportBarChartInstance = new Chart(reportBar.getContext('2d'), {
+            new Chart(reportBar.getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: barLabels,
@@ -1020,101 +1069,7 @@
 
         const reportPie = document.getElementById('reportPieChart');
         if (reportPie) {
-            if (window.reportPieChartInstance) window.reportPieChartInstance.destroy();
-            window.reportPieChartInstance = new Chart(reportPie.getContext('2d'), {
-                type: 'pie',
-                data: {
-                    labels: ['Collected', 'Overdue'],
-                    datasets: [{
-                        data: [collectedPercent, overduePercent],
-                        backgroundColor: ['#22c55e', '#ef4444'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                usePointStyle: true,
-                                font: {
-                                    size: 11
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        const dashboardBar = document.getElementById('barChart');
-        if (dashboardBar) {
-            const revenueSeries = buildDashboardRevenueSeries(dashboardRevenueRange);
-
-            if (window.dashboardBarChartInstance) window.dashboardBarChartInstance.destroy();
-            window.dashboardBarChartInstance = new Chart(dashboardBar.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: revenueSeries.labels,
-                    datasets: [{
-                        label: 'Membership Revenue',
-                        data: revenueSeries.data,
-                        backgroundColor: '#3b82f6',
-                        borderRadius: 8,
-                        barPercentage: 0.6,
-                        categoryPercentage: 0.8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            grid: {
-                                color: '#eee',
-                                borderDash: [5, 5]
-                            },
-                            ticks: {
-                                color: '#aaa',
-                                font: {
-                                    size: 11
-                                }
-                            },
-                            border: {
-                                display: false
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                color: '#aaa',
-                                font: {
-                                    size: 11
-                                }
-                            },
-                            border: {
-                                display: false
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        const dashboardPie = document.getElementById('pieChart');
-        if (dashboardPie) {
-            if (window.dashboardPieChartInstance) window.dashboardPieChartInstance.destroy();
-            window.dashboardPieChartInstance = new Chart(dashboardPie.getContext('2d'), {
+            new Chart(reportPie.getContext('2d'), {
                 type: 'pie',
                 data: {
                     labels: ['Collected', 'Overdue'],
@@ -2475,106 +2430,36 @@
             raw: await response.text().catch(() => '')
         };
     }
-    // --- INITIALIZATION ---
+
     document.addEventListener('DOMContentLoaded', async () => {
         if (!token) {
             window.location.href = '/login';
             return;
         }
 
-        sanitizeSearchAutofill();
-        setTimeout(sanitizeSearchAutofill, 120);
+        // Step 1: Fetch all data. Use try/catch so one failure doesn't break the whole dashboard
+        try {
+            await Promise.all([
+                fetchWelcomeName(),
+                fetchMembershipTypes(),
+                fetchApplicants(),
+                fetchMembers(),
+                fetchTransactions()
+            ]);
+        } catch (e) {
+            console.error("Critical Fetch Error:", e);
+        }
 
-        const loadedFromApi = await loadAccountSettingsFromApi();
-        if (!loadedFromApi) applyStoredAccountSettings();
-
-        // NEW: Fetch membership types before loading tables!
-        await fetchMembershipTypes();
-
-        fetchApplicants();
-        fetchMembers();
-        renderRecentPayments();
-        fetchTransactions();
-
-        // Initialize notifications panel
+        // Step 2: Populate UI (Only run these if data is ready)
         updateNotificationsPanel();
+        populateMainDashboard();
+        renderRecentPayments();
 
-        // Auto-refresh notifications every 30 seconds
-        setInterval(() => {
-            if (typeof allApplicantsData !== 'undefined') {
-                updateNotificationsPanel();
-            }
-        }, 30000);
-
-        const searchInputs = [{
-                id: 'memberSearch',
-                func: applyMemberFilters
-            },
-            {
-                id: 'memberSort',
-                func: applyMemberFilters
-            },
-            {
-                id: 'applicantSearch',
-                func: applyApplicantFilters
-            },
-            {
-                id: 'applicantSort',
-                func: applyApplicantFilters
-            },
-            {
-                id: 'applicantStatusFilter',
-                func: applyApplicantFilters
-            } // Strict Treasurer Dropdown
-        ];
-
-        searchInputs.forEach(input => {
-            const el = document.getElementById(input.id);
-            if (el) {
-                el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', input.func);
-            }
-        });
-
-        // Event listener for Add Member Dropdown
-        const companySelect = document.getElementById('addMemberCompanySelect');
-        if (companySelect) {
-            companySelect.addEventListener('change', function() {
-                const selectedId = this.value;
-                if (!selectedId) {
-                    populateAddMemberReadOnlyFields(null);
-                    return;
-                }
-                const selectedApplicant = approvedApplicantsForModal.find(app => String(app.id) === String(selectedId));
-                populateAddMemberReadOnlyFields(selectedApplicant);
-            });
-        }
-
-        const dashboardPaymentRangeEl = document.getElementById('dashboardPaymentRange');
-        if (dashboardPaymentRangeEl) {
-            dashboardPaymentRange = dashboardPaymentRangeEl.value || 'day';
-            dashboardPaymentRangeEl.addEventListener('change', (event) => {
-                dashboardPaymentRange = event.target.value;
-                updateDashboardPaymentSummary(allTransactionsData);
-            });
-        }
-
-        const dashboardRevenueRangeEl = document.getElementById('dashboardRevenueRange');
-        if (dashboardRevenueRangeEl) {
-            dashboardRevenueRange = dashboardRevenueRangeEl.value || 'month';
-            dashboardRevenueRangeEl.addEventListener('change', (event) => {
-                dashboardRevenueRange = event.target.value;
-                updateReportsDashboard();
-            });
-        }
+        // Step 3: Initialize Charts (Now data is guaranteed to exist)
+        renderRealDashboardCharts();
 
         const savedTab = localStorage.getItem('activeTab') || 'dashboard';
         switchTab(savedTab, false);
-
-        setInterval(() => {
-            if (document.visibilityState !== 'visible') return;
-            if (!['members', 'dashboard', 'reports'].includes(currentActiveTab)) return;
-            fetchMembers();
-        }, TREASURER_MEMBERS_AUTO_REFRESH_MS);
     });
 
     // --- MEMBER FILTER/SORT ---
@@ -3035,52 +2920,28 @@
 
     async function fetchTransactions() {
         try {
-            // 1. Fetch Global Financial Stats for the Cards
-            const statsRes = await fetch(`${window.API_BASE_URL}/v1/transactions/stats`, {
+            // Use 'all=true' so we get the full dataset for charts/revenue, not just one page
+            const transRes = await fetch(`${window.API_BASE_URL}/v1/transactions?all=true`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 }
             });
-
-            if (checkAuth(statsRes) && statsRes.ok) {
-                const stats = await statsRes.json();
-                const fmt = val => `₱ ${parseFloat(val || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-
-                document.getElementById('trans-total-amt').innerText = fmt(stats.total_revenue);
-                document.getElementById('trans-initial-amt').innerText = fmt(stats.initial_registration_total);
-                document.getElementById('trans-renewal-amt').innerText = fmt(stats.renewal_total);
-                // Calculate an estimated pending/failed total if needed, or leave at 0 if backend doesn't provide it yet
-                document.getElementById('trans-failed-amt').innerText = '₱ 0.00';
-            }
-
-            // 2. Fetch the Master Ledger Rows
-            // Passing per_page=100 so client-side pagination and search works smoothly without additional API calls
-            const transRes = await fetch(`${window.API_BASE_URL}/v1/transactions?per_page=500`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
-                }
-            });
-
-            if (!checkAuth(transRes)) return;
 
             if (transRes.ok) {
                 const transData = await transRes.json();
-
-                // Laravel pagination wraps the array inside the '.data' property
+                // Backend now returns {data: [...]} for both paginated and non-paginated
                 allTransactionsData = transData.data || [];
                 filteredTransactionsData = allTransactionsData.slice();
-                currentTransactionPage = 1;
 
-                displayTransactionsPage();
-                updateReportsDashboard(); // Update other dashboard charts if tied to this
+                populateMainDashboard();
+                updateTransactionSummary(allTransactionsData);
+                displayTransactionsPage(); // Handles its own pagination via filteredTransactionsData
+                renderRecentPayments();
+                renderRealDashboardCharts();
             }
         } catch (err) {
             console.error('Error fetching transactions:', err);
-            allTransactionsData = [];
-            filteredTransactionsData = [];
-            displayTransactionsPage();
         }
     }
 

@@ -90,7 +90,7 @@
                 <thead>
                     <tr>
                         <th>Business Name</th>
-                        <th>Membership Type</th>
+                        <th>Type</th>
                         <th>Amount</th>
                         <th>OR Number</th>
                         <th>Date</th>

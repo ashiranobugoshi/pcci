@@ -442,6 +442,55 @@
     if (typeof fetchPaymentChannels === 'function') {
         fetchPaymentChannels();
     }
+
+    // ==========================================
+    // SETTINGS MODAL OVERRIDE (Fixes the Bug / Glimpse)
+    // ==========================================
+    window.openSettingsModal = function(sector) {
+        // 1. Ensure ALL settings modals are hidden first
+        const allSectors = ['account', 'security', 'billing', 'preferences'];
+        allSectors.forEach(s => {
+            const m = document.getElementById(`settingsModal${s.charAt(0).toUpperCase() + s.slice(1)}`);
+            if (m) m.style.display = 'none';
+        });
+
+        // 2. Target the specific modal we want
+        const modal = document.getElementById(`settingsModal${sector.charAt(0).toUpperCase() + sector.slice(1)}`);
+        if (!modal) return;
+
+        // 3. Smooth Fade-in to hide rendering jumps
+        const contentBox = modal.querySelector('.modal-content-box');
+        if (contentBox) {
+            contentBox.style.opacity = '0';
+            setTimeout(() => {
+                contentBox.style.transition = 'opacity 0.2s ease-in-out';
+                contentBox.style.opacity = '1';
+            }, 50);
+        }
+
+        modal.style.display = 'flex';
+
+        // 4. Force strict loading states based on the tab opened
+        if (sector === 'account' && typeof populateSettingsAccountForm === 'function') {
+            populateSettingsAccountForm(window.currentProfileData || {});
+        } else if (sector === 'billing' && typeof fetchMyBillingHistory === 'function') {
+            setTextIfExists('billingCompanyName', 'Loading...');
+            setTextIfExists('billingPlanLabel', 'Loading...');
+            const tbody = document.getElementById('billingSessionsTable');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4 fw-bold"><i class="fa fa-spinner fa-spin me-2"></i> Loading history...</td></tr>';
+            fetchMyBillingHistory();
+        } else if (sector === 'preferences') {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const themeLabel = document.getElementById('themeLabel');
+            if (themeLabel) themeLabel.innerText = savedTheme === 'dark' ? 'Dark' : 'Light';
+        } else if (sector === 'security' && typeof renderSettingsLoginActivity === 'function') {
+            const actTable = document.getElementById('settingsLoginActivityTable');
+            if (actTable) actTable.innerHTML = '<tr><td colspan="4" class="text-center text-muted"><i class="fa fa-spinner fa-spin me-2"></i> Loading activity...</td></tr>';
+            setTimeout(() => {
+                renderSettingsLoginActivity();
+            }, 300);
+        }
+    };
 </script>
 
 <style>

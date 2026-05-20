@@ -1377,7 +1377,7 @@
         </button>
         <div class="position-relative" onclick="toggleNotificationPanel(event)" style="cursor:pointer; display: flex; align-items: center;">
             <i class="fa fa-bell fs-5 text-muted"></i>
-            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="margin-top: 4px; margin-left: -5px;"></span>
+            <span id="notificationDot" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="margin-top: 4px; margin-left: -5px; display: none;"></span>
         </div>
         <img src="{{ asset('images/PCCI-Logo.svg') }}" class="topbar-avatar ms-3" id="topbarAvatar" alt="User">
     </div>
@@ -1958,6 +1958,22 @@
         }
 
         seedUserFallbackUI();
+
+        // Render cached profile immediately to reduce loading flashes.
+        const cachedProfileRaw = localStorage.getItem('member_profile_cache');
+        if (cachedProfileRaw) {
+            try {
+                const cachedProfile = JSON.parse(cachedProfileRaw);
+                const normalizedCached = normalizeProfileShape(cachedProfile);
+                if (normalizedCached) {
+                    window.currentProfileData = normalizedCached;
+                    applyProfileDataToUI(normalizedCached);
+                }
+            } catch (error) {
+                console.warn('Failed to parse cached member profile:', error);
+            }
+        }
+
         startLiveClock();
 
         // Fetch initial data
@@ -2196,10 +2212,29 @@
             payload : [];
 
         return list.map((item, index) => {
-            const title = item.title || item.subject || item.type || 'Notification';
-            const message = item.message || item.body || item.description || 'You have a new notification.';
-            const createdAt = item.created_at || item.createdAt || item.date || item.updated_at || new Date().toISOString();
-            const severity = String(item.severity || item.level || item.status || '').toLowerCase();
+            // Safely parse the data payload
+            let data = item.data;
+            if (typeof data === 'string') {
+                try {
+                    data = JSON.parse(data);
+                } catch (e) {
+                    data = {};
+                }
+            } else if (!data || typeof data !== 'object') {
+                data = {};
+            }
+
+            // Extract clean title and message
+            let cleanTitle = data.title || data.subject || item.title || 'System Alert';
+            let cleanMessage = data.message || data.body || item.message || 'You have a new notification.';
+
+            // Fallback if the raw App\Notifications string leaks through
+            if (cleanTitle.includes('App\\Notifications') || cleanTitle.includes('App\\\\Notifications')) {
+                cleanTitle = data.title || 'System Alert';
+            }
+
+            const createdAt = item.read_at || item.created_at || item.createdAt || new Date().toISOString();
+            const severity = String(data.severity || data.level || item.severity || '').toLowerCase();
 
             let iconClass = 'fa-bell';
             let toneClass = 'text-primary';
@@ -2215,9 +2250,9 @@
             }
 
             return {
-                id: item.id || `notif-${index}`,
-                title,
-                message,
+                id: item.id || item.notification_id || `notif-${index}`,
+                title: cleanTitle,
+                message: cleanMessage,
                 createdAt,
                 iconClass,
                 toneClass,
@@ -2247,11 +2282,15 @@
     function renderMemberNotifications(items) {
         const notifBody = document.querySelector('#notificationPanel .notif-body');
         const notifBadge = document.getElementById('notifBadgeCount');
+        const notificationDot = document.getElementById('notificationDot');
         if (!notifBody || !notifBadge) return;
 
         const todayKey = getTodayKey();
         const markedReadToday = localStorage.getItem(MEMBER_NOTIF_READ_DATE_KEY) === todayKey;
         const unreadCount = markedReadToday ? 0 : items.length;
+        if (notificationDot) {
+            notificationDot.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+        }
 
         if (items.length === 0) {
             notifBody.innerHTML = `
@@ -2564,23 +2603,63 @@
         openDocModal(title, fileUrl);
     }
 
+    // ==========================================
+    // 1. APPLY DATA TO UI (Fixes ID, Type, Expiry & Full Address)
+    // ==========================================
+
     function applyProfileDataToUI(profile) {
         if (!profile) return;
 
-        const basic = profile.basic_profile || {};
-        const org = profile.organization_membership || {};
-        const rep = profile.official_representative || {};
+        // Safely extract the member object (handles both Applicant and Member API responses)
+        const memberObj = profile.member || profile.data?.member || profile;
+        const basic = memberObj.applicant?.basic_profile || profile.basic_profile || {};
+        const org = memberObj.applicant?.organization_membership || profile.organization_membership || {};
+        const rep = memberObj.applicant?.official_representative || profile.official_representative || {};
         const loc = basic.business_location || {};
 
         const companyName = basic.registered_business_name || 'Your Company';
         const repName = `${rep.first_name || ''} ${rep.surname || ''}`.trim();
-        const memberID = `PCCI-${new Date().getFullYear()}-${String(profile.id || 0).padStart(4, '0')}`;
-        const memStatus = profile.status || 'Pending';
-        const memType = profile.membership_type || 'N/A';
+        const memStatus = memberObj.status || profile.status || 'Pending';
+
+        // SMART FIX 1: Fetch Real Membership Type
+        let memType = 'N/A';
+        if (memberObj.membershipType && memberObj.membershipType.name) memType = memberObj.membershipType.name;
+        else if (memberObj.membership_type && memberObj.membership_type.name) memType = memberObj.membership_type.name;
+        else if (profile.membershipType && profile.membershipType.name) memType = profile.membershipType.name;
+        else if (profile.membership_type && profile.membership_type.name) memType = profile.membership_type.name;
+        else if (typeof profile.membership_type === 'string') memType = profile.membership_type;
+        else if (typeof memberObj.membership_type === 'string') memType = memberObj.membership_type;
+
+        // SMART FIX 2: Calculate Expiry & Membership ID
+        const baseDate = memberObj.induction_date || memberObj.applicant?.induction_date || memberObj.created_at || profile.date_approved;
+        const memberID = memberObj.membership_id || memberObj.member_id || `PCCI-${new Date(baseDate || Date.now()).getFullYear()}-${String(memberObj.id || profile.id || 0).padStart(4, '0')}`;
+
+        let expiryDate = 'Pending Approval';
+        if (baseDate) {
+            let d = new Date(baseDate);
+            if (!Number.isNaN(d.getTime())) {
+                d.setFullYear(d.getFullYear() + 1);
+                expiryDate = d.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+        }
+
         const contactNo = basic.contact_number || basic.telephone_no || 'N/A';
-        const officialReceiptNo = profile.official_receipt_no || profile.or_number || profile.receipt_no || 'N/A';
-        const membershipReceiptNo = profile.membership_receipt_no || profile.receipt_no || 'N/A';
-        const ownershipType = org.ownership_type || org.organization_type || 'Not specified';
+        const officialReceiptNo = memberObj.official_receipt_no || profile.official_receipt_no || profile.or_number || profile.receipt_no || 'N/A';
+        const membershipReceiptNo = memberObj.membership_receipt_no || profile.membership_receipt_no || profile.receipt_no || 'N/A';
+        const ownershipType = org.ownership_type || org.type_of_company || org.organization_type || 'Not specified';
+
+        // SMART FIX 3: Full Address with Province and Zip Code
+        const addressParts = [
+            loc.business_address,
+            loc.city_municipality,
+            loc.province,
+            loc.zip_code
+        ].filter(Boolean);
+        const addressString = addressParts.join(', ');
 
         // Sidebar
         setTextIfExists('sidebarCompany', companyName);
@@ -2598,7 +2677,7 @@
             if (bizMainImage) bizMainImage.src = profile.photo_url;
         }
 
-        // Dashboard
+        // Dashboard Tab
         setTextIfExists('welcomeMessage', `Welcome, ${companyName}!`);
         setTextIfExists('dashBizName', companyName);
         setTextIfExists('dashBizEmail', basic.email || 'N/A');
@@ -2610,27 +2689,14 @@
         setTextIfExists('dashReceiptNo', membershipReceiptNo);
         setTextIfExists('dashOwnershipType', ownershipType);
 
-        // My Business
+        // My Business Tab
         setTextIfExists('bizNameTitle', companyName);
         setTextIfExists('bizIndustryTitle', org.type_of_company || 'Industry not specified');
         setTextIfExists('bizEmailText', basic.email || 'N/A');
         setTextIfExists('bizPhoneText', contactNo);
-
-        const addressString = `${loc.business_address || ''}, ${loc.city_municipality || ''}`.trim().replace(/^,|,$/g, '');
         setTextIfExists('bizAddressText', addressString || 'Address not provided');
-
         setTextIfExists('bizMembershipTypeText', memType);
-        if (profile.date_approved) {
-            let d = new Date(profile.date_approved);
-            d.setFullYear(d.getFullYear() + 1);
-            setTextIfExists('bizExpiryText', d.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            }));
-        } else {
-            setTextIfExists('bizExpiryText', 'Pending Approval');
-        }
+        setTextIfExists('bizExpiryText', expiryDate);
 
         setTextIfExists('repNameText', repName || 'N/A');
         setTextIfExists('repDesignationText', rep.designation || 'Representative');
@@ -2640,8 +2706,42 @@
         updateDashboardEventCard(profile);
         updateMembershipPlanDetails(profile);
 
+        // TRIGGER NEW FETCH: Pull OR Number directly from payments!
+        if (typeof fetchAdditionalMembershipDetails === 'function') {
+            fetchAdditionalMembershipDetails();
+        }
+
         if (typeof syncSettingsFromProfile === 'function') {
             syncSettingsFromProfile(profile);
+        }
+    }
+
+    // NEW FUNCTION: Put this right below applyProfileDataToUI
+    async function fetchAdditionalMembershipDetails() {
+        try {
+            const response = await fetch(`${window.API_BASE_URL}/v1/member/payments`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                const txns = data.data || data || [];
+
+                // Get only approved/paid transactions
+                const validTxns = txns.filter(t => (t.status === 'approved' || t.status === 'paid' || t.status === 'completed'));
+                validTxns.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                // Override the receipt values in the UI if an OR number exists!
+                if (validTxns.length > 0 && validTxns[0].or_number) {
+                    const latestOR = validTxns[0].or_number;
+                    setTextIfExists('dashReceiptNo', latestOR);
+                    setTextIfExists('dashOfficialReceiptNo', latestOR);
+                }
+            }
+        } catch (e) {
+            console.error('Error fetching OR from payments:', e);
         }
     }
 
@@ -2764,7 +2864,7 @@
             },
             organization_membership: {
                 type_of_company: source.type_of_company || source.industry || 'N/A',
-                ownership_type: source.ownership_type || 'Not specified'
+                ownership_type: source.ownership_type || source.type_of_company || source.organization_type || 'Not specified'
             },
             official_representative: {
                 first_name: source.first_name || nameParts.slice(0, -1).join(' ') || nameParts[0] || '',
@@ -3024,21 +3124,15 @@
     }
 
     // ==========================================
-    // EDIT PROFILE LOGIC
+    // 2. OPEN EDIT MODAL (Populates Full Address)
     // ==========================================
-
     function openEditProfileModal() {
-        console.log('Opening edit profile modal...');
-        console.log('Profile data available:', !!window.currentProfileData);
-
-        // Get profile data if available, otherwise use defaults
         const profile = window.currentProfileData || {};
         const basic = profile.basic_profile || {};
         const org = profile.organization_membership || {};
         const rep = profile.official_representative || {};
         const loc = basic.business_location || {};
 
-        // Populate Modal Display Fields (for the new modal structure)
         document.getElementById('ep_companyNameDisplay').innerText = basic.registered_business_name || 'Not provided';
         document.getElementById('ep_companyNameDisplay2').innerText = basic.registered_business_name || 'Not provided';
         document.getElementById('ep_companyTypeDisplay').innerText = org.type_of_company || 'Not provided';
@@ -3051,10 +3145,12 @@
         document.getElementById('ep_repPositionDisplay').innerText = rep.designation || 'Not provided';
         document.getElementById('ep_contactDisplay').innerText = basic.contact_number || basic.telephone_no || 'Not provided';
 
-        document.getElementById('ep_addressDisplay').innerText = loc.business_address || 'Not provided';
+        // Set Full Address in Editor
+        const addressParts = [loc.business_address, loc.city_municipality, loc.province, loc.zip_code].filter(Boolean);
+        document.getElementById('ep_addressDisplay').innerText = addressParts.join(', ') || 'Not provided';
+
         document.getElementById('ep_urlDisplay').innerText = basic.website_url || 'Not provided';
 
-        // Keep type/description and preview sections in sync while editing.
         const businessTypeEl = document.getElementById('ep_businessType');
         const descriptionEl = document.getElementById('ep_description');
         if (businessTypeEl && !businessTypeEl.dataset.syncBound) {
@@ -3067,18 +3163,17 @@
         }
         syncBusinessPreviewFromEditor();
 
-        // Show Modal
         document.getElementById('profileAlert').style.display = 'none';
-        const modal = document.getElementById('editProfileModal');
-        console.log('Modal element:', modal);
-        modal.style.display = 'flex';
-        console.log('Modal should now be visible');
+        document.getElementById('editProfileModal').style.display = 'flex';
     }
 
     function closeEditProfileModal() {
         document.getElementById('editProfileModal').style.display = 'none';
     }
 
+    // ==========================================
+    // 3. SAVE PROFILE (Splits Address Correctly)
+    // ==========================================
     async function saveProfile() {
         const btn = document.getElementById('btnSaveProfile');
         const alertBox = document.getElementById('profileAlert');
@@ -3093,16 +3188,13 @@
         btn.innerText = 'Saving...';
         alertBox.style.display = 'none';
 
-        // 1. Create a deep copy of the existing profile data so we send EVERYTHING back
         let payload = JSON.parse(JSON.stringify(window.currentProfileData));
 
-        // Ensure objects exist to prevent javascript errors
         payload.basic_profile = payload.basic_profile || {};
         payload.basic_profile.business_location = payload.basic_profile.business_location || {};
         payload.organization_membership = payload.organization_membership || {};
         payload.official_representative = payload.official_representative || {};
 
-        // 2. Override fields from the current modal controls/display values.
         const companyName = (document.getElementById('ep_companyNameDisplay2')?.innerText || '').trim();
         const businessType = (document.getElementById('ep_businessType')?.value || '').trim();
         const businessDescription = (document.getElementById('ep_description')?.value || '').trim();
@@ -3121,10 +3213,13 @@
         if (businessType) payload.organization_membership.type_of_company = businessType;
         if (websiteUrl) payload.basic_profile.website_url = websiteUrl;
 
+        // SMART FIX: Split the string back into Address, City, Province, and Zip Code
         if (addressDisplay) {
             const parts = addressDisplay.split(',').map(p => p.trim()).filter(Boolean);
             payload.basic_profile.business_location.business_address = parts[0] || payload.basic_profile.business_location.business_address || '';
-            payload.basic_profile.business_location.city_municipality = parts.slice(1).join(', ') || payload.basic_profile.business_location.city_municipality || '';
+            if (parts.length > 1) payload.basic_profile.business_location.city_municipality = parts[1];
+            if (parts.length > 2) payload.basic_profile.business_location.province = parts[2];
+            if (parts.length > 3) payload.basic_profile.business_location.zip_code = parts[3];
         }
 
         if (repNameDisplay) {
@@ -3136,7 +3231,7 @@
 
         try {
             const response = await fetch(`${window.API_BASE_URL}/v1/application`, {
-                method: 'PUT', // /v1/application update route supports PUT
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
@@ -3148,7 +3243,6 @@
             const data = await response.json();
 
             if (response.ok || response.status === 200 || response.status === 201) {
-                // Apply optimistic UI update immediately so users see changes right after closing modal.
                 window.currentProfileData = payload;
                 applyProfileDataToUI(payload);
                 closeEditProfileModal();

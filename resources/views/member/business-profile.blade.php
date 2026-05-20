@@ -176,5 +176,30 @@ $business = $business ?? [
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        // Assume ID is passed from URL
+        const businessId = "{{ $id ?? '' }}";
+        if (!businessId) return;
 
+        try {
+            const response = await fetch(`${window.API_BASE_URL}/v1/business/${businessId}`);
+            const result = await response.json();
+            const biz = result.data || result;
+
+            // Update DOM
+            document.getElementById('biz-name').innerText = biz.registered_business_name;
+            document.getElementById('biz-industry').innerText = biz.industry || 'General Industry';
+            document.getElementById('biz-email').innerText = biz.email;
+
+            // Fix Address Display
+            const loc = biz.business_location || {};
+            const address = [loc.business_address, loc.city_municipality, loc.province, loc.zip_code].filter(Boolean).join(', ');
+            document.getElementById('biz-address').innerText = address;
+
+        } catch (e) {
+            console.error("Could not fetch business profile:", e);
+        }
+    });
+</script>
 @endsection
