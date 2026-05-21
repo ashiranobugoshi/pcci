@@ -2848,22 +2848,17 @@
         let startIndex = (currentMemberPage - 1) * membersPerPage;
         let pageData = filteredMembersData.slice(startIndex, startIndex + membersPerPage);
 
-        if (pageData.length === 0 && totalRecords > 0 && currentMemberPage > 1) {
-            currentMemberPage = totalPages;
-            startIndex = (currentMemberPage - 1) * membersPerPage;
-            pageData = filteredMembersData.slice(startIndex, startIndex + membersPerPage);
-        }
-
         const tbody = document.getElementById('members-table-body');
         if (!tbody) return;
 
         tbody.innerHTML = '';
-        if (totalRecords === 0) tbody.innerHTML = `<tr><td colspan="9" class="text-center py-5 text-muted fw-bold">No members found matching your search.</td></tr>`;
+        if (totalRecords === 0) tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted fw-bold">No members found matching your search.</td></tr>`;
 
         pageData.forEach(member => {
             const name = member.applicant?.basic_profile?.registered_business_name || 'N/A';
-            const orNumber = `OR-${10000 + member.id}`;
+            const fallbackOrNumber = `OR-${10000 + member.id}`;
             const regDate = member.created_at ? member.created_at.split('T')[0] : 'N/A';
+
             let expDate = member.membership_end_date ? member.membership_end_date.split('T')[0] : 'N/A';
             if (expDate === 'N/A' && member.created_at) {
                 const dateObj = new Date(member.created_at);
@@ -2871,20 +2866,35 @@
                 expDate = dateObj.toISOString().split('T')[0];
             }
 
+            // Logic for proof file
+            const memId = String(member.id || '');
+            const appId = String(member.applicant_id || member.applicant?.id || '');
+            const memberTxns = allTransactionsData.filter(t =>
+                (String(t.member_id) === memId) || (String(t.applicant_id) === appId)
+            );
+            const latestTxn = memberTxns.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+            const proofUrl = latestTxn && latestTxn.receipt_image_url ? latestTxn.receipt_image_url : member.proof_of_payment_url;
+            const safeProofUrl = proofUrl ? encodeURIComponent(proofUrl) : '';
+
             tbody.insertAdjacentHTML('beforeend', `
-                <tr>
-                    <td class="fw-bold text-dark">${name}</td>
-                    <td>Annual</td>
-                    <td class="fw-bold text-dark">₱5,000</td>
-                    <td class="text-dark">${orNumber}</td>
-                    <td class="text-dark">${regDate}</td>
-                    <td class="text-dark">${expDate}</td>
-                    <td><span class="status-badge status-completed">Active</span></td>
-                    <td><button class="btn btn-sm btn-link p-0 fw-bold" onclick="openSimpleProof('${member.proof_of_payment_url}')">View File</button></td>
-                    <td><button class="action-btn btn-gray" onclick="viewMemberDetails(${member.id})">Details</button></td>
-                </tr>
-            `);
+            <tr class="align-middle">
+                <td class="fw-bold text-dark ps-4">${name}</td>
+                <td class="text-dark">${latestTxn && latestTxn.or_number ? latestTxn.or_number : fallbackOrNumber}</td>
+                <td class="text-dark">${regDate}</td>
+                <td class="text-dark">${expDate}</td>
+                <td><span class="badge bg-success rounded-pill px-3 py-1">Active</span></td>
+                <td>
+                    <button class="btn btn-sm btn-light border text-primary" onclick="openSimpleProof('${safeProofUrl}')" ${!safeProofUrl ? 'disabled' : ''}>
+                        <i class="fa fa-file-image"></i> View
+                    </button>
+                </td>
+                <td>
+                    <button class="action-btn btn-gray" onclick="viewMemberDetails(${member.id})">Details</button>
+                </td>
+            </tr>
+        `);
         });
+
         const paginationText = document.getElementById('member-pagination-text');
         if (paginationText) paginationText.innerText = `Page ${currentMemberPage} of ${totalPages}`;
     }
