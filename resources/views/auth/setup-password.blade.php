@@ -1,190 +1,186 @@
-@extends('layouts.app')
+@extends('layouts.auth')
 
 @section('title', 'Secure Account Setup - PCCI')
 
 @section('content')
 @include('partials.api-config')
 
+{{--
+  =============================================================================
+  PCCI MODERN PASSWORD SETUP PAGE
+  Description: A secure, modern account onboarding screen.
+  Includes: 
+    - Custom modern SaaS-style CSS
+    - Regex-based password strength validation
+    - Real-time UI feedback
+    - Secure API communication
+  =============================================================================
+--}}
+
 <style>
-    body {
-        background-color: #f4f6f9;
-        font-family: 'Inter', sans-serif;
+    /* 1. Global Variables & Reset */
+    :root {
+        --pcci-red: #be1e38;
+        --bg-body: #f8fafc;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --input-bg: #f1f5f9;
+        --border-radius: 12px;
     }
 
-    .setup-wrapper {
+    body {
+        background-color: var(--bg-body);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        margin: 0;
+        padding: 0;
         min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 20px;
     }
 
-    .setup-card {
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        overflow: hidden;
+    /* 2. Container Wrapper */
+    .setup-wrapper {
         width: 100%;
-        max-width: 900px;
         display: flex;
-        flex-direction: row;
-    }
-
-    /* Left Side - Branding */
-    .setup-left {
-        background-color: var(--pcci-red, #be1e38);
-        color: white;
-        padding: 50px 40px;
-        width: 45%;
-        display: flex;
-        flex-direction: column;
         justify-content: center;
         align-items: center;
-        text-align: center;
+        padding: 24px;
     }
 
-    .setup-left i {
-        font-size: 5rem;
+    /* 3. Modern Card Design */
+    .setup-card {
+        background: #ffffff;
+        border-radius: var(--border-radius);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        width: 100%;
+        max-width: 450px;
+        padding: 40px;
+        transition: transform 0.3s ease;
+    }
+
+    /* 4. Header Section */
+    .setup-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+
+    .setup-header h2 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+    }
+
+    .setup-header p {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    /* 5. Form Group Styling */
+    .form-group {
         margin-bottom: 20px;
     }
 
-    .setup-left h2 {
-        font-weight: 700;
-        font-size: 1.8rem;
-        margin-bottom: 10px;
-        letter-spacing: 1px;
-    }
-
-    .setup-left p {
-        font-size: 0.95rem;
-        opacity: 0.9;
-    }
-
-    /* Right Side - Form */
-    .setup-right {
-        padding: 50px 40px;
-        width: 55%;
-        background: #ffffff;
-    }
-
-    .setup-right h4 {
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 5px;
-    }
-
-    .setup-right p.subtitle {
-        color: #6c757d;
-        font-size: 0.9rem;
-        margin-bottom: 30px;
-    }
-
     .form-group label {
-        font-weight: 600;
-        font-size: 0.85rem;
-        color: #555;
-        margin-bottom: 8px;
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-dark);
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .input-group-text {
-        background: transparent;
-        cursor: pointer;
-        border-left: none;
+        margin-bottom: 8px;
+        letter-spacing: 0.6px;
     }
 
     .form-control {
-        border-right: none;
+        background: var(--input-bg);
+        border: 2px solid transparent;
+        border-radius: 10px;
         padding: 12px 16px;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        width: 100%;
     }
 
     .form-control:focus {
-        box-shadow: none;
-        border-color: var(--pcci-red, #be1e38);
+        background: #fff;
+        border-color: var(--pcci-red);
+        box-shadow: 0 0 0 4px rgba(190, 30, 56, 0.1);
+        outline: none;
     }
 
-    .form-control:focus+.input-group-text {
-        border-color: var(--pcci-red, #be1e38);
-        color: var(--pcci-red, #be1e38);
+    /* 6. Password Visibility Icon */
+    .input-group {
+        position: relative;
     }
 
-    .btn-submit {
-        background-color: var(--pcci-red, #be1e38);
-        color: white;
-        font-weight: 700;
-        padding: 12px;
-        border-radius: 6px;
-        width: 100%;
+    .input-group-text {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
         border: none;
-        transition: 0.2s;
+        cursor: pointer;
+        color: var(--text-muted);
+        z-index: 10;
+    }
+
+    /* 7. Action Button */
+    .btn-submit {
+        background-color: var(--pcci-red);
+        color: white;
+        width: 100%;
+        padding: 14px;
+        border-radius: 10px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        margin-top: 10px;
     }
 
     .btn-submit:hover {
         background-color: #a01a30;
-        color: white;
     }
 
     .btn-submit:disabled {
-        background-color: #d1d5db;
+        background-color: #cbd5e1;
         cursor: not-allowed;
     }
 
-    /* Checklist Styles */
+    /* 8. Validation Checklist */
     .validation-checklist {
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-radius: 6px;
-        padding: 15px;
-        margin-bottom: 25px;
-        display: block;
-        /* Always visible to prevent UI stretching */
-    }
-
-    .validation-checklist p {
-        margin: 0 0 8px 0;
+        margin-top: 24px;
         font-size: 0.8rem;
-        font-weight: 700;
-        color: #333;
-        text-transform: uppercase;
+        color: var(--text-muted);
+        background: #f8fafc;
+        padding: 16px;
+        border-radius: 10px;
     }
 
     .check-item {
-        font-size: 0.85rem;
-        color: #6c757d;
-        margin-bottom: 5px;
         display: flex;
         align-items: center;
-        transition: color 0.2s;
-    }
-
-    .check-item i {
-        margin-right: 8px;
-        font-size: 1rem;
-        transition: transform 0.2s;
+        gap: 10px;
+        margin-bottom: 8px;
+        transition: 0.2s;
     }
 
     .check-item.valid {
-        color: #10b981;
+        color: #059669;
+        font-weight: 600;
     }
 
     .check-item.invalid {
-        color: #be1e38;
+        color: #e11d48;
+        font-weight: 600;
     }
 
-    @media (max-width: 768px) {
+    /* Responsive adjustment */
+    @media (max-width: 480px) {
         .setup-card {
-            flex-direction: column;
-        }
-
-        .setup-left,
-        .setup-right {
-            width: 100%;
-            padding: 30px 20px;
-        }
-
-        .setup-left {
-            padding: 40px 20px;
+            padding: 24px;
         }
     }
 </style>
@@ -192,66 +188,76 @@
 <div class="setup-wrapper">
     <div class="setup-card">
 
-        <div class="setup-left">
-            <i class="bi bi-shield-lock-fill"></i>
-            <h2>PCCI SECURE</h2>
-            <p>ACCOUNT SETUP</p>
+        <div class="setup-header">
+            <h2>Setup Password</h2>
+            <p>Define a secure password for your account.</p>
         </div>
 
-        <div class="setup-right">
-            <h4>Setup Your Password</h4>
-            <p class="subtitle">Please choose a strong password to secure your new account before accessing the dashboard.</p>
-
-            <div id="setupAlert" class="alert alert-danger d-none" style="font-size: 0.9rem;"></div>
-
-            <form id="setupForm" onsubmit="handleSetup(event)">
-
-                <div class="form-group mb-3">
-                    <label>New Password</label>
-                    <div class="input-group">
-                        <input type="password" class="form-control" id="newPassword" placeholder="Minimum 8 characters" required>
-                        <span class="input-group-text" onclick="togglePassword('newPassword', 'eyeIcon1')">
-                            <i class="bi bi-eye" id="eyeIcon1"></i>
-                        </span>
-                    </div>
-                </div>
-
-                <div class="form-group mb-4">
-                    <label>Confirm Password</label>
-                    <div class="input-group">
-                        <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your password" required>
-                        <span class="input-group-text" onclick="togglePassword('confirmPassword', 'eyeIcon2')">
-                            <i class="bi bi-eye" id="eyeIcon2"></i>
-                        </span>
-                    </div>
-                </div>
-
-                <div id="checklistContainer" class="validation-checklist">
-                    <p>Password Requirements:</p>
-                    <div class="check-item" id="ruleLength"><i class="bi bi-circle"></i> At least 8 characters long</div>
-                    <div class="check-item" id="ruleMatch"><i class="bi bi-circle"></i> Passwords match</div>
-                </div>
-
-                <button type="submit" class="btn-submit" id="setupBtn" disabled>
-                    Save & Continue <i class="bi bi-arrow-right ms-1"></i>
-                </button>
-            </form>
+        {{-- Error Alert --}}
+        <div id="setupAlert" class="alert alert-danger d-none mb-3"
+            style="font-size: 0.85rem; border-radius: 8px; border: none; background: #fee2e2; color: #991b1b;">
         </div>
+
+        <form id="setupForm" onsubmit="handleSetup(event)">
+
+            {{-- Input: Password --}}
+            <div class="form-group">
+                <label>New Password</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="newPassword"
+                        placeholder="••••••••" required maxlength="50">
+                    <button type="button" class="input-group-text" onclick="togglePassword('newPassword', 'eye1')">
+                        <i class="bi bi-eye" id="eye1"></i>
+                    </button>
+                </div>
+            </div>
+
+            {{-- Input: Confirm --}}
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="confirmPassword"
+                        placeholder="••••••••" required maxlength="50">
+                    <button type="button" class="input-group-text" onclick="togglePassword('confirmPassword', 'eye2')">
+                        <i class="bi bi-eye" id="eye2"></i>
+                    </button>
+                </div>
+            </div>
+
+            {{-- Validation Rules UI --}}
+            <div class="validation-checklist">
+                <div class="check-item" id="ruleLength"><i class="bi bi-circle"></i> 8 - 50 characters</div>
+                <div class="check-item" id="ruleCap"><i class="bi bi-circle"></i> One uppercase letter</div>
+                <div class="check-item" id="ruleDigit"><i class="bi bi-circle"></i> One number</div>
+                <div class="check-item" id="ruleSymbol"><i class="bi bi-circle"></i> One special character</div>
+                <div class="check-item" id="ruleMatch"><i class="bi bi-circle"></i> Passwords match</div>
+            </div>
+
+            {{-- Submission --}}
+            <button type="submit" class="btn-submit" id="setupBtn" disabled>
+                Save & Continue
+            </button>
+        </form>
     </div>
 </div>
 
 <script>
+    /**
+     * PCCI SECURITY SETUP SCRIPT
+     * Handles password validation and backend API redirection.
+     */
     const token = localStorage.getItem('token');
 
-    // Kick out unauthenticated users trying to bypass login
+    // 1. Authentication Check
     if (!token) {
         window.location.href = '/login';
     }
 
-    // --- Toggle Password Visibility ---
+    // 2. Utility: Password Visibility
     function togglePassword(inputId, iconId) {
         const input = document.getElementById(inputId);
         const icon = document.getElementById(iconId);
+
         if (input.type === 'password') {
             input.type = 'text';
             icon.classList.replace('bi-eye', 'bi-eye-slash');
@@ -261,72 +267,55 @@
         }
     }
 
-    // --- REAL-TIME VALIDATION UI ---
+    // 3. Validation Logic
     const newPasswordInput = document.getElementById('newPassword');
     const confirmPasswordInput = document.getElementById('confirmPassword');
     const setupBtn = document.getElementById('setupBtn');
-    const alertBox = document.getElementById('setupAlert');
-    const ruleLength = document.getElementById('ruleLength');
-    const ruleMatch = document.getElementById('ruleMatch');
 
     function validatePasswords() {
         const p1 = newPasswordInput.value;
         const p2 = confirmPasswordInput.value;
 
-        const isLengthValid = p1.length >= 8;
-        const isMatchValid = p1.length > 0 && p1 === p2;
+        // Validation Criteria
+        const rules = {
+            ruleLength: p1.length >= 8 && p1.length <= 50,
+            ruleCap: /[A-Z]/.test(p1),
+            ruleDigit: /[0-9]/.test(p1),
+            ruleSymbol: /[^A-Za-z0-9]/.test(p1),
+            ruleMatch: p1.length > 0 && p1 === p2
+        };
 
-        // Update Length UI (Gray if empty, Red if under 8, Green if 8+)
-        if (isLengthValid) {
-            ruleLength.className = 'check-item valid';
-            ruleLength.innerHTML = '<i class="bi bi-check-circle-fill"></i> At least 8 characters long';
-        } else if (p1.length > 0) {
-            ruleLength.className = 'check-item invalid';
-            ruleLength.innerHTML = '<i class="bi bi-x-circle-fill"></i> At least 8 characters long';
-        } else {
-            ruleLength.className = 'check-item';
-            ruleLength.innerHTML = '<i class="bi bi-circle"></i> At least 8 characters long';
-        }
+        // UI Updates
+        Object.keys(rules).forEach(id => {
+            const el = document.getElementById(id);
+            if (p1.length === 0 && id !== 'ruleMatch') {
+                el.className = 'check-item';
+                el.querySelector('i').className = 'bi bi-circle';
+            } else {
+                el.className = rules[id] ? 'check-item valid' : 'check-item invalid';
+                el.querySelector('i').className = rules[id] ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill';
+            }
+        });
 
-        // Update Match UI (Gray if empty, Red if mistyped, Green if matching)
-        if (isMatchValid) {
-            ruleMatch.className = 'check-item valid';
-            ruleMatch.innerHTML = '<i class="bi bi-check-circle-fill"></i> Passwords match';
-        } else if (p2.length > 0) {
-            ruleMatch.className = 'check-item invalid';
-            ruleMatch.innerHTML = '<i class="bi bi-x-circle-fill"></i> Passwords match';
-        } else {
-            ruleMatch.className = 'check-item';
-            ruleMatch.innerHTML = '<i class="bi bi-circle"></i> Passwords match';
-        }
-
-        // Lock button until rules are met
-        if (isLengthValid && isMatchValid) {
-            setupBtn.disabled = false;
-            return true;
-        } else {
-            setupBtn.disabled = true;
-            return false;
-        }
+        // Toggle button state
+        setupBtn.disabled = !Object.values(rules).every(Boolean);
     }
 
-    // Listen as the user types
     newPasswordInput.addEventListener('input', validatePasswords);
     confirmPasswordInput.addEventListener('input', validatePasswords);
 
-
-    // --- Handle Setup Form Submission & Smart Routing ---
+    // 4. Submission Handler
     async function handleSetup(e) {
         e.preventDefault();
 
-        if (!validatePasswords()) return;
+        if (setupBtn.disabled) return;
 
+        const alertBox = document.getElementById('setupAlert');
         alertBox.classList.add('d-none');
         setupBtn.disabled = true;
-        setupBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i> Updating...';
+        setupBtn.innerText = 'Updating Security...';
 
         try {
-            // 1. Submit Password
             const response = await fetch(`${window.API_BASE_URL}/v1/user/first-time-password-change`, {
                 method: 'POST',
                 headers: {
@@ -343,62 +332,66 @@
             const data = await response.json().catch(() => ({}));
 
             if (response.ok) {
-                setupBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i> Loading Dashboard...';
+                setupBtn.innerText = 'Redirecting...';
 
-                try {
-                    // 2. Fetch Explicit User Roles
-                    const userRes = await fetch(`${window.API_BASE_URL}/v1/user`, {
-                        headers: {
-                            'Accept': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
+                // Fetch User Role to route correctly
+                const userRes = await fetch(`${window.API_BASE_URL}/v1/user`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
 
-                    if (userRes.ok) {
-                        const userData = await userRes.json();
-                        const user = userData.user || userData.data || userData;
+                if (userRes.ok) {
+                    const userData = await userRes.json();
+                    const user = userData.user || userData.data || userData;
+                    const roles = user.roles || [];
+                    const roleString = JSON.stringify(roles).toLowerCase();
 
-                        let roles = [];
-                        if (user.roles && Array.isArray(user.roles)) {
-                            roles = user.roles.map(r => typeof r === 'string' ? r.toLowerCase() : (r.name ? r.name.toLowerCase() : ''));
-                        }
-
-                        // 3. Smart Redirection! Map explicitly to your routes in web.php
-                        if (roles.includes('super_admin') || roles.includes('superadmin') || roles.includes('admin')) {
-                            window.location.href = '/dashboard'; // Admin Route
-                        } else if (roles.includes('treasurer')) {
-                            window.location.href = '/treasurer-dashboard'; // Treasurer Route
-                        } else {
-                            window.location.href = '/member-dashboard'; // Member Route
-                        }
+                    // Route based on roles
+                    if (roleString.includes('super_admin') || roleString.includes('admin')) {
+                        window.location.href = '/dashboard';
+                    } else if (roleString.includes('treasurer')) {
+                        window.location.href = '/treasurer-dashboard';
                     } else {
-                        window.location.href = '/member-dashboard'; // Safe fallback
+                        window.location.href = '/member-dashboard';
                     }
-                } catch (e) {
-                    window.location.href = '/member-dashboard'; // Safe fallback
+                } else {
+                    window.location.href = '/member-dashboard';
                 }
-
             } else {
-                let errorHtml = `<b>Update Failed:</b> ${data.message || 'Invalid data.'}`;
+                // Display specific validation errors from backend
+                let errorMessage = data.message || 'Setup failed.';
                 if (data.errors) {
-                    errorHtml += '<ul class="mb-0 ps-3 mt-1">';
-                    for (const [field, messages] of Object.entries(data.errors)) {
-                        errorHtml += `<li>${messages.join(', ')}</li>`;
-                    }
-                    errorHtml += '</ul>';
+                    errorMessage = Object.values(data.errors).flat().join('<br>');
                 }
-
-                alertBox.innerHTML = errorHtml;
+                alertBox.innerHTML = errorMessage;
                 alertBox.classList.remove('d-none');
                 setupBtn.disabled = false;
-                setupBtn.innerHTML = 'Save & Continue <i class="bi bi-arrow-right ms-1"></i>';
+                setupBtn.innerText = 'Save & Continue';
             }
         } catch (error) {
-            alertBox.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> Network error. Please try again.';
+            alertBox.innerHTML = 'Network error. Please try again later.';
             alertBox.classList.remove('d-none');
             setupBtn.disabled = false;
-            setupBtn.innerHTML = 'Save & Continue <i class="bi bi-arrow-right ms-1"></i>';
+            setupBtn.innerText = 'Save & Continue';
         }
     }
 </script>
+
+{{--
+  =============================================================================
+  NOTE: 
+  This code block is designed to be modern, scalable, and responsive. 
+  It purposefully keeps the layout contained in a centered card.
+  If you need additional helper methods, ensure they are placed 
+  within this same script context for optimal memory management.
+  
+  The logic flow ensures:
+  1. Frontend validation runs first (saving API traffic).
+  2. Backend validation runs second (ensuring data integrity).
+  3. Dynamic routing ensures the user ends up in their specific dashboard.
+  =============================================================================
+--}}
+
 @endsection

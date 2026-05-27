@@ -137,17 +137,15 @@
     }
 
     .avatar-preview {
-        width: 100px;
-        height: 100px;
+        width: 150px;
+        height: 150px;
         border-radius: 50%;
-        border: 3px solid #be1e38;
-        object-fit: cover;
-        background: #f5f5f5;
+        overflow: hidden;
+        border: 2px solid #ddd;
         display: flex;
         align-items: center;
         justify-content: center;
-        overflow: hidden;
-        flex-shrink: 0;
+        background: #eee;
     }
 
     .avatar-preview img {
@@ -156,10 +154,10 @@
         object-fit: cover;
     }
 
-    .avatar-preview .initials {
+    .initials {
         font-size: 2rem;
-        font-weight: 700;
-        color: #be1e38;
+        font-weight: bold;
+        color: #888;
     }
 
     .avatar-actions {
@@ -251,7 +249,9 @@
             <span class="initials" id="avatarInitials">A</span>
         </div>
         <div class="avatar-actions">
-            <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
+            {{-- HIDDEN FILE INPUT --}}
+            <input type="file" id="avatarInput" accept="image/*" onchange="handleAccountImageChange(this)" style="display: none;">
+
             <button class="btn-upload" onclick="document.getElementById('avatarInput').click()">
                 <i class="bi bi-camera"></i> Change Photo
             </button>
@@ -328,57 +328,131 @@
     </form>
 </div>
 
+{{-- MODAL FOR CROPPING --}}
+<div class="modal-overlay" id="cropModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center;">
+    <div class="modal-card" style="background: #fff; width: 90%; max-width: 500px; padding: 20px; border-radius: 12px;">
+        <h5 class="fw-bold mb-3">Crop Image</h5>
+        <div style="max-height: 400px;"><img id="cropperImage" src="" style="max-width: 100%;"></div>
+        <div class="d-flex justify-content-end gap-2 mt-3">
+            <button class="btn btn-secondary" onclick="closeCropModal()">Cancel</button>
+            <button class="btn text-white" style="background-color: var(--pcci-red);" onclick="applyCrop()">Apply Crop</button>
+        </div>
+    </div>
+</div>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
 <script>
+    let cropper = null;
+    let accountImageFile = null; // Holds the file to be uploaded
     var token = localStorage.getItem('token');
-    let avatarChanged = false;
 
     if (!token) {
         window.location.href = '/login';
     }
 
-    // === Avatar Functions ===
-    function previewAvatar(input) {
+    // --- AVATAR CROPPING LOGIC ---
+    function handleAccountImageChange(input) {
         if (!input.files || !input.files[0]) return;
+
         const file = input.files[0];
-
-        if (file.size > 2 * 1024 * 1024) {
-            showAlert(document.getElementById('profileAlert'), 'Image must be under 2MB.', 'error');
-            input.value = '';
-            return;
-        }
-
         const reader = new FileReader();
+
         reader.onload = function(e) {
-            const preview = document.getElementById('avatarPreview');
-            preview.innerHTML = `<img src="${e.target.result}" alt="Avatar">`;
-            avatarChanged = true;
+            // 1. Show the Modal
+            const modal = document.getElementById('cropModal');
+            if (modal) modal.style.display = 'flex';
+
+            // 2. Load image into Cropper
+            const img = document.getElementById('cropperImage');
+            img.src = e.target.result;
+
+            if (window.cropper) window.cropper.destroy();
+            window.cropper = new Cropper(img, {
+                aspectRatio: 1,
+                viewMode: 1
+            });
         };
         reader.readAsDataURL(file);
     }
 
-    function removeAvatar() {
-        const preview = document.getElementById('avatarPreview');
-        const name = document.getElementById('profileName').value || 'A';
-        const initials = name.substring(0, 2).toUpperCase();
-        preview.innerHTML = `<span class="initials">${initials}</span>`;
-        document.getElementById('avatarInput').value = '';
-        avatarChanged = true;
-        localStorage.removeItem('adminAvatar');
+    window.cropper = null;
+    window.accountImageFile = null;
 
-        const sidebarAvatar = document.querySelector('.sidebar .avatar');
-        if (sidebarAvatar) sidebarAvatar.src = 'https://i.pravatar.cc/150?u=default';
+    function applyCrop() {
+        if (!window.cropper) {
+            console.error("Cropper instance not found!");
+            return;
+        }
+
+        window.cropper.getCroppedCanvas({
+            width: 500,
+            height: 500
+        }).toBlob((blob) => {
+            // 1. Create the File Object for the backend
+            window.accountImageFile = new File([blob], "profile_crop.jpg", {
+                type: "image/jpeg"
+            });
+
+            // 2. Generate a local preview URL
+            const previewUrl = URL.createObjectURL(window.accountImageFile);
+
+            // 3. Update the Profile Page Preview
+            document.getElementById('avatarPreview').innerHTML = `<img src="${previewUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+
+            // 4. Update the Sidebar/Navbar Preview (if they exist)
+            const sidebarAvatar = document.querySelector('.sidebar .avatar');
+            if (sidebarAvatar) sidebarAvatar.src = previewUrl;
+
+            const navbarAvatar = document.getElementById('navbarAvatar');
+            if (navbarAvatar) navbarAvatar.src = previewUrl;
+
+            // 5. Force Close Modal
+            document.getElementById('cropModal').style.display = 'none';
+
+        }, 'image/jpeg', 0.9);
     }
 
-    function loadAvatarFromStorage() {
-        const savedAvatar = localStorage.getItem('adminAvatar');
-        if (savedAvatar) {
-            document.getElementById('avatarPreview').innerHTML = `<img src="${savedAvatar}" alt="Avatar">`;
-            const sidebarAvatar = document.querySelector('.sidebar .avatar');
-            if (sidebarAvatar) sidebarAvatar.src = savedAvatar;
-        } else {
-            updateInitials();
+    function closeCropModal() {
+        document.getElementById('cropModal').style.display = 'none';
+    }
+
+    async function removeAvatar() {
+        if (!confirm("Are you sure you want to remove your profile photo?")) return;
+
+        try {
+            // Ensure this matches the route in routes/api.php exactly
+            const response = await fetch(`${window.API_BASE_URL}/user/avatar`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                alert('Avatar removed successfully.');
+                // Refresh UI
+                location.reload();
+            } else {
+                console.error("Failed to delete avatar");
+            }
+        } catch (err) {
+            console.error('Error:', err);
         }
     }
+
+    // function loadAvatarFromStorage() {
+    //     const savedAvatar = localStorage.getItem('adminAvatar');
+    //     if (savedAvatar) {
+    //         document.getElementById('avatarPreview').innerHTML = `<img src="${savedAvatar}" alt="Avatar">`;
+    //         const sidebarAvatar = document.querySelector('.sidebar .avatar');
+    //         if (sidebarAvatar) sidebarAvatar.src = savedAvatar;
+    //     } else {
+    //         updateInitials();
+    //     }
+    // }
 
     function updateInitials() {
         const name = document.getElementById('profileName').value || localStorage.getItem('userName') || 'A';
@@ -402,10 +476,9 @@
     }
 
     async function loadProfile() {
-        const storedName = localStorage.getItem('userName') || '';
-        document.getElementById('profileName').value = storedName;
-
-        loadAvatarFromStorage();
+        const preview = document.getElementById('avatarPreview');
+        // Set a "loading" state immediately
+        preview.innerHTML = `<span class="initials">...</span>`;
 
         try {
             const response = await fetch(`${window.API_BASE_URL}/v1/user`, {
@@ -418,97 +491,161 @@
             if (response.ok) {
                 const data = await response.json();
                 const user = data.user || data.data || data;
-                document.getElementById('profileName').value = user.name || storedName;
+
+                // 1. Update text fields
+                document.getElementById('profileName').value = user.name || (user.first_name + ' ' + user.last_name) || '';
                 document.getElementById('profileEmail').value = user.email || '';
-                document.getElementById('profileRole').value = (user.roles || []).join(', ') || 'Admin';
+
+                // 2. Set the image URL 
+                // We use 'photo_url' which you set up in your User.php model
+                const avatarUrl = user.photo_url;
+
+                if (avatarUrl) {
+                    // Success: Set the image and STOP. Do NOT run updateInitials().
+                    preview.innerHTML = `<img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+
+                    const sidebarAvatar = document.querySelector('.sidebar .avatar');
+                    if (sidebarAvatar) sidebarAvatar.src = avatarUrl;
+                } else {
+                    // Only if photo_url is missing, run initials
+                    updateInitials();
+                }
+            } else {
+                updateInitials();
+            }
+        } catch (err) {
+            console.error('Error fetching profile:', err);
+            updateInitials();
+        }
+    }
+
+    async function loadProfile() {
+        const preview = document.getElementById('avatarPreview');
+        // Set a loading state
+        preview.innerHTML = `<span class="initials">...</span>`;
+
+        try {
+            const response = await fetch(`${window.API_BASE_URL}/v1/user`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const user = data.user || data.data || data;
+
+                // 1. POPULATE TEXT FIELDS (Restored from your old code)
+                document.getElementById('profileName').value = user.name || (user.first_name + ' ' + user.last_name) || '';
+                document.getElementById('profileEmail').value = user.email || '';
+                document.getElementById('profileRole').value = (user.roles && user.roles.length > 0) ? user.roles.join(', ') : 'Admin';
+
                 document.getElementById('profileJoined').value = user.created_at ?
                     new Date(user.created_at).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
-                    }) :
-                    'N/A';
+                    }) : 'N/A';
 
-                if (user.avatar || user.photo_url) {
-                    const avatarUrl = user.avatar || user.photo_url;
-                    document.getElementById('avatarPreview').innerHTML = `<img src="${avatarUrl}" alt="Avatar">`;
-                    localStorage.setItem('adminAvatar', avatarUrl);
+                // 2. POPULATE IMAGES (Restored from the new Backblaze logic)
+                const avatarUrl = user.photo_url; // This comes from your UserResource
+
+                if (avatarUrl) {
+                    // Update Main Preview
+                    preview.innerHTML = `<img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+
+                    // Update Sidebar Avatar
+                    const sidebarAvatar = document.querySelector('.sidebar .avatar');
+                    if (sidebarAvatar) sidebarAvatar.src = avatarUrl;
+
+                    // Update Navbar Avatar
+                    const navbarAvatar = document.getElementById('navbarAvatar');
+                    if (navbarAvatar) navbarAvatar.src = avatarUrl;
+                } else {
+                    // Only run initials if no photo_url exists
+                    updateInitials();
                 }
             } else {
-                document.getElementById('profileName').value = storedName;
+                // Error handling fallback
+                document.getElementById('profileName').value = localStorage.getItem('userName') || '';
                 document.getElementById('profileRole').value = 'Admin';
                 document.getElementById('profileJoined').value = 'N/A';
+                updateInitials();
             }
         } catch (err) {
             console.error('Error fetching profile:', err);
-            document.getElementById('profileName').value = storedName;
-            document.getElementById('profileRole').value = 'Admin';
+            updateInitials();
         }
-
-        updateInitials();
     }
 
+    document.addEventListener('DOMContentLoaded', () => {
+        loadProfile();
+    });
+
+    // --- SAVING LOGIC (BACKBLAZE READY) ---
     async function saveProfile() {
         const btn = document.getElementById('btnSaveProfile');
         const alertBox = document.getElementById('profileAlert');
-        const name = document.getElementById('profileName').value.trim();
-        const email = document.getElementById('profileEmail').value.trim();
-        const avatarFile = document.getElementById('avatarInput').files[0];
+        const formData = new FormData();
 
-        if (!name) {
-            showAlert(alertBox, 'Name is required.', 'error');
-            return;
-        }
+        const newName = document.getElementById('profileName').value;
 
-        btn.disabled = true;
-        btn.textContent = 'Saving...';
-        alertBox.style.display = 'none';
+        formData.append('_method', 'PUT');
+        formData.append('name', newName);
+        formData.append('email', document.getElementById('profileEmail').value);
 
-        if (avatarChanged && avatarFile) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                localStorage.setItem('adminAvatar', e.target.result);
-                const sidebarAvatar = document.querySelector('.sidebar .avatar');
-                if (sidebarAvatar) sidebarAvatar.src = e.target.result;
-            };
-            reader.readAsDataURL(avatarFile);
+        // Only append image if one exists from the cropper
+        if (window.accountImageFile) {
+            formData.append('image', window.accountImageFile);
         }
 
         try {
-            const formData = new FormData();
-            formData.append('name', name);
-            formData.append('email', email);
-            formData.append('_method', 'PUT');
-            if (avatarFile) formData.append('avatar', avatarFile);
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
 
             const response = await fetch(`${window.API_BASE_URL}/v1/user/change-info`, {
-                method: 'POST',
+                method: 'POST', // FormData requires POST
                 headers: {
-                    'Accept': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
                 body: formData
             });
 
-            const data = await response.json().catch(() => ({}));
+            const data = await response.json();
 
             if (response.ok) {
-                localStorage.setItem('userName', name);
-                const sidebarName = document.getElementById('sidebarAdminName');
-                if (sidebarName) sidebarName.textContent = name.toUpperCase();
-
-                avatarChanged = false;
                 showAlert(alertBox, 'Profile updated successfully!', 'success');
-            } else {
-                localStorage.setItem('userName', name);
-                const sidebarName = document.getElementById('sidebarAdminName');
-                if (sidebarName) sidebarName.textContent = name.toUpperCase();
 
-                showAlert(alertBox, 'Profile saved locally. API: ' + (data.message || 'Could not sync to server.'), 'success');
+                // 1. Clear the pending file so we don't accidentally re-upload it next time
+                window.accountImageFile = null;
+
+                // 2. Update local storage with the new name
+                localStorage.setItem('userName', newName);
+
+                // 3. Swap the temporary 'blob' URL with the REAL Backblaze URL from the backend!
+                if (data.user) {
+                    const realAvatarUrl = data.user.photo_url || data.user.image_url || data.user.avatar;
+
+                    if (realAvatarUrl) {
+                        // Update Profile Page Preview
+                        document.getElementById('avatarPreview').innerHTML = `<img src="${realAvatarUrl}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+
+                        // Update Sidebar/Navbar
+                        const sidebarAvatar = document.querySelector('.sidebar .avatar');
+                        if (sidebarAvatar) sidebarAvatar.src = realAvatarUrl;
+
+                        const navbarAvatar = document.getElementById('navbarAvatar');
+                        if (navbarAvatar) navbarAvatar.src = realAvatarUrl;
+                    }
+                }
+            } else {
+                console.error("Backend returned error:", data);
+                showAlert(alertBox, 'Error ' + response.status + ': ' + (data.message || 'Check console'), 'error');
             }
         } catch (err) {
-            localStorage.setItem('userName', name);
-            showAlert(alertBox, 'Profile saved locally. Could not reach server.', 'success');
+            console.error("Fetch failed:", err);
+            showAlert(alertBox, 'Connection Error: Check if your API is running and URL is correct.', 'error');
         } finally {
             btn.disabled = false;
             btn.textContent = 'Save Changes';

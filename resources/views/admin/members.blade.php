@@ -97,26 +97,41 @@
         box-shadow: 0 4px 14px rgba(190, 30, 56, 0.35);
     }
 
-    /* --- Table Container (UPDATED FOR HORIZONTAL SCROLLING) --- */
+    /* 1. OUTER WRAPPER (Holds the red border, no scrolling here) */
     .members-table-wrapper {
         border: 2px solid var(--pcci-red);
         border-radius: 12px;
-        overflow-x: auto;
-        /* Allows horizontal scrolling */
-        -webkit-overflow-scrolling: touch;
-        /* Smooth scrolling on iOS */
+        background: #fff;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
     }
 
+    /* 2. TABLE SCROLL AREA (Only the table scrolls) */
+    .members-table-scroll {
+        overflow-x: auto;
+        width: 100%;
+    }
+
+    /* 3. TABLE STYLES */
     .members-table {
         width: 100%;
         min-width: 1100px;
-        /* Forces scrolling on screens smaller than 1100px */
-        border-collapse: collapse;
-        font-size: 0.88rem;
+        border-collapse: separate !important;
+        border-spacing: 0;
         margin-bottom: 0;
     }
 
-    /* --- Table Header --- */
+    /* 4. STICKY ACTIONS COLUMN */
+    .members-table th:last-child,
+    .members-table td:last-child {
+        position: sticky;
+        right: 0;
+        z-index: 10;
+        background-color: #fff !important;
+        border-left: 2px solid #eee;
+    }
+
     .members-table thead th {
         background-color: var(--pcci-red);
         color: #fff;
@@ -129,27 +144,20 @@
     }
 
     .members-table thead th:last-child {
-        border-right: none;
+        z-index: 11;
+        background-color: var(--pcci-red) !important;
     }
 
-    .sort-icon {
-        font-size: 0.7rem;
-        margin-left: 4px;
-        opacity: 0.8;
-        vertical-align: middle;
-    }
-
-    /* --- Table Body --- */
+    /* 5. TABLE BODY & HOVER LOGIC (Action column won't hover) */
     .members-table tbody tr {
         border-bottom: 1px solid #e8e8e8;
-        transition: background-color 0.15s;
     }
 
     .members-table tbody tr:last-child {
         border-bottom: none;
     }
 
-    .members-table tbody tr:hover {
+    .members-table tbody tr:hover td:not(:last-child) {
         background-color: #fff5f6;
     }
 
@@ -165,7 +173,41 @@
         border-right: none;
     }
 
-    /* --- NEW UI CSS ADDITIONS --- */
+    .sort-icon {
+        font-size: 0.7rem;
+        margin-left: 4px;
+        opacity: 0.8;
+        vertical-align: middle;
+    }
+
+    /* 5. TABLE BODY & HOVER LOGIC */
+    .members-table tbody tr {
+        border-bottom: 1px solid #e8e8e8;
+        transition: background-color 0.15s;
+    }
+
+    .members-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    /* Hover effect applies to all columns EXCEPT the last one (Actions) */
+    .members-table tbody tr:hover td:not(:last-child) {
+        background-color: #fff5f6;
+    }
+
+    .members-table tbody td {
+        padding: 14px 12px;
+        color: #333;
+        vertical-align: middle;
+        border-right: 1px solid #f0f0f0;
+        text-align: center;
+    }
+
+    .members-table tbody td:last-child {
+        border-right: none;
+    }
+
+    /* 6. STATUS BADGES & ICONS */
     .status-inactive {
         background-color: #ff9800 !important;
         color: white !important;
@@ -186,25 +228,29 @@
 
     /* --- Pagination Bar --- */
     .members-pagination {
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
         align-items: center;
-        justify-content: space-between;
         padding: 14px 20px;
         border-top: 2px solid var(--pcci-red);
         background: #fff;
-        font-size: 0.85rem;
-        color: #555;
+        width: 100%;
+        box-sizing: border-box;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
     }
 
     .pagination-left {
         display: flex;
         align-items: center;
         gap: 8px;
+        justify-self: start;
     }
 
     .pagination-left label {
         font-weight: 500;
         color: #555;
+        font-size: 0.85rem;
     }
 
     .pagination-left select {
@@ -217,15 +263,24 @@
         cursor: pointer;
     }
 
+    /* Center Wrapper groups Text & Buttons tightly */
+    .pagination-center-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        justify-self: center;
+    }
+
     .pagination-center {
-        font-weight: 500;
+        font-weight: 600;
         color: #555;
+        font-size: 0.9rem;
     }
 
     .pagination-right {
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 6px;
     }
 
     .pagination-btn {
@@ -354,30 +409,34 @@
 
 {{-- ======== TABLE ======== --}}
 <div class="members-table-wrapper">
-    <table class="members-table">
-        <thead>
-            <tr>
-                <th class="text-start">Company Name <i class="bi bi-arrow-down-up sort-icon"></i></th>
-                <th>Member Type</th>
-                <th>Current Status</th>
-                <th>Business Address</th>
-                <th>Email</th>
-                <th>Contact No. <i class="bi bi-arrow-down-up sort-icon"></i></th>
-                <th>Registered Member</th>
-                <th>Registration date <i class="bi bi-arrow-down sort-icon"></i></th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="membersTableBody">
-            <tr>
-                <td colspan="9" style="text-align: center; padding: 30px; color: #888;">
-                    <i class="bi bi-arrow-repeat" style="display:inline-block; animation: spin 1s linear infinite;"></i> Loading members...
-                </td>
-            </tr>
-        </tbody>
-    </table>
 
-    {{-- ======== PAGINATION ======== --}}
+    {{-- 1. SCROLLABLE TABLE AREA --}}
+    <div class="members-table-scroll">
+        <table class="members-table">
+            <thead>
+                <tr>
+                    <th class="text-start">Company Name <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                    <th>Member Type</th>
+                    <th>Current Status</th>
+                    <th>Business Address</th>
+                    <th>Email</th>
+                    <th>Contact No. <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                    <th>Registered Member</th>
+                    <th>Registration date <i class="bi bi-arrow-down sort-icon"></i></th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="membersTableBody">
+                <tr>
+                    <td colspan="9" style="text-align: center; padding: 30px; color: #888;">
+                        <i class="bi bi-arrow-repeat" style="display:inline-block; animation: spin 1s linear infinite;"></i> Loading members...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div> {{-- END SCROLL AREA --}}
+
+    {{-- 2. STATIC PAGINATION BAR (Stays locked to screen) --}}
     <div class="members-pagination">
         <div class="pagination-left">
             <label>Rows per page</label>
@@ -387,15 +446,21 @@
                 <option value="50">50</option>
             </select>
         </div>
-        <div class="pagination-center">
-            Page 1 of 1
+
+        <div class="pagination-center-wrapper">
+            <div class="pagination-center" id="page-info">
+                Page 1 of 1
+            </div>
+            <div class="pagination-right">
+                <button class="pagination-btn" id="firstPageBtn"><i class="bi bi-chevron-double-left"></i></button>
+                <button class="pagination-btn" id="prevPageBtn"><i class="bi bi-chevron-left"></i></button>
+                <button class="pagination-btn" id="nextPageBtn"><i class="bi bi-chevron-right"></i></button>
+                <button class="pagination-btn" id="lastPageBtn"><i class="bi bi-chevron-double-right"></i></button>
+            </div>
         </div>
-        <div class="pagination-right">
-            <button class="pagination-btn disabled" id="firstPageBtn" title="First" type="button"><i class="bi bi-chevron-double-left"></i></button>
-            <button class="pagination-btn disabled" id="prevPageBtn" title="Previous" type="button"><i class="bi bi-chevron-left"></i></button>
-            <button class="pagination-btn disabled" id="nextPageBtn" title="Next" type="button"><i class="bi bi-chevron-right"></i></button>
-            <button class="pagination-btn disabled" id="lastPageBtn" title="Last" type="button"><i class="bi bi-chevron-double-right"></i></button>
-        </div>
+
+        {{-- Invisible column to keep Grid centered --}}
+        <div></div>
     </div>
 </div>
 
@@ -448,16 +513,16 @@
 </div>
 
 {{-- ======== EDIT MEMBER MODAL ======== --}}
-
 <div class="modal-overlay" id="editMemberModal">
-    <div class="modal-card" style="max-width: 550px;">
-        <div class="modal-header">
-            <h4><i class="bi bi-pencil-square text-primary me-2"></i>Edit Member Profile</h4>
-            <button class="btn-close" onclick="closeEditMemberModal()"><i class="bi bi-x-lg"></i></button>
+    <div class="modal-card" style="max-width: 550px; border: 1px solid var(--pcci-red);">
+        {{-- Custom Red Header --}}
+        <div class="modal-header" style="background-color: var(--pcci-red); color: white;">
+            <h4 class="m-0 text-white fw-bold"><i class="bi bi-pencil-square me-2"></i>Edit Member Profile</h4>
+            <button class="btn-close btn-close-white" onclick="closeEditMemberModal()"></button>
         </div>
+
         <div class="modal-body p-4">
             <div id="editMemberError" class="alert alert-danger d-none mt-2 mb-3"></div>
-
             <input type="hidden" id="editMemberId">
 
             <div class="mb-4">
@@ -487,7 +552,11 @@
                 </div>
             </div>
 
-            <button class="btn btn-primary btn-lg w-100 fw-bold py-3 mt-2" id="updateMemberBtn" onclick="submitEditMember()" style="border-radius: 8px;">
+            {{-- Brand-compliant Save Button --}}
+            <button class="btn btn-lg w-100 fw-bold py-3 mt-2 text-white"
+                id="updateMemberBtn"
+                onclick="submitEditMember()"
+                style="background-color: var(--pcci-red); border-radius: 8px;">
                 <i class="bi bi-save me-2"></i> Save Changes
             </button>
         </div>

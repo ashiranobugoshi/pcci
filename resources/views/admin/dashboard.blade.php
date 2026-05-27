@@ -25,7 +25,7 @@
         display: flex;
         flex-wrap: wrap;
         gap: clamp(12px, 2vw, 24px);
-        margin-bottom: clamp(20px, 4vw, 40px);
+        margin-bottom: clamp(20px, 4vw, 24px);
     }
 
     .dash-stat-card {
@@ -141,14 +141,14 @@
 </style>
 
 <div class="container-fluid px-0">
-    {{-- ======== ALDRIN'S HEADER BANNER ======== --}}
+    {{-- ======== HEADER BANNER ======== --}}
     <div class="dashboard-header-banner">
         Dashboard
     </div>
 
     <div class="row g-4">
         <div class="col-xl-8 col-lg-7">
-            {{-- ======== ALDRIN'S STAT CARDS ======== --}}
+            {{-- ======== STAT CARDS ======== --}}
             <div class="dashboard-stats">
                 <a href="{{ route('members') }}" class="dash-stat-card">
                     <div class="dash-stat-card-title">Members</div>
@@ -164,6 +164,16 @@
                         <span class="count" id="applicantCount"><span class="count-loading"></span></span>
                     </div>
                 </a>
+            </div>
+
+            {{-- ======== MEMBERSHIP ANALYTICS CHART ======== --}}
+            <div class="notif-card shadow-sm p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                    <h6 class="fw-bold text-dark mb-0"><i class="fa fa-chart-pie me-2" style="color: var(--pcci-red, #be1e38);"></i>Membership Analytics</h6>
+                </div>
+                <div style="position: relative; height: 280px; display: flex; justify-content: center;">
+                    <canvas id="memberStatusChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -210,6 +220,8 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 {{-- ======== COMBINED JAVASCRIPT ======== --}}
 <script>
     var token = localStorage.getItem('token');
@@ -218,7 +230,7 @@
     var dashboardVisibilityListener = null;
     var baseUrl = window.API_BASE_URL || 'http://127.0.0.1:8000/api';
 
-    // 1. Dashboard Count Engine
+    // 1. Dashboard Count & Analytics Engine
     async function refreshDashboardCounts() {
         await Promise.all([
             fetchCount(`${baseUrl}/v1/members`, token, 'memberCount'),
@@ -228,7 +240,7 @@
 
     async function fetchCount(url, token, elementId) {
         const el = document.getElementById(elementId);
-        if (!el) return; // Guard: Element doesn't exist on current page
+        if (!el) return;
         try {
             const response = await fetch(url, {
                 headers: {
@@ -239,27 +251,73 @@
             });
 
             if (!response.ok) {
+                console.error(`API Error on ${url}:`, response.status);
                 el.textContent = '0';
                 return;
             }
             const data = await response.json();
+            console.log(`Data received for ${elementId}:`, data); // DEBUG: Open F12 Console to see if this logs!
 
             let count = 0;
+            // Ensure we handle paginated data (data.data) or raw arrays
             let items = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []);
 
-            if (elementId === 'applicantCount' && items.length > 0) {
-                items = items.filter(app => ['pending', 'approved', 'rejected', 'declined'].includes(String(app.status).toLowerCase()));
-                count = items.length;
-            } else if (elementId === 'memberCount' && items.length > 0) {
-                // ADDED 'inactive' to the included statuses here
-                items = items.filter(member => ['paid', 'approved', 'active', 'inactive'].includes(String(member.status).toLowerCase()));
-                count = items.length;
+            if (elementId === 'memberCount') {
+                let activeCount = items.filter(m => ['paid', 'approved', 'active'].includes(String(m.status).toLowerCase())).length;
+                let inactiveCount = items.filter(m => ['inactive', 'expired', 'failed'].includes(String(m.status).toLowerCase())).length;
+
+                count = activeCount + inactiveCount;
+                renderMemberAnalyticsChart(activeCount, inactiveCount); // Now guaranteed to have numbers
             } else {
-                count = data.total !== undefined ? data.total : (data.count !== undefined ? data.count : items.length);
+                count = items.length;
             }
             animateCount(el, count);
         } catch (err) {
+            console.error("Fetch Error:", err);
             el.textContent = '—';
+        }
+    }
+
+    // Chart.js Renderer
+    function renderMemberAnalyticsChart(active, inactive) {
+        const canvas = document.getElementById('memberStatusChart');
+        if (!canvas) return;
+
+        // Safely destroy existing chart instance to prevent overlaps
+        if (typeof Chart !== 'undefined') {
+            const existingChart = Chart.getChart('memberStatusChart');
+            if (existingChart) existingChart.destroy();
+
+            new Chart(canvas.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Active Members', 'Inactive Members'],
+                    datasets: [{
+                        data: [active, inactive],
+                        backgroundColor: ['#10b981', '#ef4444'], // Green & Red
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                font: {
+                                    size: 13,
+                                    family: "'Poppins', sans-serif"
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
     }
 

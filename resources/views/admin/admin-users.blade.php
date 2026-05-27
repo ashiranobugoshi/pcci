@@ -395,7 +395,7 @@
 </div>
 
 {{-- Register User Modal --}}
-<div id="registerModal" class="modal-overlay" onclick="if(event.target===this) closeRegisterModal()">
+<div id="registerModal" class="modal-overlay">
     <div class="modal-box">
         <h3><i class="bi bi-person-plus"></i> Register New User</h3>
         <p>Create a new admin or treasurer account.</p>
@@ -429,7 +429,7 @@
 </div>
 
 {{-- Success Modal --}}
-<div id="successModal" class="modal-overlay" onclick="if(event.target===this) closeSuccessModal()">
+<div id="successModal" class="modal-overlay">
     <div class="modal-box">
         <h3><i class="bi bi-check-circle"></i> Account Created!</h3>
         <p>The account for <strong id="successEmail"></strong> has been registered.</p>
@@ -603,7 +603,6 @@
         const role = document.getElementById('regRole').value;
 
         try {
-            // If editing, hit the /v1/users/{id} route. If creating, hit /register.
             const targetUrl = editUserId ? `${window.API_BASE_URL}/v1/users/${editUserId}` : `${window.API_BASE_URL}/register`;
             const methodType = editUserId ? 'PUT' : 'POST';
 
@@ -626,16 +625,16 @@
 
             if (response.ok || response.status === 201) {
                 closeRegisterModal();
+                fetchUsers(); // Refresh table
 
-                // Only show the success password modal if we CREATED a new user!
+                // ONLY show the password modal if we are creating a new user (not editing)
                 if (!editUserId) {
                     showSuccessModal(email, data.generated_password);
                 } else {
                     alert("User updated successfully!");
                 }
 
-                fetchUsers(); // Refresh table
-                showSuccessModal(email, data.generated_password);
+                // REMOVE the extra showSuccessModal(email, data.generated_password) call that was here
             } else {
                 let msg = data.message || 'Registration failed.';
                 if (data.errors) msg += ' ' + Object.values(data.errors).flat().join(' ');
@@ -647,7 +646,7 @@
             errorDiv.style.display = 'block';
         } finally {
             btn.disabled = false;
-            btn.innerText = 'Register Account';
+            btn.innerText = editUserId ? 'Save Changes' : 'Register Account';
         }
     }
 
