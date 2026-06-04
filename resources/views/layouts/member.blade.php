@@ -307,7 +307,7 @@
         object-fit: cover;
         background: #000;
         padding: 3px;
-        border: 1px solid #e5e7eb;
+        border: 0.5px solid #e5e7eb;
         margin-bottom: 10px;
     }
 

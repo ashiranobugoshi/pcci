@@ -397,7 +397,7 @@
 
     <div class="d-flex align-items-center">
         <span class="fw-bold text-muted small me-2 text-uppercase">Status:</span>
-        <select class="form-select border fw-bold text-dark fs-sm" id="memberStatusFilter" style="width: 140px; cursor: pointer;">
+        <select id="memberStatusFilter" class="form-select form-select-sm text-muted fw-bold" style="height: 44px; border-radius: 8px; border-color: #ddd; font-size: 14px; box-shadow: none; cursor:pointer; width: 140px; background-color: #fff;" onchange="filterMembers()">
             <option value="all" selected>All</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
@@ -783,38 +783,29 @@
 
     // --- FETCH MEMBERS CORE LOGIC ---
     async function fetchMembers() {
-        const tbody = document.getElementById('membersTableBody');
-        if (!tbody) return;
-        var token = localStorage.getItem('token');
+        let tbody = document.getElementById('membersTableBody');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 30px;"><i class="bi bi-arrow-repeat spin"></i> Loading members...</td></tr>';
 
         try {
-            const response = await fetch(`${window.API_BASE_URL}/v1/members?noCache=${Date.now()}`, {
-                method: 'GET',
-                cache: 'no-store',
+            const response = await fetch(`${window.API_BASE_URL}/v1/members`, {
                 headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
                 }
             });
+            const result = await response.json();
 
-            if (!response.ok) throw new Error("Failed to fetch members");
+            // Re-fetch the element! If the user clicked a different tab, this becomes null, and we abort.
+            tbody = document.getElementById('membersTableBody');
+            if (!tbody) return;
 
-            const data = await response.json();
-
-            allMembersData = data.data || [];
-
-            if (allMembersData.length > 0 && document.getElementById('membersTableBody').innerHTML.includes('Loading')) {
-                currentPage = 1;
-                currentSearchTerm = '';
-                document.getElementById('memberSearchInput').value = '';
+            if (response.ok) {
+                allMembersData = result.data || [];
+                renderMembers(currentSearchTerm);
             }
-
-            fetchTreasurerApprovedApplicantsForModal();
-            renderMembers(currentSearchTerm);
-
         } catch (error) {
-            console.error("Error loading members:", error);
-            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: red; padding: 20px;">Failed to load members from database.</td></tr>`;
+            tbody = document.getElementById('membersTableBody');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="text-danger text-center">Failed to load members.</td></tr>';
         }
     }
 

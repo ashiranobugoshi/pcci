@@ -5,18 +5,6 @@
 @section('content')
 @include('partials.api-config')
 
-{{--
-  =============================================================================
-  PCCI MODERN PASSWORD SETUP PAGE
-  Description: A secure, modern account onboarding screen.
-  Includes: 
-    - Custom modern SaaS-style CSS
-    - Regex-based password strength validation
-    - Real-time UI feedback
-    - Secure API communication
-  =============================================================================
---}}
-
 <style>
     /* 1. Global Variables & Reset */
     :root {
@@ -378,20 +366,5 @@
         }
     }
 </script>
-
-{{--
-  =============================================================================
-  NOTE: 
-  This code block is designed to be modern, scalable, and responsive. 
-  It purposefully keeps the layout contained in a centered card.
-  If you need additional helper methods, ensure they are placed 
-  within this same script context for optimal memory management.
-  
-  The logic flow ensures:
-  1. Frontend validation runs first (saving API traffic).
-  2. Backend validation runs second (ensuring data integrity).
-  3. Dynamic routing ensures the user ends up in their specific dashboard.
-  =============================================================================
---}}
 
 @endsection

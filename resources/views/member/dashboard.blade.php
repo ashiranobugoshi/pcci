@@ -1480,7 +1480,8 @@
                     <div style="font-size: 14px;" class="mb-4 flex-grow-1">
                         <p class="mb-2"><strong class="text-muted d-inline-block" style="width: 140px;">Member ID:</strong> <span class="text-dark fw-bold" id="dashMembershipID">...</span></p>
                         <p class="mb-2"><strong class="text-muted d-inline-block" style="width: 140px;">Receipt No:</strong> <span class="text-dark fw-bold" id="dashReceiptNo">N/A</span></p>
-                        <p class="mb-0"><strong class="text-muted d-inline-block" style="width: 140px;">Membership Type:</strong> <span class="text-dark fw-bold" id="dashMembershipType">Loading...</span></p>
+                        <p class="mb-2"><strong class="text-muted d-inline-block" style="width: 140px;">Membership Type:</strong> <span class="text-dark fw-bold" id="dashMembershipType">Loading...</span></p>
+                        <p class="mb-0"><strong class="text-muted d-inline-block" style="width: 140px;">Expires:</strong> <span class="text-dark fw-bold" id="dashExpiryDate">Loading...</span></p>
                     </div>
                     <button class="btn btn-danger w-100 rounded-pill py-2 fw-bold mt-auto" onclick="switchTab('membership')">Renew Membership</button>
                 </div>
@@ -1647,9 +1648,9 @@
                     <div class="mb-3" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                         <div style="flex-grow: 1;">
                             <small class="text-muted fw-bold d-block mb-1" style="font-size: 12px;">REGISTERED NAME</small>
-                            <div style="padding: 8px 12px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 14px;" id="ep_companyNameDisplay2">Loading...</div>
+                            <input id="ep_companyName" type="text" class="form-control form-control-sm" style="padding: 8px 12px; font-size: 14px; background-color: #ffffff; color: #333; border: 1px solid #e5e7eb;" placeholder="Enter registered business name">
                         </div>
-                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="editField('companyName')"><i class="fa fa-pen"></i> Edit</button>
+                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="focusEditField('companyName')"><i class="fa fa-pen"></i> Edit</button>
                     </div>
 
                     <div class="mb-3" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
@@ -1662,7 +1663,7 @@
                                 <option value="Services">Services</option>
                             </select>
                         </div>
-                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer; margin-top: 18px;" onclick="editField('businessType')"><i class="fa fa-pen"></i> Edit</button>
+                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer; margin-top: 18px;" onclick="focusEditField('businessType')"><i class="fa fa-pen"></i> Edit</button>
                     </div>
 
                     <div class="mb-3">
@@ -1674,25 +1675,25 @@
                     <div class="mb-3" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                         <div style="flex-grow: 1;">
                             <small class="text-muted fw-bold d-block mb-1" style="font-size: 12px;">REPRESENTATIVE NAME</small>
-                            <div style="padding: 8px 12px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 14px;" id="ep_repNameDisplay">Loading...</div>
+                            <input id="ep_repName" type="text" class="form-control form-control-sm" style="padding: 8px 12px; font-size: 14px; background-color: #ffffff; color: #333; border: 1px solid #e5e7eb;" placeholder="Enter representative name">
                         </div>
-                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="editField('repName')"><i class="fa fa-pen"></i> Edit</button>
+                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="focusEditField('repName')"><i class="fa fa-pen"></i> Edit</button>
                     </div>
 
                     <div class="mb-3" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                         <div style="flex-grow: 1;">
                             <small class="text-muted fw-bold d-block mb-1" style="font-size: 12px;">REPRESENTATIVE POSITION</small>
-                            <div style="padding: 8px 12px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 14px;" id="ep_repPositionDisplay">Loading...</div>
+                            <input id="ep_repPosition" type="text" class="form-control form-control-sm" style="padding: 8px 12px; font-size: 14px; background-color: #ffffff; color: #333; border: 1px solid #e5e7eb;" placeholder="Enter representative position">
                         </div>
-                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="editField('repPosition')"><i class="fa fa-pen"></i> Edit</button>
+                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="focusEditField('repPosition')"><i class="fa fa-pen"></i> Edit</button>
                     </div>
 
                     <div class="mb-3" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                         <div style="flex-grow: 1;">
                             <small class="text-muted fw-bold d-block mb-1" style="font-size: 12px;">CONTACT NUMBER</small>
-                            <div style="padding: 8px 12px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 14px;" id="ep_contactDisplay">Loading...</div>
+                            <input id="ep_contact" type="text" class="form-control form-control-sm" style="padding: 8px 12px; font-size: 14px; background-color: #ffffff; color: #333; border: 1px solid #e5e7eb;" placeholder="Enter contact number">
                         </div>
-                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="editField('contact')"><i class="fa fa-pen"></i> Edit</button>
+                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="focusEditField('contact')"><i class="fa fa-pen"></i> Edit</button>
                     </div>
                 </div>
 
@@ -1702,18 +1703,20 @@
                     <div class="mb-3" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                         <div style="flex-grow: 1;">
                             <small class="text-muted fw-bold d-block mb-1" style="font-size: 12px;">ADDRESS</small>
-                            <div style="padding: 8px 12px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 14px;" id="ep_addressDisplay">Loading...</div>
+                            <textarea id="ep_address" class="form-control form-control-sm" style="padding: 8px 12px; font-size: 14px; resize: vertical; height: 90px; font-family: inherit; background-color: #ffffff; color: #333; border: 1px solid #e5e7eb;" placeholder="Enter business address, city, province, zip"></textarea>
                         </div>
-                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="editField('address')"><i class="fa fa-pen"></i> Edit</button>
+                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="focusEditField('address')"><i class="fa fa-pen"></i> Edit</button>
                     </div>
 
                     <div class="mb-4" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                         <div style="flex-grow: 1;">
                             <small class="text-muted fw-bold d-block mb-1" style="font-size: 12px;">URL</small>
-                            <div style="padding: 8px 12px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 14px; word-break: break-all;" id="ep_urlDisplay">Loading...</div>
+                            <input id="ep_url" type="text" class="form-control form-control-sm" style="padding: 8px 12px; font-size: 14px; background-color: #ffffff; color: #333; border: 1px solid #e5e7eb;" placeholder="Enter website URL">
                         </div>
-                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="editField('url')"><i class="fa fa-pen"></i> Edit</button>
+                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="focusEditField('url')"><i class="fa fa-pen"></i> Edit</button>
                     </div>
+
+                    <div id="ep_changeSummary" class="small text-muted mb-3">No changes yet. Make your edits and click Save Changes.</div>
 
                     <h6 class="fw-bold mb-3 text-dark" style="font-size: 14px;">Business Documentation</h6>
 
@@ -1794,13 +1797,13 @@
     }
 
     function syncBusinessPreviewFromEditor() {
-        const name = (document.getElementById('ep_companyNameDisplay2')?.innerText || '').trim();
+        const name = (document.getElementById('ep_companyName')?.value || '').trim();
         const type = (document.getElementById('ep_businessType')?.value || '').trim();
         const description = (document.getElementById('ep_description')?.value || '').trim();
-        const repName = (document.getElementById('ep_repNameDisplay')?.innerText || '').trim();
-        const repPosition = (document.getElementById('ep_repPositionDisplay')?.innerText || '').trim();
-        const contact = (document.getElementById('ep_contactDisplay')?.innerText || '').trim();
-        const address = (document.getElementById('ep_addressDisplay')?.innerText || '').trim();
+        const repName = (document.getElementById('ep_repName')?.value || '').trim();
+        const repPosition = (document.getElementById('ep_repPosition')?.value || '').trim();
+        const contact = (document.getElementById('ep_contact')?.value || '').trim();
+        const address = (document.getElementById('ep_address')?.value || '').trim();
 
         if (name) {
             setTextIfExists('ep_companyNameDisplay', name);
@@ -1868,46 +1871,7 @@
     }
 
     function editField(field) {
-        const fieldConfig = {
-            companyName: {
-                id: 'ep_companyNameDisplay2'
-            },
-            repName: {
-                id: 'ep_repNameDisplay'
-            },
-            repPosition: {
-                id: 'ep_repPositionDisplay'
-            },
-            contact: {
-                id: 'ep_contactDisplay'
-            },
-            address: {
-                id: 'ep_addressDisplay'
-            },
-            url: {
-                id: 'ep_urlDisplay'
-            }
-        };
-
-        if (field === 'businessType') {
-            const businessTypeSelect = document.getElementById('ep_businessType');
-            if (businessTypeSelect) businessTypeSelect.focus();
-            return;
-        }
-
-        if (field === 'description') {
-            const descriptionInput = document.getElementById('ep_description');
-            if (descriptionInput) descriptionInput.focus();
-            return;
-        }
-
-        const config = fieldConfig[field];
-        if (!config) return;
-
-        const target = document.getElementById(config.id);
-        if (!target) return;
-
-        enableInlineEdit(target);
+        focusEditField(field);
     }
 </script>
 
@@ -1964,21 +1928,30 @@
         if (cachedProfileRaw) {
             try {
                 const cachedProfile = JSON.parse(cachedProfileRaw);
-                const normalizedCached = normalizeProfileShape(cachedProfile);
-                if (normalizedCached) {
-                    window.currentProfileData = normalizedCached;
-                    applyProfileDataToUI(normalizedCached);
+                // Discard stale cache missing membership_end_date (from old code)
+                if (!cachedProfile.membership_end_date) {
+                    localStorage.removeItem('member_profile_cache');
+                } else {
+                    const normalizedCached = normalizeProfileShape(cachedProfile);
+                    if (normalizedCached) {
+                        window.currentProfileData = normalizedCached;
+                        applyProfileDataToUI(normalizedCached);
+                        profileUiRendered = true;
+                    }
                 }
             } catch (error) {
                 console.warn('Failed to parse cached member profile:', error);
+                localStorage.removeItem('member_profile_cache');
             }
         }
 
         startLiveClock();
 
-        // Fetch initial data
-        await fetchRealDashboardData(token);
-        profileUiRendered = true;
+        // Fetch initial data in the background for faster perceived load.
+        // Always apply fresh API data even if cache was already rendered.
+        fetchRealDashboardData(token).finally(() => {
+            profileUiRendered = true;
+        });
 
         const hashTab = (window.location.hash || '').replace('#', '').trim();
         const savedTab = hashTab || localStorage.getItem('activeTab') || 'dashboard';
@@ -2610,7 +2583,6 @@
     function applyProfileDataToUI(profile) {
         if (!profile) return;
 
-        // Safely extract the member object (handles both Applicant and Member API responses)
         const memberObj = profile.member || profile.data?.member || profile;
         const basic = memberObj.applicant?.basic_profile || profile.basic_profile || {};
         const org = memberObj.applicant?.organization_membership || profile.organization_membership || {};
@@ -2621,21 +2593,73 @@
         const repName = `${rep.first_name || ''} ${rep.surname || ''}`.trim();
         const memStatus = memberObj.status || profile.status || 'Pending';
 
-        // SMART FIX 1: Fetch Real Membership Type
+        // SMART FIX: Aggressively hunt down the true ladderized tier (Micro, Small, etc.)
         let memType = 'N/A';
-        if (memberObj.membershipType && memberObj.membershipType.name) memType = memberObj.membershipType.name;
-        else if (memberObj.membership_type && memberObj.membership_type.name) memType = memberObj.membership_type.name;
-        else if (profile.membershipType && profile.membershipType.name) memType = profile.membershipType.name;
-        else if (profile.membership_type && profile.membership_type.name) memType = profile.membership_type.name;
-        else if (typeof profile.membership_type === 'string') memType = profile.membership_type;
-        else if (typeof memberObj.membership_type === 'string') memType = memberObj.membership_type;
+        const typeCandidates = [
+            memberObj.membershipType?.name,
+            memberObj.membership_type?.name,
+            profile.membershipType?.name,
+            profile.membership_type?.name,
+            memberObj.applicant?.membershipType?.name,
+            memberObj.applicant?.membership_type?.name,
+            profile.member?.membershipType?.name,
+            profile.member?.membership_type?.name,
+            profile.data?.member?.membershipType?.name,
+            profile.data?.member?.membership_type?.name,
+            typeof profile.membership_type === 'string' ? profile.membership_type : null,
+            typeof memberObj.membership_type === 'string' ? memberObj.membership_type : null,
+            typeof profile.member?.membership_type === 'string' ? profile.member.membership_type : null
+        ];
 
-        // SMART FIX 2: Calculate Expiry & Membership ID
+        for (let candidate of typeCandidates) {
+            if (candidate && typeof candidate === 'string') {
+                const clean = candidate.trim();
+                const lower = clean.toLowerCase();
+                // Accept valid tiers, reject generic transaction names and N/A
+                if (clean !== '' && lower !== 'n/a' && lower !== 'initial_registration' && lower !== 'renewal') {
+                    memType = clean;
+                    break;
+                }
+            }
+        }
+
+        // Shorten full tier names to their short label (e.g. "Micro Enterprise" → "Micro")
+        function shortenMembershipType(name) {
+            if (!name || name === 'N/A') return name;
+            const lower = name.toLowerCase();
+            if (lower.includes('micro')) return 'Micro';
+            if (lower.includes('small')) return 'Small';
+            if (lower.includes('medium')) return 'Medium';
+            if (lower.includes('large')) return 'Large';
+            if (lower.includes('lifetime')) return 'Lifetime';
+            if (lower.includes('regular')) return 'Regular';
+            return name; // fallback: show as-is
+        }
+        memType = shortenMembershipType(memType);
+
         const baseDate = memberObj.induction_date || memberObj.applicant?.induction_date || memberObj.created_at || profile.date_approved;
         const memberID = memberObj.membership_id || memberObj.member_id || `PCCI-${new Date(baseDate || Date.now()).getFullYear()}-${String(memberObj.id || profile.id || 0).padStart(4, '0')}`;
 
+        // Use membership_end_date from API directly — it already accounts for the
+        // correct duration per membership type (Micro, Small, Regular, Lifetime, etc.)
+        const rawEndDate = memberObj.membership_end_date ||
+            profile.membership_end_date ||
+            profile.member?.membership_end_date ||
+            profile.data?.member?.membership_end_date ||
+            null;
+
         let expiryDate = 'Pending Approval';
-        if (baseDate) {
+        if (rawEndDate) {
+            const d = new Date(rawEndDate);
+            if (!Number.isNaN(d.getTime())) {
+                expiryDate = d.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+        } else if (baseDate) {
+            // Fallback: calculate from induction_date only if end date is missing
             let d = new Date(baseDate);
             if (!Number.isNaN(d.getTime())) {
                 d.setFullYear(d.getFullYear() + 1);
@@ -2652,13 +2676,7 @@
         const membershipReceiptNo = memberObj.membership_receipt_no || profile.membership_receipt_no || profile.receipt_no || 'N/A';
         const ownershipType = org.ownership_type || org.type_of_company || org.organization_type || 'Not specified';
 
-        // SMART FIX 3: Full Address with Province and Zip Code
-        const addressParts = [
-            loc.business_address,
-            loc.city_municipality,
-            loc.province,
-            loc.zip_code
-        ].filter(Boolean);
+        const addressParts = [loc.business_address, loc.city_municipality, loc.province, loc.zip_code].filter(Boolean);
         const addressString = addressParts.join(', ');
 
         // Sidebar
@@ -2685,6 +2703,7 @@
         setTextIfExists('dashMembershipStatus', memStatus.toUpperCase());
         setTextIfExists('dashMembershipID', memberID);
         setTextIfExists('dashMembershipType', memType);
+        setTextIfExists('dashExpiryDate', expiryDate);
         setTextIfExists('dashOfficialReceiptNo', officialReceiptNo);
         setTextIfExists('dashReceiptNo', membershipReceiptNo);
         setTextIfExists('dashOwnershipType', ownershipType);
@@ -2703,20 +2722,41 @@
         setTextIfExists('repEmailText', rep.email || basic.email || 'N/A');
         setTextIfExists('repPhoneText', rep.contact_number || contactNo);
 
-        updateDashboardEventCard(profile);
-        updateMembershipPlanDetails(profile);
-
-        // TRIGGER NEW FETCH: Pull OR Number directly from payments!
-        if (typeof fetchAdditionalMembershipDetails === 'function') {
-            fetchAdditionalMembershipDetails();
-        }
-
-        if (typeof syncSettingsFromProfile === 'function') {
-            syncSettingsFromProfile(profile);
-        }
+        if (typeof updateDashboardEventCard === 'function') updateDashboardEventCard(profile);
+        if (typeof updateMembershipPlanDetails === 'function') updateMembershipPlanDetails(profile);
+        if (typeof fetchAdditionalMembershipDetails === 'function') fetchAdditionalMembershipDetails();
+        if (typeof syncSettingsFromProfile === 'function') syncSettingsFromProfile(profile);
     }
 
-    // NEW FUNCTION: Put this right below applyProfileDataToUI
+    // NEW FUNCTION: Removed the hardcoded transaction type fallbacks
+    function inferMembershipTypeFromTransactions(transactions) {
+        if (!Array.isArray(transactions) || transactions.length === 0) return null;
+        const sorted = [...transactions].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        const candidate = sorted.find(txn => ['initial_registration', 'renewal'].includes((txn.transaction_type || '').toLowerCase())) || sorted[0];
+        if (!candidate) return null;
+
+        const possibleTypes = [
+            candidate.membershipType?.name,
+            candidate.membership_type?.name,
+            candidate.member?.membershipType?.name,
+            candidate.member?.membership_type?.name,
+            candidate.applicant?.membershipType?.name,
+            candidate.applicant?.membership_type?.name,
+            candidate.membership_type
+        ];
+
+        for (let type of possibleTypes) {
+            if (type && typeof type === 'string') {
+                const clean = type.trim();
+                const lower = clean.toLowerCase();
+                if (clean !== '' && lower !== 'n/a' && lower !== 'initial_registration' && lower !== 'renewal') {
+                    return clean;
+                }
+            }
+        }
+        return null;
+    }
+
     async function fetchAdditionalMembershipDetails() {
         try {
             const response = await fetch(`${window.API_BASE_URL}/v1/member/payments`, {
@@ -2725,23 +2765,33 @@
                     'Accept': 'application/json'
                 }
             });
-            if (response.ok) {
-                const data = await response.json();
-                const txns = data.data || data || [];
+            if (!response.ok) return;
 
-                // Get only approved/paid transactions
-                const validTxns = txns.filter(t => (t.status === 'approved' || t.status === 'paid' || t.status === 'completed'));
-                validTxns.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            const data = await response.json();
+            const txns = data.data || data || [];
+            const validTxns = txns.filter(t => ['approved', 'paid', 'completed'].includes((t.status || '').toLowerCase()));
+            validTxns.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-                // Override the receipt values in the UI if an OR number exists!
-                if (validTxns.length > 0 && validTxns[0].or_number) {
-                    const latestOR = validTxns[0].or_number;
+            if (validTxns.length > 0) {
+                const latest = validTxns[0];
+                const latestOR = latest.or_number || latest.receipt_no || latest.official_receipt_no;
+                if (latestOR) {
                     setTextIfExists('dashReceiptNo', latestOR);
                     setTextIfExists('dashOfficialReceiptNo', latestOR);
                 }
+
+                const fallbackType = inferMembershipTypeFromTransactions(validTxns);
+                const currentType = (document.getElementById('dashMembershipType')?.innerText || '').trim();
+
+                // ONLY OVERWRITE IF IT'S N/A. DO NOT OVERWRITE MICRO/SMALL!
+                if (fallbackType && /^(n\/a|loading\.\.\.)$/i.test(currentType)) {
+                    const shortened = shortenMembershipType(fallbackType);
+                    setTextIfExists('dashMembershipType', shortened);
+                    setTextIfExists('bizMembershipTypeText', shortened);
+                }
             }
         } catch (e) {
-            console.error('Error fetching OR from payments:', e);
+            console.error('Error fetching membership payment details:', e);
         }
     }
 
@@ -2829,7 +2879,7 @@
     function normalizeProfileShape(rawProfile) {
         if (!rawProfile || typeof rawProfile !== 'object') return null;
 
-        if (rawProfile.basic_profile || rawProfile.organization_membership || rawProfile.official_representative) {
+        if (rawProfile.basic_profile || rawProfile.organization_membership || rawProfile.official_representative || rawProfile.membershipType || rawProfile.membership_type || rawProfile.user) {
             return rawProfile;
         }
 
@@ -2839,7 +2889,12 @@
                 return {
                     ...applicant,
                     status: rawProfile.status || applicant.status,
-                    id: rawProfile.id || applicant.id
+                    id: rawProfile.id || applicant.id,
+                    membershipType: rawProfile.membershipType || applicant.membershipType,
+                    membership_type: rawProfile.membership_type || applicant.membership_type,
+                    membership_end_date: rawProfile.membership_end_date || applicant.membership_end_date || null,
+                    induction_date: rawProfile.induction_date || applicant.induction_date || null,
+                    user: rawProfile.user || applicant.user || undefined
                 };
             }
         }
@@ -2851,7 +2906,10 @@
         return {
             id: source.id || rawProfile.id || 0,
             status: source.status || rawProfile.status || 'Active',
+            membershipType: source.membershipType || rawProfile.membershipType,
             membership_type: source.membership_type || rawProfile.membership_type || 'N/A',
+            membership_end_date: rawProfile.membership_end_date || source.membership_end_date || null,
+            induction_date: rawProfile.induction_date || source.induction_date || null,
             basic_profile: {
                 registered_business_name: source.registered_business_name || source.company_name || source.business_name || name || 'Your Company',
                 email: source.email || rawProfile.email || 'N/A',
@@ -2876,6 +2934,17 @@
         };
     }
 
+    function fetchWithTimeout(url, options = {}, timeoutMs = 9000) {
+        const controller = new AbortController();
+        const signal = controller.signal;
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+        return fetch(url, {
+            ...options,
+            signal
+        }).finally(() => clearTimeout(timer));
+    }
+
     // ========================================
     // REAL API FETCH LOGIC
     // ==========================================
@@ -2885,14 +2954,21 @@
             'Accept': 'application/json'
         };
 
-        const endpoints = ['/v1/application', '/v1/user'];
+        const endpoints = ['/v1/member/profile', '/v1/application', '/v1/user'];
 
         try {
             for (const endpoint of endpoints) {
-                const response = await fetch(`${window.API_BASE_URL}${endpoint}`, {
-                    headers
-                });
+                let response;
+                try {
+                    response = await fetchWithTimeout(`${window.API_BASE_URL}${endpoint}`, {
+                        headers
+                    }, 9000);
+                } catch (err) {
+                    console.warn(`Fetch timeout or error for ${endpoint}:`, err);
+                    continue;
+                }
 
+                if (!response) continue;
                 if (response.status === 401) {
                     logout();
                     return;
@@ -2905,6 +2981,16 @@
                 const profile = normalizeProfileShape(rawProfile);
 
                 if (profile) {
+                    // Rescue fields that normalization may have dropped
+                    if (!profile.membershipType && rawProfile) {
+                        profile.membershipType = rawProfile.membershipType || rawProfile.member?.membershipType || rawProfile.membership_type;
+                    }
+                    if (!profile.membership_end_date && rawProfile) {
+                        profile.membership_end_date = rawProfile.membership_end_date || rawProfile.member?.membership_end_date || data.membership_end_date || null;
+                    }
+                    if (!profile.induction_date && rawProfile) {
+                        profile.induction_date = rawProfile.induction_date || rawProfile.member?.induction_date || null;
+                    }
                     window.currentProfileData = profile;
                     localStorage.setItem('member_profile_cache', JSON.stringify(profile));
                     applyProfileDataToUI(profile);
@@ -3133,35 +3219,39 @@
         const rep = profile.official_representative || {};
         const loc = basic.business_location || {};
 
+        const companyNameInput = document.getElementById('ep_companyName');
+        const businessTypeSelect = document.getElementById('ep_businessType');
+        const descriptionInput = document.getElementById('ep_description');
+        const repNameInput = document.getElementById('ep_repName');
+        const repPositionInput = document.getElementById('ep_repPosition');
+        const contactInput = document.getElementById('ep_contact');
+        const addressInput = document.getElementById('ep_address');
+        const urlInput = document.getElementById('ep_url');
+
+        if (companyNameInput) companyNameInput.value = basic.registered_business_name || '';
+        if (businessTypeSelect) businessTypeSelect.value = org.type_of_company || '';
+        if (descriptionInput) descriptionInput.value = basic.business_description || '';
+        if (repNameInput) repNameInput.value = `${rep.first_name || ''} ${rep.surname || ''}`.trim();
+        if (repPositionInput) repPositionInput.value = rep.designation || '';
+        if (contactInput) contactInput.value = basic.contact_number || basic.telephone_no || '';
+        if (addressInput) {
+            addressInput.value = [loc.business_address, loc.city_municipality, loc.province, loc.zip_code].filter(Boolean).join(', ');
+        }
+        if (urlInput) urlInput.value = basic.website_url || '';
+
         document.getElementById('ep_companyNameDisplay').innerText = basic.registered_business_name || 'Not provided';
-        document.getElementById('ep_companyNameDisplay2').innerText = basic.registered_business_name || 'Not provided';
         document.getElementById('ep_companyTypeDisplay').innerText = org.type_of_company || 'Not provided';
 
-        document.getElementById('ep_businessType').value = org.type_of_company || '';
-        document.getElementById('ep_description').value = basic.business_description || '';
+        document.getElementById('ep_changeSummary').innerText = 'No changes yet. Make your edits and click Save Changes.';
 
-        const fullName = ((rep.first_name || '') + ' ' + (rep.surname || '')).trim();
-        document.getElementById('ep_repNameDisplay').innerText = fullName || 'Not provided';
-        document.getElementById('ep_repPositionDisplay').innerText = rep.designation || 'Not provided';
-        document.getElementById('ep_contactDisplay').innerText = basic.contact_number || basic.telephone_no || 'Not provided';
+        const inputFields = [companyNameInput, businessTypeSelect, descriptionInput, repNameInput, repPositionInput, contactInput, addressInput, urlInput];
+        inputFields.forEach(field => {
+            if (!field || field.dataset.changeListener) return;
+            field.addEventListener('input', updateProfileChangeSummary);
+            field.dataset.changeListener = '1';
+        });
 
-        // Set Full Address in Editor
-        const addressParts = [loc.business_address, loc.city_municipality, loc.province, loc.zip_code].filter(Boolean);
-        document.getElementById('ep_addressDisplay').innerText = addressParts.join(', ') || 'Not provided';
-
-        document.getElementById('ep_urlDisplay').innerText = basic.website_url || 'Not provided';
-
-        const businessTypeEl = document.getElementById('ep_businessType');
-        const descriptionEl = document.getElementById('ep_description');
-        if (businessTypeEl && !businessTypeEl.dataset.syncBound) {
-            businessTypeEl.addEventListener('change', syncBusinessPreviewFromEditor);
-            businessTypeEl.dataset.syncBound = '1';
-        }
-        if (descriptionEl && !descriptionEl.dataset.syncBound) {
-            descriptionEl.addEventListener('input', syncBusinessPreviewFromEditor);
-            descriptionEl.dataset.syncBound = '1';
-        }
-        syncBusinessPreviewFromEditor();
+        updateProfileChangeSummary();
 
         document.getElementById('profileAlert').style.display = 'none';
         document.getElementById('editProfileModal').style.display = 'flex';
@@ -3169,6 +3259,77 @@
 
     function closeEditProfileModal() {
         document.getElementById('editProfileModal').style.display = 'none';
+    }
+
+    function focusEditField(field) {
+        const fieldMap = {
+            companyName: 'ep_companyName',
+            businessType: 'ep_businessType',
+            description: 'ep_description',
+            repName: 'ep_repName',
+            repPosition: 'ep_repPosition',
+            contact: 'ep_contact',
+            address: 'ep_address',
+            url: 'ep_url'
+        };
+        const target = document.getElementById(fieldMap[field]);
+        if (!target) return;
+        target.focus();
+        if (typeof target.scrollIntoView === 'function') {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    }
+
+    function updateProfileChangeSummary() {
+        const profile = window.currentProfileData || {};
+        const basic = profile.basic_profile || {};
+        const org = profile.organization_membership || {};
+        const rep = profile.official_representative || {};
+        const loc = basic.business_location || {};
+
+        const original = {
+            companyName: basic.registered_business_name || '',
+            businessType: org.type_of_company || '',
+            description: basic.business_description || '',
+            repName: `${rep.first_name || ''} ${rep.surname || ''}`.trim(),
+            repPosition: rep.designation || '',
+            contact: basic.contact_number || basic.telephone_no || '',
+            address: [loc.business_address, loc.city_municipality, loc.province, loc.zip_code].filter(Boolean).join(', '),
+            url: basic.website_url || ''
+        };
+
+        const current = {
+            companyName: (document.getElementById('ep_companyName')?.value || '').trim(),
+            businessType: (document.getElementById('ep_businessType')?.value || '').trim(),
+            description: (document.getElementById('ep_description')?.value || '').trim(),
+            repName: (document.getElementById('ep_repName')?.value || '').trim(),
+            repPosition: (document.getElementById('ep_repPosition')?.value || '').trim(),
+            contact: (document.getElementById('ep_contact')?.value || '').trim(),
+            address: (document.getElementById('ep_address')?.value || '').trim(),
+            url: (document.getElementById('ep_url')?.value || '').trim()
+        };
+
+        const labels = {
+            companyName: 'Company name',
+            businessType: 'Business type',
+            description: 'Description',
+            repName: 'Representative name',
+            repPosition: 'Representative position',
+            contact: 'Contact number',
+            address: 'Address',
+            url: 'Website URL'
+        };
+
+        const changed = Object.keys(current).filter(key => current[key] !== original[key]);
+        const summaryEl = document.getElementById('ep_changeSummary');
+        if (!summaryEl) return;
+
+        summaryEl.innerText = changed.length === 0 ?
+            'No changes yet. Make your edits and click Save Changes.' :
+            `Changed fields: ${changed.map(key => labels[key]).join(', ')}`;
     }
 
     // ==========================================
@@ -3195,14 +3356,14 @@
         payload.organization_membership = payload.organization_membership || {};
         payload.official_representative = payload.official_representative || {};
 
-        const companyName = (document.getElementById('ep_companyNameDisplay2')?.innerText || '').trim();
+        const companyName = (document.getElementById('ep_companyName')?.value || '').trim();
         const businessType = (document.getElementById('ep_businessType')?.value || '').trim();
         const businessDescription = (document.getElementById('ep_description')?.value || '').trim();
-        const contactNumber = (document.getElementById('ep_contactDisplay')?.innerText || '').trim();
-        const addressDisplay = (document.getElementById('ep_addressDisplay')?.innerText || '').trim();
-        const repNameDisplay = (document.getElementById('ep_repNameDisplay')?.innerText || '').trim();
-        const repDesignation = (document.getElementById('ep_repPositionDisplay')?.innerText || '').trim();
-        const websiteUrl = (document.getElementById('ep_urlDisplay')?.innerText || '').trim();
+        const contactNumber = (document.getElementById('ep_contact')?.value || '').trim();
+        const addressDisplay = (document.getElementById('ep_address')?.value || '').trim();
+        const repNameDisplay = (document.getElementById('ep_repName')?.value || '').trim();
+        const repDesignation = (document.getElementById('ep_repPosition')?.value || '').trim();
+        const websiteUrl = (document.getElementById('ep_url')?.value || '').trim();
 
         if (companyName) payload.basic_profile.registered_business_name = companyName;
         if (businessDescription !== '') payload.basic_profile.business_description = businessDescription;
@@ -3244,6 +3405,7 @@
 
             if (response.ok || response.status === 200 || response.status === 201) {
                 window.currentProfileData = payload;
+                localStorage.setItem('member_profile_cache', JSON.stringify(payload));
                 applyProfileDataToUI(payload);
                 closeEditProfileModal();
                 alert('Profile updated successfully!');

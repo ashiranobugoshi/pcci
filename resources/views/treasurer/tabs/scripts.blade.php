@@ -1531,247 +1531,6 @@
         document.getElementById('settings-main').style.display = 'block';
     }
 
-    function triggerAccountImagePicker() {
-        const imageInput = document.getElementById('settingsImageInput');
-        if (imageInput) imageInput.click();
-    }
-
-    function resolveUserFromResponse(payload) {
-        return payload?.data?.user || payload?.data || payload?.user || payload || {};
-    }
-
-    function normalizeImageUrl(value) {
-        const raw = String(value || '').trim();
-        if (!raw) return '';
-        if (/^https?:\/\//i.test(raw)) return raw;
-        return `${apiOrigin}/${raw.replace(/^\/+/, '')}`;
-    }
-
-    function applyAccountAvatar(imageValue) {
-        const imageUrl = normalizeImageUrl(imageValue);
-        if (!imageUrl) return;
-        ['topbarAvatar', 'sidebarAvatar', 'settingsAccountAvatar'].forEach((id) => {
-            const el = document.getElementById(id);
-            if (el) el.src = imageUrl;
-        });
-        localStorage.setItem('userImage', imageUrl);
-    }
-
-    function extractUserImage(user) {
-        return user?.image_url || user?.image || user?.avatar || user?.profile_image || user?.profile_photo || user?.photo || '';
-    }
-
-    function handleAccountImageChange(event) {
-        const file = event?.target?.files?.[0] || null;
-        accountImageFile = file;
-        if (file) {
-            const previewUrl = URL.createObjectURL(file);
-            ['topbarAvatar', 'sidebarAvatar', 'settingsAccountAvatar'].forEach((id) => {
-                const el = document.getElementById(id);
-                if (el) el.src = previewUrl;
-            });
-        }
-    }
-
-    function toggleAccountField(fieldId) {
-        const input = document.getElementById(fieldId);
-        if (!input) return;
-        const editButton = input.parentElement ? input.parentElement.querySelector('.new-acc-edit') : null;
-        const isReadOnly = input.hasAttribute('readonly');
-
-        if (isReadOnly) {
-            input.removeAttribute('readonly');
-            input.focus();
-            input.select();
-            if (editButton) editButton.innerHTML = '<i class="fa fa-check"></i> Done';
-        } else {
-            input.setAttribute('readonly', 'readonly');
-            if (editButton) editButton.innerHTML = '<i class="fa fa-edit"></i> Edit';
-        }
-    }
-    async function saveAccountSettings() {
-        const firstNameInput = document.getElementById('settingsFirstName');
-        const lastNameInput = document.getElementById('settingsLastName');
-        const emailInput = document.getElementById('settingsEmailInput');
-        const contactInput = document.getElementById('settingsContactInput');
-
-        const firstName = (firstNameInput?.value || '').trim();
-        const lastName = (lastNameInput?.value || '').trim();
-        const email = (emailInput?.value || '').trim();
-        const contact = (contactInput?.value || '').trim();
-
-        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            alert('Please enter a valid email address.');
-            return;
-        }
-        if (!email) {
-            alert('Email is required.');
-            return;
-        }
-
-        const endpointBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
-        const endpoint = `${endpointBase}/v1/user/change-info`;
-        const payload = new FormData();
-        if (accountImageFile) payload.append('image', accountImageFile);
-        payload.append('email', email);
-        payload.append('_method', 'PUT');
-        payload.append('contact', contact);
-        payload.append('first_name', firstName);
-        payload.append('last_name', lastName);
-
-        const saveButton = document.querySelector('#settings-account .new-acc-action-dark');
-        if (saveButton) {
-            saveButton.disabled = true;
-            saveButton.dataset.originalText = saveButton.innerText;
-            saveButton.innerText = 'Saving...';
-        }
-
-        try {
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    ...(token ? {
-                        'Authorization': `Bearer ${token}`
-                    } : {})
-                },
-                body: payload
-            });
-
-            const {
-                data: result,
-                raw
-            } = await readApiResponse(response);
-            if (!response.ok) throw new Error(result.message || raw || 'Failed to save account settings.');
-
-            const userPayload = resolveUserFromResponse(result);
-            const responseImage = extractUserImage(userPayload);
-            if (responseImage) applyAccountAvatar(responseImage);
-
-            const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
-            if (fullName) {
-                localStorage.setItem('userName', fullName);
-                const sidebarName = document.getElementById('sidebarName');
-                if (sidebarName) sidebarName.innerText = fullName;
-            }
-
-            localStorage.setItem('userEmail', email);
-            const sidebarEmail = document.getElementById('sidebarEmail');
-            if (sidebarEmail) sidebarEmail.innerText = email;
-
-            localStorage.setItem('userContact', contact);
-
-            ['settingsFirstName', 'settingsLastName', 'settingsEmailInput', 'settingsContactInput'].forEach((id) => {
-                const input = document.getElementById(id);
-                if (!input) return;
-                input.setAttribute('readonly', 'readonly');
-                const editButton = input.parentElement ? input.parentElement.querySelector('.new-acc-edit') : null;
-                if (editButton) editButton.innerHTML = '<i class="fa fa-edit"></i> Edit';
-            });
-
-            accountImageFile = null;
-            const imageInput = document.getElementById('settingsImageInput');
-            if (imageInput) imageInput.value = '';
-
-            alert(result.message || 'Account settings saved.');
-        } catch (error) {
-            console.error('Error updating account settings:', error);
-            alert(error.message || 'Failed to save account settings.');
-        } finally {
-            if (saveButton) {
-                saveButton.disabled = false;
-                saveButton.innerText = saveButton.dataset.originalText || 'Save Changes';
-            }
-        }
-    }
-
-    function applyStoredAccountSettings() {
-        const storedName = localStorage.getItem('userName') || 'Treasurer';
-        const sidebarName = document.getElementById('sidebarName');
-        if (sidebarName) sidebarName.innerText = storedName;
-
-        const nameParts = storedName.split(' ');
-        const firstNameInput = document.getElementById('settingsFirstName');
-        const lastNameInput = document.getElementById('settingsLastName');
-        if (firstNameInput) firstNameInput.value = nameParts[0] || storedName;
-        if (lastNameInput) lastNameInput.value = nameParts.slice(1).join(' ');
-
-        const storedEmail = localStorage.getItem('userEmail') || '';
-        const sidebarEmail = document.getElementById('sidebarEmail');
-        if (sidebarEmail) sidebarEmail.innerText = storedEmail || 'No email';
-        const settingsEmailInput = document.getElementById('settingsEmailInput');
-        if (settingsEmailInput) settingsEmailInput.value = storedEmail;
-
-        const storedContact = localStorage.getItem('userContact') || '';
-        const settingsContactInput = document.getElementById('settingsContactInput');
-        if (settingsContactInput) settingsContactInput.value = storedContact;
-
-        const storedImage = localStorage.getItem('userImage') || '';
-        if (storedImage) applyAccountAvatar(storedImage);
-    }
-
-    async function loadAccountSettingsFromApi() {
-        if (!token) return false;
-        try {
-            const endpointBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
-            const response = await fetch(`${endpointBase}/v1/user`, {
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            if (!response.ok) return false;
-
-            const {
-                data: result
-            } = await readApiResponse(response);
-            const user = result?.data || result?.user || result || {};
-
-            const localName = (localStorage.getItem('userName') || '').trim();
-            const localEmail = (localStorage.getItem('userEmail') || '').trim();
-            const localContact = (localStorage.getItem('userContact') || '').trim();
-
-            const firstName = (user.first_name || '').trim();
-            const lastName = (user.last_name || '').trim();
-            const fallbackName = (user.name || '').trim();
-            const apiFullName = [firstName, lastName].filter(Boolean).join(' ').trim() || fallbackName;
-            const fullName = localName || apiFullName;
-            const email = localEmail || String(user.email || '').trim();
-            const contact = localContact || String(user.contact || user.contact_no || user.phone || '').trim();
-            const imageValue = extractUserImage(user) || localStorage.getItem('userImage') || '';
-
-            if (fullName) {
-                if (!localName && apiFullName) localStorage.setItem('userName', fullName);
-                const sidebarName = document.getElementById('sidebarName');
-                if (sidebarName) sidebarName.innerText = fullName;
-                const nameParts = fullName.split(' ');
-                const firstNameInput = document.getElementById('settingsFirstName');
-                const lastNameInput = document.getElementById('settingsLastName');
-                if (firstNameInput) firstNameInput.value = nameParts[0] || '';
-                if (lastNameInput) lastNameInput.value = nameParts.slice(1).join(' ');
-            }
-
-            if (email) {
-                if (!localEmail && String(user.email || '').trim()) localStorage.setItem('userEmail', email);
-                const sidebarEmail = document.getElementById('sidebarEmail');
-                if (sidebarEmail) sidebarEmail.innerText = email;
-                const settingsEmailInput = document.getElementById('settingsEmailInput');
-                if (settingsEmailInput) settingsEmailInput.value = email;
-            }
-
-            if (contact) {
-                if (!localContact && String(user.contact || user.contact_no || user.phone || '').trim()) localStorage.setItem('userContact', contact);
-                const settingsContactInput = document.getElementById('settingsContactInput');
-                if (settingsContactInput) settingsContactInput.value = contact;
-            }
-
-            if (imageValue) applyAccountAvatar(imageValue);
-            return Boolean(fullName || email || contact);
-        } catch (_) {
-            return false;
-        }
-    }
-
     const notifApiBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
     console.log("Fetching from:", `${notifApiBase}/v1/notifications`);
 
@@ -1943,39 +1702,48 @@
     // IMAGE VIEWER (SPINNER FIX)
     // ==========================================
     function openSimpleProof(encodedUrl) {
-        const url = decodeURIComponent(encodedUrl);
+        // Decode the URL
+        const url = decodeURIComponent(encodedUrl || '');
+
         if (!url || url === '#' || url === 'null' || url === 'undefined' || url.trim() === '') {
-            alert("No receipt image was found for this transaction.");
+            alert("No receipt image was found.");
             return;
         }
 
         const img = document.getElementById('simpleModalImage');
         const spinner = document.getElementById('simpleModalSpinner');
 
-        // Show spinner, hide image initially
         if (spinner) spinner.style.display = 'flex';
         img.style.display = 'none';
 
+        // THE FIX:
+        // If the URL is already a full link (from S3/Backblaze), use it directly.
+        // Only add '/storage/' if it's a relative path (local).
         let finalUrl = url;
         if (!url.startsWith('http')) {
-            const base = (window.API_BASE_URL || '').replace('/api', '');
-            finalUrl = `${base}/${url.replace(/^\/+/, '')}`;
+            const base = (window.API_BASE_URL || '').replace(/\/api$/, '');
+            const cleanPath = url.startsWith('/') ? url.substring(1) : url;
+
+            // Only prepend 'storage/' if it isn't an S3 path
+            finalUrl = cleanPath.startsWith('proofs/') || cleanPath.startsWith('uploads/') ?
+                `${base}/storage/${cleanPath}` :
+                `${base}/storage/${cleanPath}`;
         }
 
-        // THE FIX: When the image finishes loading, hide the spinner and show the image!
         img.onload = function() {
             if (spinner) spinner.style.display = 'none';
             img.style.display = 'block';
         };
 
-        // Failsafe: If the S3 link expired, show an error
         img.onerror = function() {
             if (spinner) spinner.style.display = 'none';
-            alert("Failed to load image. The secure link may have expired or is broken.");
+            // If local storage fails, try the original URL just in case
+            this.src = url;
         };
 
         img.src = finalUrl;
-        document.getElementById('simpleProofModal').style.display = 'flex';
+        const modal = document.getElementById('simpleProofModal');
+        if (modal) modal.style.display = 'flex';
     }
 
     function onSimpleImageLoad() {
@@ -3106,6 +2874,251 @@
             alert("A network error occurred while trying to approve the payment.");
             btn.disabled = false;
             btn.innerHTML = 'Approve';
+        }
+    }
+
+    // ========================================
+    // TREASURER ACCOUNT & DATA LOGIC (SMART CACHE)
+    // ========================================
+
+    let trsCropper = null;
+    let trsAccountImageFile = null;
+    let trsSessionAvatarUrl = null;
+
+    // Run immediately if the page is already loaded!
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => fetchTreasurerProfile(false));
+    } else {
+        fetchTreasurerProfile(false);
+    }
+
+    async function fetchTreasurerProfile(forceRefresh = false) {
+        // 1. INSTANT LOAD: Check the browser cache first
+        const cachedProfile = localStorage.getItem('pcci_treasurer_profile');
+
+        if (!forceRefresh && cachedProfile) {
+            populateSettingsAccountForm(JSON.parse(cachedProfile));
+            return; // EXIT EARLY: Zero database load time!
+        }
+
+        // 2. HARD LOAD: Hit the database ONLY if forced (after saving) or cache is empty
+        try {
+            const apiBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
+            const response = await fetch(`${apiBase}/v1/user`, {
+                method: 'GET',
+                cache: 'no-store',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const responsePayload = await response.json();
+
+                // 3. SAVE CACHE: Store the fresh database data in the browser
+                localStorage.setItem('pcci_treasurer_profile', JSON.stringify(responsePayload));
+
+                populateSettingsAccountForm(responsePayload);
+            }
+        } catch (error) {
+            console.error("Failed to load user profile:", error);
+        }
+    }
+
+    function populateSettingsAccountForm(responsePayload) {
+        if (!responsePayload) return;
+        const user = responsePayload.data || responsePayload;
+
+        const firstEl = document.getElementById('settingsFirstName');
+        const lastEl = document.getElementById('settingsLastName');
+        const emailEl = document.getElementById('settingsEmailInput');
+        const phoneEl = document.getElementById('settingsContactInput');
+
+        if (firstEl) firstEl.value = user.first_name || '';
+        if (lastEl) lastEl.value = user.last_name || '';
+        if (emailEl) emailEl.value = user.email || '';
+
+        // Strictly mapped to the User table's contact_number column
+        if (phoneEl) {
+            phoneEl.value = user.contact_number || '';
+        }
+
+        const defaultAvatar = "{{ asset('images/PCCI-Logo.svg') }}";
+        let finalUrl = defaultAvatar;
+
+        if (window.trsSessionAvatarUrl) {
+            finalUrl = window.trsSessionAvatarUrl;
+        } else {
+            const avatarUrl = user.photo_url || user.profile_photo_url || user.profile_photo_path || null;
+            if (avatarUrl) {
+                let storageBase = (window.API_BASE_URL || '/api').replace(/\/$/, '').replace('/api', '');
+                finalUrl = avatarUrl.startsWith('http') ? avatarUrl : `${storageBase}/storage/${avatarUrl}`;
+            }
+        }
+
+        document.querySelectorAll('img[alt="Profile"], #settingsAccountAvatar').forEach(img => {
+            img.src = finalUrl;
+            img.onerror = function() {
+                this.onerror = null;
+                this.src = defaultAvatar;
+            };
+        });
+    }
+
+    async function saveAccountSettings() {
+        const firstName = document.getElementById('settingsFirstName')?.value?.trim() || '';
+        const lastName = document.getElementById('settingsLastName')?.value?.trim() || '';
+        const email = document.getElementById('settingsEmailInput')?.value?.trim() || '';
+        const phone = document.getElementById('settingsContactInput')?.value?.trim() || '';
+        const btn = document.getElementById('saveAccountBtn');
+
+        const formData = new FormData();
+        formData.append('_method', 'PUT');
+
+        if (firstName) formData.append('first_name', firstName);
+        if (lastName) formData.append('last_name', lastName);
+        if (email) formData.append('email', email);
+
+        // Exact match to what works on the Member dashboard
+        if (phone) formData.append('contact_number', phone);
+
+        if (window.trsAccountImageFile) {
+            formData.append('image', window.trsAccountImageFile);
+        }
+
+        try {
+            if (btn) {
+                btn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i> Saving...';
+                btn.disabled = true;
+            }
+
+            const apiBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
+            const response = await fetch(`${apiBase}/v1/user/change-info`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                alert('Account updated successfully!');
+                window.trsAccountImageFile = null;
+
+                const fullName = `${firstName} ${lastName}`.trim();
+                const sidebarName = document.getElementById('sidebarName');
+                const welcomeName = document.getElementById('dashWelcomeName');
+                if (sidebarName) sidebarName.innerText = fullName;
+                if (welcomeName) welcomeName.innerText = firstName;
+
+                await fetchTreasurerProfile(true);
+            } else {
+                const data = await response.json();
+                alert('Failed to update account: ' + (data.message || 'Validation error'));
+            }
+        } catch (error) {
+            alert('Network error while saving account.');
+        } finally {
+            if (btn) {
+                btn.innerText = 'Save Changes';
+                btn.disabled = false;
+            }
+        }
+    }
+
+    function triggerAccountImagePicker() {
+        const input = document.getElementById('settingsImageInput');
+        if (input) input.click();
+    }
+
+    function handleAccountImageChange(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size exceeds 5MB.');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const cropModal = document.getElementById('accountCropModal');
+            if (cropModal) cropModal.style.display = 'flex';
+
+            const img = document.getElementById('accountCropperImage');
+            if (img) img.src = e.target.result;
+
+            if (window.trsCropper) window.trsCropper.destroy();
+            if (img) {
+                window.trsCropper = new Cropper(img, {
+                    aspectRatio: 1,
+                    viewMode: 1
+                });
+            }
+        };
+        reader.readAsDataURL(file);
+        event.target.value = '';
+    }
+
+    function closeAccountCropModal() {
+        const cropModal = document.getElementById('accountCropModal');
+        if (cropModal) cropModal.style.display = 'none';
+
+        if (window.trsCropper) {
+            window.trsCropper.destroy();
+            window.trsCropper = null;
+        }
+    }
+
+    function applyAccountCrop() {
+        if (!window.trsCropper) return;
+
+        window.trsCropper.getCroppedCanvas({
+            width: 500,
+            height: 500
+        }).toBlob((blob) => {
+            window.trsAccountImageFile = new File([blob], "admin_profile.jpg", {
+                type: "image/jpeg"
+            });
+            const previewUrl = URL.createObjectURL(window.trsAccountImageFile);
+
+            window.trsSessionAvatarUrl = previewUrl;
+
+            document.querySelectorAll('img[alt="Profile"], #settingsAccountAvatar').forEach(img => {
+                img.src = previewUrl;
+            });
+
+            closeAccountCropModal();
+        }, 'image/jpeg', 0.9);
+    }
+
+    async function removeAccountAvatar() {
+        if (!confirm("Are you sure you want to remove your profile photo?")) return;
+
+        try {
+            const apiBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
+            const response = await fetch(`${apiBase}/v1/user/avatar`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                alert('Avatar removed successfully.');
+                window.trsAccountImageFile = null;
+                window.trsSessionAvatarUrl = null;
+
+                // CRITICAL CACHE FLUSH: Forcing refresh to erase image from memory
+                await fetchTreasurerProfile(true);
+            } else {
+                alert('Failed to delete avatar from the server.');
+            }
+        } catch (err) {
+            console.error('Error:', err);
         }
     }
 </script>

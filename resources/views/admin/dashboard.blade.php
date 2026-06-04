@@ -232,10 +232,54 @@
 
     // 1. Dashboard Count & Analytics Engine
     async function refreshDashboardCounts() {
-        await Promise.all([
-            fetchCount(`${baseUrl}/v1/members`, token, 'memberCount'),
-            fetchCount(`${baseUrl}/v1/applicants`, token, 'applicantCount')
-        ]);
+        try {
+            const apiBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
+            const token = localStorage.getItem('token');
+
+            // Fetch arrays directly from your existing endpoints
+            const [memRes, appRes] = await Promise.all([
+                fetch(`${apiBase}/v1/members`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                }),
+                fetch(`${apiBase}/v1/applicants`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                })
+            ]);
+
+            if (memRes.ok) {
+                const memData = await memRes.json();
+                const members = memData.data || memData || [];
+
+                // Only count ACTIVE members
+                const activeMembers = members.filter(m => String(m.status).toLowerCase() === 'active');
+
+                const activeCountEl = document.getElementById('dash-active-members');
+                // Support both your element IDs just in case
+                if (activeCountEl) activeCountEl.innerText = activeMembers.length;
+                else if (document.getElementById('memberCount')) document.getElementById('memberCount').innerText = activeMembers.length;
+            }
+
+            if (appRes.ok) {
+                const appData = await appRes.json();
+                const applicants = appData.data || appData || [];
+
+                // Only count PENDING applicants (fixes the issue of counting 65 members)
+                const pendingApplicants = applicants.filter(a => String(a.status).toLowerCase() === 'pending');
+
+                const applicantCountEl = document.getElementById('dash-new-applicants');
+                // Support both your element IDs just in case
+                if (applicantCountEl) applicantCountEl.innerText = pendingApplicants.length;
+                else if (document.getElementById('applicantCount')) document.getElementById('applicantCount').innerText = pendingApplicants.length;
+            }
+        } catch (e) {
+            console.error("Dashboard count fetch error:", e);
+        }
     }
 
     async function fetchCount(url, token, elementId) {

@@ -6,7 +6,7 @@
     :root {
         --primary-red: #be1e38;
         --dark-bg: #222431;
-        --card-bg: #2b2d3c; 
+        --card-bg: #2b2d3c;
         --input-bg: #323545;
         --text-grey: #a0aec0;
         --text-white: #ffffff;
@@ -20,8 +20,8 @@
         align-items: center;
         justify-content: center;
         min-height: 100vh;
-        padding-top: 120px;    
-        padding-bottom: 80px;  
+        padding-top: 120px;
+        padding-bottom: 80px;
         padding-left: 15px;
         padding-right: 15px;
     }
@@ -33,7 +33,7 @@
         border-radius: 20px;
         border: 1px solid rgba(155, 152, 152, 0.63);
         box-shadow: 0px 6px 14.7px rgba(108, 120, 175, 0.47);
-        max-width: 1000px; 
+        max-width: 1000px;
         width: 100%;
     }
 
@@ -49,7 +49,7 @@
 
     .form-header h1 {
         font-family: 'Poppins', sans-serif;
-        font-size: clamp(2rem, 5vw, 2.5rem); 
+        font-size: clamp(2rem, 5vw, 2.5rem);
         margin-bottom: 5px;
     }
 
@@ -58,26 +58,26 @@
         margin-bottom: 30px;
     }
 
-    .custom-form-group { 
+    .custom-form-group {
         display: block !important;
         width: 100% !important;
-        margin-bottom: 25px; 
+        margin-bottom: 25px;
     }
-    
-    .custom-form-group label { 
+
+    .custom-form-group label {
         display: block !important;
-        margin-bottom: 10px; 
-        font-weight: 700; 
-        font-size: 0.95rem; 
+        margin-bottom: 10px;
+        font-weight: 700;
+        font-size: 0.95rem;
         color: var(--text-white);
     }
 
-    .input-wrapper { 
-        position: relative; 
-        width: 100% !important; 
+    .input-wrapper {
+        position: relative;
+        width: 100% !important;
         display: block !important;
     }
-    
+
     .input-wrapper i {
         position: absolute;
         left: 18px;
@@ -95,7 +95,7 @@
         height: 55px !important;
         box-sizing: border-box !important;
         margin: 0 !important;
-        padding: 15px 15px 15px 55px !important; 
+        padding: 15px 15px 15px 55px !important;
         background-color: var(--input-bg) !important;
         border: 1px solid #4a4d61 !important;
         border-radius: 8px !important;
@@ -121,8 +121,8 @@
         z-index: 6;
     }
 
-    .input-wrapper input:focus { 
-        border-color: var(--primary-red) !important; 
+    .input-wrapper input:focus {
+        border-color: var(--primary-red) !important;
     }
 
     .input-wrapper input::placeholder {
@@ -133,16 +133,16 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        flex-wrap: wrap; 
+        flex-wrap: wrap;
         gap: 10px;
         margin-bottom: 30px;
         font-size: 0.9rem;
         color: var(--text-grey);
     }
-    
-    .form-options a { 
-        color: var(--text-grey); 
-        text-decoration: underline; 
+
+    .form-options a {
+        color: var(--text-grey);
+        text-decoration: underline;
     }
 
     .btn-submit {
@@ -157,11 +157,11 @@
         cursor: pointer;
         transition: 0.3s;
     }
-    
-    .btn-submit:hover { 
-        background-color: #900f24; 
+
+    .btn-submit:hover {
+        background-color: #900f24;
     }
-    
+
     .btn-submit:disabled {
         background-color: #555;
         cursor: not-allowed;
@@ -172,7 +172,7 @@
         position: relative;
         background-color: #000;
     }
-    
+
     .login-image-side img.bg-img {
         width: 100%;
         height: 100%;
@@ -189,7 +189,7 @@
         gap: 12px;
         z-index: 10;
     }
-    
+
     #api-error {
         color: #ff6b6b;
         background-color: rgba(255, 107, 107, 0.1);
@@ -198,7 +198,7 @@
         margin-bottom: 20px;
         font-size: 0.9rem;
         text-align: center;
-        display: none; 
+        display: none;
     }
 
     .forgot-modal-overlay {
@@ -440,15 +440,34 @@
     }
 
     @media (max-width: 991.98px) {
-        .login-container { flex-direction: column; }
-        .login-image-side { height: 250px; order: -1; }
-        .login-form-side { padding: 40px; }
+        .login-container {
+            flex-direction: column;
+        }
+
+        .login-image-side {
+            height: 250px;
+            order: -1;
+        }
+
+        .login-form-side {
+            padding: 40px;
+        }
     }
 
     @media (max-width: 575.98px) {
-        .login-page-wrapper { padding-top: 100px; padding-bottom: 40px; }
-        .login-form-side { padding: 30px 20px; }
-        .form-options { flex-direction: column; align-items: flex-start; }
+        .login-page-wrapper {
+            padding-top: 100px;
+            padding-bottom: 40px;
+        }
+
+        .login-form-side {
+            padding: 30px 20px;
+        }
+
+        .form-options {
+            flex-direction: column;
+            align-items: flex-start;
+        }
     }
 </style>
 
@@ -464,7 +483,7 @@
 
             <form id="loginForm" onsubmit="handleLogin(event)">
                 @csrf
-                
+
                 <div class="custom-form-group">
                     <label for="email">Email</label>
                     <div class="input-wrapper">
@@ -484,13 +503,13 @@
 
                 <div class="form-options">
                     <label>
-                        <input type="checkbox" name="remember"> Remember for 30 Days
+                        <input type="checkbox" name="remember" id="rememberMe"> Remember for 30 Days
                     </label>
                     <a href="#" onclick="openForgotPasswordModal(event)">Forgot password</a>
                 </div>
 
                 <button type="submit" id="submitBtn" class="btn-submit">Sign In</button>
-                
+
                 <p style="text-align: center; margin-top: 20px; font-size: 0.9rem; color: var(--text-grey);">
                     Don't have an account? <a href="{{ route('signup') }}" style="color: white; font-weight: bold;">Sign Up</a>
                 </p>
@@ -505,7 +524,7 @@
                     <span style="font-size: 0.8rem;">Philippine Chamber of Commerce and Industry</span>
                 </div>
             </div>
-            
+
             <img src="{{ asset('images/log in.png') }}" alt="Background" class="bg-img">
         </div>
     </div>
@@ -561,10 +580,10 @@
 <div id="pageToast" class="page-toast" role="status" aria-live="polite"></div>
 
 <script>
-    // --- HELPER FUNCTIONS FOR FORGOT PASSWORD ---
-    let forgotStep = 'email';
-    let toastTimer = null;
-    const forgotApi = {
+    // Changed to 'var' to prevent SPA routing memory collision errors
+    var forgotStep = 'email';
+    var toastTimer = null;
+    var forgotApi = {
         sendOtp: 'https://pccivalph.onrender.com/api/forgot-password/send-otp',
         reset: 'https://pccivalph.onrender.com/api/forgot-password/reset',
     };
@@ -597,10 +616,15 @@
     function showPageToast(message) {
         const toast = document.getElementById('pageToast');
         if (!toast) return;
-        if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+        if (toastTimer) {
+            clearTimeout(toastTimer);
+            toastTimer = null;
+        }
         toast.textContent = message;
         toast.classList.add('show');
-        toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 1800);
+        toastTimer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 1800);
     }
 
     function openForgotPasswordModal(event) {
@@ -638,7 +662,11 @@
             err: document.getElementById('forgotModalError')
         };
 
-        if (els.emailEl) { els.emailEl.value = ''; els.emailEl.readOnly = false; els.emailEl.style.opacity = '1'; }
+        if (els.emailEl) {
+            els.emailEl.value = '';
+            els.emailEl.readOnly = false;
+            els.emailEl.style.opacity = '1';
+        }
         if (els.otpEl) els.otpEl.value = '';
         if (els.pwEl) els.pwEl.value = '';
         if (els.pwcEl) els.pwcEl.value = '';
@@ -646,16 +674,26 @@
         if (els.pwWrap) els.pwWrap.classList.remove('active');
         if (els.reqWrap) els.reqWrap.classList.remove('active');
         if (els.desc) els.desc.textContent = 'Enter your email and click Verify Email to receive an OTP.';
-        if (els.emailBtn) { els.emailBtn.disabled = false; els.emailBtn.style.display = 'block'; els.emailBtn.textContent = 'Verify Email'; }
+        if (els.emailBtn) {
+            els.emailBtn.disabled = false;
+            els.emailBtn.style.display = 'block';
+            els.emailBtn.textContent = 'Verify Email';
+        }
         if (els.otpBtn) els.otpBtn.style.display = 'block';
         if (els.resetBtn) els.resetBtn.style.display = 'block';
-        if (els.err) { els.err.style.display = 'none'; els.err.textContent = 'Please enter a valid email address.'; }
+        if (els.err) {
+            els.err.style.display = 'none';
+            els.err.textContent = 'Please enter a valid email address.';
+        }
     }
 
     function showForgotOtpStep(emailValue) {
         forgotStep = 'otp';
         const emailEl = document.getElementById('forgotEmail');
-        if (emailEl) { emailEl.readOnly = true; emailEl.style.opacity = '0.75'; }
+        if (emailEl) {
+            emailEl.readOnly = true;
+            emailEl.style.opacity = '0.75';
+        }
         document.getElementById('forgotOtpWrap')?.classList.add('active');
         const desc = document.getElementById('forgotDesc');
         if (desc) desc.textContent = `OTP sent to ${emailValue}. Enter the code below, then continue.`;
@@ -685,7 +723,9 @@
             return await response.json().catch(() => ({}));
         }
         const text = await response.text().catch(() => '');
-        return { message: text || 'Unexpected server response.' };
+        return {
+            message: text || 'Unexpected server response.'
+        };
     }
 
     async function sendForgotOtp() {
@@ -695,27 +735,45 @@
         const email = (emailEl?.value || '').trim();
 
         if (!isValidEmail(email)) {
-            if (err) { err.textContent = 'Please enter a valid email address.'; err.style.display = 'block'; }
-            emailEl?.focus(); return;
+            if (err) {
+                err.textContent = 'Please enter a valid email address.';
+                err.style.display = 'block';
+            }
+            emailEl?.focus();
+            return;
         }
 
         try {
             if (err) err.style.display = 'none';
-            if (emailBtn) { emailBtn.disabled = true; emailBtn.textContent = 'Sending...'; }
+            if (emailBtn) {
+                emailBtn.disabled = true;
+                emailBtn.textContent = 'Sending...';
+            }
 
             const response = await fetch(forgotApi.sendOtp, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({ email }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    email
+                }),
             });
 
             const result = await parseForgotResponse(response);
             if (!response.ok) throw new Error(result.message || 'Failed to send OTP. Please try again.');
             showForgotOtpStep(email);
         } catch (error) {
-            if (err) { err.textContent = error?.message || 'Failed to send OTP. Please try again.'; err.style.display = 'block'; }
+            if (err) {
+                err.textContent = error?.message || 'Failed to send OTP. Please try again.';
+                err.style.display = 'block';
+            }
         } finally {
-            if (emailBtn) { emailBtn.disabled = false; emailBtn.textContent = 'Verify Email'; }
+            if (emailBtn) {
+                emailBtn.disabled = false;
+                emailBtn.textContent = 'Verify Email';
+            }
         }
     }
 
@@ -725,8 +783,12 @@
         const otp = (otpEl?.value || '').replace(/\D/g, '');
 
         if (!/^\d{6}$/.test(otp)) {
-            if (err) { err.textContent = 'Please enter a valid 6-digit OTP code.'; err.style.display = 'block'; }
-            otpEl?.focus(); return;
+            if (err) {
+                err.textContent = 'Please enter a valid 6-digit OTP code.';
+                err.style.display = 'block';
+            }
+            otpEl?.focus();
+            return;
         }
 
         if (err) err.style.display = 'none';
@@ -735,7 +797,7 @@
         document.getElementById('forgotPasswordWrap').classList.add('active');
         document.getElementById('forgotPasswordRequirements').classList.add('active');
         document.getElementById('forgotDesc').textContent = 'OTP verified. You can now enter your new password.';
-        
+
         forgotStep = 'password';
         validateForgotPasswordRequirements();
         document.getElementById('forgotPassword')?.focus();
@@ -746,7 +808,10 @@
         const btn = document.getElementById('forgotResetBtn');
 
         if (forgotStep !== 'password') {
-            if (err) { err.textContent = 'Please verify OTP first.'; err.style.display = 'block'; }
+            if (err) {
+                err.textContent = 'Please verify OTP first.';
+                err.style.display = 'block';
+            }
             return;
         }
 
@@ -756,28 +821,48 @@
         const password_confirmation = (document.getElementById('forgotPasswordConfirm')?.value || '').trim();
 
         if (!/^\d{6}$/.test(otp)) {
-            if (err) { err.textContent = 'Please enter a valid 6-digit OTP code.'; err.style.display = 'block'; }
+            if (err) {
+                err.textContent = 'Please enter a valid 6-digit OTP code.';
+                err.style.display = 'block';
+            }
             return;
         }
 
         if (!validateForgotPasswordRequirements()) {
-            if (err) { err.textContent = 'Please meet all password requirements first.'; err.style.display = 'block'; }
+            if (err) {
+                err.textContent = 'Please meet all password requirements first.';
+                err.style.display = 'block';
+            }
             return;
         }
 
         if (password !== password_confirmation) {
-            if (err) { err.textContent = 'Password confirmation does not match.'; err.style.display = 'block'; }
+            if (err) {
+                err.textContent = 'Password confirmation does not match.';
+                err.style.display = 'block';
+            }
             return;
         }
 
         try {
             if (err) err.style.display = 'none';
-            if (btn) { btn.disabled = true; btn.textContent = 'Resetting...'; }
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Resetting...';
+            }
 
             const response = await fetch(forgotApi.reset, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({ email, otp, password, password_confirmation }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    email,
+                    otp,
+                    password,
+                    password_confirmation
+                }),
             });
 
             const result = await parseForgotResponse(response);
@@ -786,87 +871,96 @@
             showPageToast(result.message || 'Password reset successful. You can now sign in.');
             closeForgotPasswordModal();
         } catch (error) {
-            if (err) { err.textContent = error?.message || 'Failed to reset password. Please try again.'; err.style.display = 'block'; }
+            if (err) {
+                err.textContent = error?.message || 'Failed to reset password. Please try again.';
+                err.style.display = 'block';
+            }
         } finally {
-            if (btn) { btn.disabled = false; btn.textContent = 'Reset Password'; }
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = 'Reset Password';
+            }
         }
     }
 
-
     // ==========================================
-    // MAIN LOGIN FUNCTION (WITH LOADING SCREEN)
+    // MAIN LOGIN ACTION
     // ==========================================
     async function handleLogin(event) {
-        event.preventDefault(); 
+        event.preventDefault();
 
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
+        const remember = document.getElementById('rememberMe').checked;
+
         const errorDiv = document.getElementById('api-error');
         const submitBtn = document.getElementById('submitBtn');
 
         errorDiv.style.display = 'none';
         errorDiv.textContent = '';
         submitBtn.disabled = true;
-        
-        // 1. Initial Loading State
+
         submitBtn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Authenticating...';
 
         try {
             const response = await fetch(`${window.API_BASE_URL}/login`, {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json' 
+                    'Accept': 'application/json'
                 },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({
+                    email,
+                    password,
+                    remember
+                })
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                // 2. Analyzing State
+                // Instantly track or erase email storage flag locally
+                if (remember) {
+                    localStorage.setItem('rememberedEmail', email);
+                } else {
+                    localStorage.removeItem('rememberedEmail');
+                }
+
                 submitBtn.innerHTML = '<i class="bi bi-person-lines-fill"></i> Analyzing User Data...';
 
                 const token = data.token || data.data?.token;
                 const user = data.user || data.data?.user || {};
+                const isFirstTime = String(data.requires_password_change) === 'true' ||
+                    String(data.data?.requires_password_change) === 'true';
 
-                // Use String() to make sure boolean true and string "true" both work perfectly
-                const isFirstTime = String(data.requires_password_change) === 'true' || 
-                                    String(data.data?.requires_password_change) === 'true';
-
-                // Store credentials AND the first-time flag so page reloads don't break the logic!
                 localStorage.setItem('token', token);
                 localStorage.setItem('userName', user.name || '');
                 localStorage.setItem('userRoles', JSON.stringify(user.roles || []));
                 localStorage.setItem('requiresPasswordChange', isFirstTime ? 'true' : 'false');
 
-                // --- FIRST TIME REDIRECT ---
                 if (isFirstTime) {
-                    submitBtn.style.backgroundColor = '#f59e0b'; // Turn button yellow/orange
+                    submitBtn.style.backgroundColor = '#f59e0b';
                     submitBtn.innerHTML = '<i class="bi bi-shield-lock-fill"></i> Setup Required! Redirecting...';
-                    
-                    // Add a small 1.5 second delay so the user can read the button
                     setTimeout(() => {
                         window.location.href = '/setup-password';
                     }, 1500);
-                    return; 
+                    return;
                 }
 
-                // --- NORMAL REDIRECT ---
-                submitBtn.style.backgroundColor = '#10b981'; // Turn button green
+                submitBtn.style.backgroundColor = '#10b981';
                 submitBtn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Success! Loading Dashboard...';
 
                 const roles = user.roles || [];
-                
+
                 setTimeout(() => {
                     if (roles.includes('treasurer')) {
                         window.location.href = '/treasurer-dashboard';
                     } else if (roles.includes('superadmin') || roles.includes('admin') || roles.includes('super_admin')) {
-                        window.location.href = '/dashboard'; 
+                        window.location.href = '/dashboard';
                     } else if (roles.includes('member')) {
-                        window.location.href = '/member-dashboard'; 
+                        window.location.href = '/member-dashboard';
                     } else {
-                        window.location.href = '/'; 
+                        window.location.href = '/';
                     }
                 }, 1000);
 
@@ -877,7 +971,7 @@
                 submitBtn.innerHTML = 'Sign In';
             }
         } catch (err) {
-            console.error("Fetch/Logic Error:", err);
+            console.error("Fetch Error:", err);
             errorDiv.textContent = 'Network error. Please make sure you are connected.';
             errorDiv.style.display = 'block';
             submitBtn.disabled = false;
@@ -885,60 +979,72 @@
         }
     }
 
-    // --- EVENT LISTENERS ON PAGE LOAD ---
-    document.addEventListener('DOMContentLoaded', function () {
-        const existingToken = localStorage.getItem('token');
-        const existingRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
-        
-        // Check the flag we stored earlier!
-        const requiresChange = localStorage.getItem('requiresPasswordChange') === 'true';
+    // ==========================================
+    // SPA-PROOF RUN-TIME INITIALIZER
+    // ==========================================
+    function initLoginPage() {
+        // 1. Instantly look up memory and fill elements before anything else handles it!
+        var savedEmail = localStorage.getItem('rememberedEmail');
+        var emailField = document.getElementById('email');
+        var rememberCheckbox = document.getElementById('rememberMe');
+
+        if (savedEmail && emailField) {
+            emailField.value = savedEmail;
+            if (rememberCheckbox) rememberCheckbox.checked = true;
+        }
+
+        // 2. Clear routing traps or dynamic redirects
+        var existingToken = localStorage.getItem('token');
+        var existingRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+        var requiresChange = localStorage.getItem('requiresPasswordChange') === 'true';
 
         if (existingToken) {
-            // If they reload the login page but still need a password change, force them back to setup!
             if (requiresChange) {
                 window.location.href = '/setup-password';
                 return;
             }
-
-            // Otherwise, send normal users to their dashboard
-            const redirectUrl = existingRoles.includes('treasurer')
-                ? '/treasurer-dashboard'
-                : (existingRoles.includes('admin') || existingRoles.includes('superadmin') || existingRoles.includes('super_admin'))
-                    ? '/dashboard'
-                    : (existingRoles.includes('member') ? '/member-dashboard' : '/');
+            const redirectUrl = existingRoles.includes('treasurer') ?
+                '/treasurer-dashboard' :
+                (existingRoles.includes('admin') || existingRoles.includes('superadmin') || existingRoles.includes('super_admin')) ?
+                '/dashboard' :
+                (existingRoles.includes('member') ? '/member-dashboard' : '/');
 
             window.location.href = redirectUrl;
             return;
         }
 
-        const err = document.getElementById('forgotModalError');
-        const otpEl = document.getElementById('forgotOtp');
-        const emailEl = document.getElementById('forgotEmail');
-        const pwEl = document.getElementById('forgotPassword');
-        const pwcEl = document.getElementById('forgotPasswordConfirm');
+        // 3. Attach functional handlers securely to inputs (SPA friendly)
+        var err = document.getElementById('forgotModalError');
+        var otpEl = document.getElementById('forgotOtp');
+        var emailEl = document.getElementById('forgotEmail');
+        var pwEl = document.getElementById('forgotPassword');
+        var pwcEl = document.getElementById('forgotPasswordConfirm');
 
         if (otpEl) {
-            otpEl.addEventListener('input', function () {
+            otpEl.oninput = function() {
                 this.value = this.value.replace(/\D/g, '').slice(0, 6);
                 if (err) err.style.display = 'none';
-            });
+            };
         }
 
-        [emailEl, otpEl, pwEl, pwcEl].forEach(function (el) {
+        [emailEl, otpEl, pwEl, pwcEl].forEach(function(el) {
             if (!el) return;
-            el.addEventListener('input', function () {
+            el.oninput = function() {
                 if (err) err.style.display = 'none';
-            });
-            el.addEventListener('keydown', function (event) {
+            };
+            el.onkeydown = function(event) {
                 if (event.key === 'Enter') {
                     event.preventDefault();
                     handleForgotReset();
                 }
-            });
+            };
         });
 
-        if (pwEl) pwEl.addEventListener('input', validateForgotPasswordRequirements);
-        if (pwcEl) pwcEl.addEventListener('input', validateForgotPasswordRequirements);
-    });
+        if (pwEl) pwEl.oninput = validateForgotPasswordRequirements;
+        if (pwcEl) pwcEl.oninput = validateForgotPasswordRequirements;
+    }
+
+    // TRIGGER FOR SPA LOAD ENGINE IMMEDIATELY!
+    initLoginPage();
 </script>
 @endsection
