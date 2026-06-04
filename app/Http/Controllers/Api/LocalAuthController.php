@@ -73,3 +73,4 @@ class LocalAuthController extends Controller
 
         return ['member'];
     }
+}

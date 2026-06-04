@@ -196,7 +196,7 @@
 {{-- ========================================= --}}
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
-        const targetId = @json($id);
+        const targetId = "{{ $id ?? '' }}";
 
         try {
             const headers = {
@@ -213,19 +213,40 @@
             }
 
             const result = await response.json();
-            let biz;
+            let biz = {};
 
-            if (Array.isArray(result)) {
-                biz = result.find(b => String(b.id) === String(targetId) || String(b._idx) === String(targetId));
-            } else if (Array.isArray(result.data)) {
-                biz = result.data.find(b => String(b.id) === String(targetId) || String(b._idx) === String(targetId));
-            } else {
-                biz = result.data || result;
+            function resolveBusinessPayload(payload) {
+                if (!payload || typeof payload !== 'object') {
+                    return {};
+                }
+
+                if (Array.isArray(payload)) {
+                    return payload.find(item => String(item.id) === String(targetId) || String(item._idx) === String(targetId)) || {};
+                }
+
+                if (payload.data) {
+                    if (Array.isArray(payload.data)) {
+                        return payload.data.find(item => String(item.id) === String(targetId) || String(item._idx) === String(targetId)) || {};
+                    }
+                    return payload.data;
+                }
+
+                if (payload.business_profile && typeof payload.business_profile === 'object') {
+                    return payload.business_profile;
+                }
+
+                if (payload.profile && typeof payload.profile === 'object') {
+                    return payload.profile;
+                }
+
+                return payload;
             }
+
+            biz = resolveBusinessPayload(result);
 
             document.getElementById('loading-spinner').style.display = 'none';
 
-            if (!biz) {
+            if (!biz || Object.keys(biz).length === 0) {
                 document.getElementById('error-message').innerText = "The business profile you are looking for does not exist.";
                 document.getElementById('error-state').style.display = 'block';
                 return;
@@ -276,8 +297,10 @@
 
             // 3. DYNAMIC PHOTO URL
             if (biz.photo_url && biz.photo_url !== 'N/A' && biz.photo_url !== 'null') {
-                const activeOrigin = new URL(baseUrl).origin;
-                let finalPhotoUrl = biz.photo_url.replace('http://127.0.0.1:8000', activeOrigin).replace('http://localhost:8000', activeOrigin);
+                const activeOrigin = new URL(window.API_BASE_URL || window.location.origin).origin;
+                let finalPhotoUrl = biz.photo_url
+                    .replace('http://127.0.0.1:8000', activeOrigin)
+                    .replace('http://localhost:8000', activeOrigin);
 
                 document.getElementById('biz-avatar-container').innerHTML = `<img src="${finalPhotoUrl}" alt="${name}" class="w-100 h-100" style="object-fit: cover;">`;
             } else {
@@ -289,24 +312,143 @@
                 document.getElementById('biz-initials').innerText = initials;
             }
 
-            // Map Tags Array to Services UI
-            const servicesContainer = document.getElementById('biz-services');
-            servicesContainer.innerHTML = '';
-            const tags = Array.isArray(biz.tags) && biz.tags.length > 0 ? biz.tags : ['General Services'];
+            function extractProductItems(source) {
+                if (!source || typeof source !== 'object') return [];
 
-            tags.forEach(tag => {
-                servicesContainer.innerHTML += `
+                const candidates = [
+                    source.products,
+                    source.product_items,
+                    source.product_list,
+                    source.items,
+                    source.business_products,
+                    source.business_services,
+                    source.services,
+                    source.offerings,
+                    source.service_items,
+                    source.services_offered,
+                    source.catalog,
+                    source.items_offered,
+                    source.records,
+                ];
+
+                for (const candidate of candidates) {
+                    if (Array.isArray(candidate) && candidate.length > 0) {
+                        const items = candidate.map(item => {
+                            if (typeof item === 'string') {
+                                const title = item.trim();
+                                return title ? {
+                                    title,
+                                    description: '',
+                                    url: ''
+                                } : null;
+                            }
+                            if (item && typeof item === 'object') {
+                                const title = item.name || item.product_name || item.title || item.service_name || item.label || item.product_title || item.service_title;
+                                if (!title) return null;
+                                return {
+                                    title: String(title).trim(),
+                                    description: String(item.description || item.details || item.summary || item.long_description || item.product_description || item.service_description || '').trim(),
+                                    url: String(item.url || item.service_url || item.website || item.link || item.product_url || item.website_url || '').trim(),
+                                };
+                            }
+                            return null;
+                        }).filter(Boolean);
+
+                        if (items.length > 0) {
+                            return items;
+                        }
+                    }
+
+                    if (typeof candidate === 'string' && candidate.trim() !== '') {
+                        return candidate.split(/[,;|]/).map(s => {
+                            const title = s.trim();
+                            return title ? {
+                                title,
+                                description: '',
+                                url: ''
+                            } : null;
+                        }).filter(Boolean);
+                    }
+                }
+
+                return [];
+            }
+
+            function renderProductCards(items, container) {
+                if (!container) return;
+                container.innerHTML = '';
+                if (!Array.isArray(items) || items.length === 0) {
+                    return;
+                }
+
+                container.innerHTML = items.map(item => `
                     <div class="col-md-6 col-lg-4">
                         <div class="service-box bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-4 p-3 h-100">
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <i class="bi bi-check-circle-fill text-danger"></i>
-                                <h6 class="fw-bold mb-0 text-danger text-capitalize" style="font-family: 'Poppins', sans-serif;">${tag}</h6>
+                            <div class="d-flex align-items-start gap-2 mb-2">
+                                <i class="bi bi-box-seam text-danger fs-4 mt-1"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-danger text-capitalize" style="font-family: 'Poppins', sans-serif;">${item.title}</h6>
+                                    <p class="small mb-0 text-muted">${item.description || ''}</p>
+                                </div>
                             </div>
-                            <p class="small mb-0" style="color: var(--text-muted);">Core offering provided by ${name}.</p>
+                            ${item.url ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="small fw-bold text-danger">View product</a>` : ''}
                         </div>
                     </div>
-                `;
-            });
+                `).join('');
+            }
+
+            const servicesContainer = document.getElementById('biz-services');
+
+            function resolveProductOwnerId(source) {
+                if (!source || typeof source !== 'object') {
+                    return null;
+                }
+
+                const keys = ['user_id', 'owner_id', 'created_by', 'member_id', 'business_user_id', 'seller_id'];
+                for (const key of keys) {
+                    if (source[key] !== undefined && source[key] !== null && String(source[key]).trim() !== '') {
+                        return String(source[key]);
+                    }
+                }
+
+                if (source.user && typeof source.user === 'object' && source.user.id) {
+                    return String(source.user.id);
+                }
+
+                return null;
+            }
+
+            async function fetchProductsForBusiness(biz, targetId) {
+                const ownerId = resolveProductOwnerId(biz);
+
+                if (!ownerId) {
+                    return [];
+                }
+
+                try {
+                    const res = await fetch(`${window.API_BASE_URL}/v1/products/active?user_id=${encodeURIComponent(ownerId)}`);
+                    if (!res.ok) return [];
+                    const data = await res.json();
+                    const list = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
+
+                    return list.map(item => ({
+                        title: String(item.name || item.title || item.product_name || item.service_name || item.label || item.product_title || item.service_title || item.id || '').trim(),
+                        description: String(item.description || item.details || item.summary || item.product_description || '').trim(),
+                        url: String(item.url || item.service_url || item.product_url || item.website || '').trim(),
+                    })).filter(Boolean);
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            // Prefer dedicated products API; fall back to embedded product lists in business object
+            (async () => {
+                let products = await fetchProductsForBusiness(biz, targetId);
+                if (!products || products.length === 0) {
+                    products = extractProductItems(biz);
+                }
+                renderProductCards(products, servicesContainer);
+            })();
 
             // Map Business Hours
             const hoursContainer = document.getElementById('biz-hours-container');

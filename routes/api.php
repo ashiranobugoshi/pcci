@@ -3,9 +3,11 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\Api\BusinessController;
 use App\Http\Controllers\Api\LocalAuthController;
 use App\Http\Controllers\Api\LeadershipController;
 use App\Http\Controllers\Api\MemberController;
+use App\Http\Controllers\Api\PublicProductController;
 use App\Http\Controllers\Api\TreasurerProxyController;
 
 /*
@@ -68,7 +70,13 @@ Route::prefix('v1')->group(function () {
     // Add this to allow Admin to Approve/Reject via the Proxy Controller
     Route::put('/applicants/{id}', [TreasurerProxyController::class, 'updateTransaction']);
 
-    // Route::get('/v1/business/{id}', [BusinessController::class, 'show']); // BusinessController not yet created
+    // Business profile proxy route for the landing page
+    Route::get('/business/{id}', [BusinessController::class, 'show']);
+
+    // Public product proxy routes
+    Route::get('/products', [PublicProductController::class, 'index']);
+    Route::get('/products/active', [PublicProductController::class, 'active']);
+
     // Your existing Event routes
     Route::get('/events', [EventController::class, 'index']);
     Route::post('/events', [EventController::class, 'store']);

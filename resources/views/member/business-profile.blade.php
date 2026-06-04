@@ -87,7 +87,7 @@ $business = $business ?? [
                     <span>Products & Services</span>
                 </h4>
 
-                <div class="row g-3">
+                <div class="row g-3" id="biz-services">
                     @foreach ($business['services'] as $service)
                     <div class="col-12 col-sm-6 col-xl-4">
                         <div class="service-box bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-4 p-3 h-100 shadow-sm">
@@ -379,6 +379,146 @@ $business = $business ?? [
             setTextIfExists('bizPhoneText', biz.phone || document.getElementById('bizPhoneText')?.innerText);
             setTextIfExists('bizAddressText', address || document.getElementById('bizAddressText')?.innerText);
 
+            function extractProductItems(source) {
+                if (!source || typeof source !== 'object') return [];
+
+                const candidates = [
+                    source.products,
+                    source.product_items,
+                    source.product_list,
+                    source.items,
+                    source.business_products,
+                    source.business_services,
+                    source.services,
+                    source.offerings,
+                    source.service_items,
+                    source.services_offered,
+                    source.catalog,
+                    source.items_offered,
+                    source.records,
+                ];
+
+                for (const candidate of candidates) {
+                    if (Array.isArray(candidate) && candidate.length > 0) {
+                        const items = candidate.map(item => {
+                            if (typeof item === 'string') {
+                                const title = item.trim();
+                                return title ? {
+                                    title,
+                                    description: '',
+                                    url: ''
+                                } : null;
+                            }
+                            if (item && typeof item === 'object') {
+                                const title = item.name || item.product_name || item.title || item.service_name || item.label || item.product_title || item.service_title;
+                                if (!title) return null;
+                                return {
+                                    title: String(title).trim(),
+                                    description: String(item.description || item.details || item.summary || item.long_description || item.product_description || item.service_description || '').trim(),
+                                    url: String(item.url || item.service_url || item.website || item.link || item.product_url || item.website_url || '').trim(),
+                                };
+                            }
+                            return null;
+                        }).filter(Boolean);
+
+                        if (items.length > 0) {
+                            return items;
+                        }
+                    }
+
+                    if (typeof candidate === 'string' && candidate.trim() !== '') {
+                        return candidate.split(/[,;|]/).map(s => {
+                            const title = s.trim();
+                            return title ? {
+                                title,
+                                description: '',
+                                url: ''
+                            } : null;
+                        }).filter(Boolean);
+                    }
+                }
+
+                return [];
+            }
+
+            function renderProductCards(items, container) {
+                if (!container) return;
+                container.innerHTML = '';
+                if (!Array.isArray(items) || items.length === 0) {
+                    return;
+                }
+
+                container.innerHTML = items.map(item => `
+                    <div class="col-12 col-sm-6 col-xl-4">
+                        <div class="service-box bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-4 p-3 h-100 shadow-sm">
+                            <div class="d-flex align-items-start gap-2 mb-2">
+                                <i class="bi bi-box-seam text-danger fs-4 mt-1"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-danger">${item.title}</h6>
+                                    <p class="small mb-0 opacity-75">${item.description || ''}</p>
+                                </div>
+                            </div>
+                            ${item.url ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="small fw-bold text-danger">View product</a>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            const servicesContainer = document.getElementById('biz-services');
+
+            function resolveProductOwnerId(source) {
+                if (!source || typeof source !== 'object') {
+                    return null;
+                }
+
+                const keys = ['user_id', 'owner_id', 'created_by', 'member_id', 'business_user_id', 'seller_id'];
+                for (const key of keys) {
+                    if (source[key] !== undefined && source[key] !== null && String(source[key]).trim() !== '') {
+                        return String(source[key]);
+                    }
+                }
+
+                if (source.user && typeof source.user === 'object' && source.user.id) {
+                    return String(source.user.id);
+                }
+
+                return null;
+            }
+
+            async function fetchProductsForBusiness(biz, targetId) {
+                const ownerId = resolveProductOwnerId(biz);
+
+                if (!ownerId) {
+                    return [];
+                }
+
+                try {
+                    const res = await fetch(`${window.API_BASE_URL}/v1/products/active?user_id=${encodeURIComponent(ownerId)}`);
+                    if (!res.ok) return [];
+                    const data = await res.json();
+                    const list = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
+
+                    return list.map(item => ({
+                        title: String(item.name || item.title || item.product_name || item.service_name || item.label || item.product_title || item.service_title || item.id || '').trim(),
+                        description: String(item.description || item.details || item.summary || item.product_description || '').trim(),
+                        url: String(item.url || item.service_url || item.product_url || item.website || '').trim(),
+                    })).filter(Boolean);
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            if (servicesContainer) {
+                (async () => {
+                    const businessId = "{{ $id ?? '' }}";
+                    let products = await fetchProductsForBusiness(biz, businessId);
+                    if (!products || products.length === 0) {
+                        products = extractProductItems(biz);
+                    }
+                    renderProductCards(products, servicesContainer);
+                })();
+            }
+
             // --- Membership type & expiry (robust extractor similar to settings/dashboard) ---
             (function() {
                 const memberObj = biz.member || biz.data?.member || biz;
@@ -411,7 +551,11 @@ $business = $business ?? [
                     const d = new Date(baseDate);
                     if (!Number.isNaN(d.getTime())) {
                         d.setFullYear(d.getFullYear() + 1);
-                        expiryDate = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        expiryDate = d.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
                     }
                 }
 
