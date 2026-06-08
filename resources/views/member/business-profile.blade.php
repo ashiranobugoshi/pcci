@@ -369,14 +369,79 @@ $business = $business ?? [
             const biz = result.data || result || {};
             window.currentBusinessProfile = biz;
 
-            const loc = biz.business_location || {};
+            // === NORMALISE NESTED OBJECTS — safe JSON-string guard ===
+            function safeObj(val) {
+                if (!val) return {};
+                if (typeof val === 'string') {
+                    try {
+                        return JSON.parse(val);
+                    } catch (e) {
+                        return {};
+                    }
+                }
+                return (typeof val === 'object' && !Array.isArray(val)) ? val : {};
+            }
+
+            const basic = safeObj(biz.applicant?.basic_profile ?? biz.basic_profile);
+            const rep = safeObj(biz.applicant?.official_representative ?? biz.official_representative);
+            const org = safeObj(biz.applicant?.organization_membership ?? biz.organization_membership);
+            const bizAdditional = safeObj(biz.applicant?.business_additional_data ?? biz.business_additional_data);
+
+            // === LOCATION — BusinessResource exposes at top-level AND inside basic_profile ===
+            const locRaw = biz.business_location ?? basic.business_location;
+            const loc = safeObj(locRaw);
             const address = [loc.business_address, loc.city_municipality, loc.province, loc.zip_code].filter(Boolean).join(', ');
 
+            // === PHONE — two Applicant columns: telephone_no (landline) and rep_contact_no (mobile)
+            // BusinessResource now exposes BOTH at top-level; nested paths are fallbacks.
+            const phone =
+                biz.telephone_no // top-level PRIMARY — BusinessResource fix
+                ||
+                biz.applicant?.telephone_no // flat on applicant object
+                ||
+                basic.telephone_no // inside basic_profile
+                ||
+                biz.rep_contact_no // top-level rep mobile
+                ||
+                biz.applicant?.rep_contact_no ||
+                rep.contact_no // inside official_representative
+                ||
+                biz.user?.contact_number ||
+                biz.contact_number ||
+                biz.phone ||
+                null;
+
+            // === EMAIL ===
+            const email =
+                biz.email // top-level PRIMARY
+                ||
+                biz.applicant?.email ||
+                basic.email ||
+                biz.user?.email ||
+                null;
+
+            // === INDUSTRY ===
+            const industry =
+                bizAdditional.industry ||
+                biz.industry ||
+                org.type_of_company ||
+                biz.type_of_company ||
+                biz.business_type ||
+                null;
+
+            // === ABOUT ===
+            const about =
+                bizAdditional.about_description ||
+                biz.about_description ||
+                biz.about ||
+                biz.description ||
+                null;
+
             setTextIfExists('bizDisplayName', biz.registered_business_name || biz.name || biz.business_name || document.getElementById('bizDisplayName')?.innerText);
-            setTextIfExists('bizIndustryText', biz.industry || biz.type_of_company || biz.business_type || document.getElementById('bizIndustryText')?.innerText || 'Industry not specified');
-            setTextIfExists('bizAboutText', biz.about || biz.description || document.getElementById('bizAboutText')?.innerText);
-            setTextIfExists('bizEmailText', biz.email || document.getElementById('bizEmailText')?.innerText);
-            setTextIfExists('bizPhoneText', biz.phone || document.getElementById('bizPhoneText')?.innerText);
+            setTextIfExists('bizIndustryText', industry || document.getElementById('bizIndustryText')?.innerText || 'Industry not specified');
+            setTextIfExists('bizAboutText', about || document.getElementById('bizAboutText')?.innerText);
+            setTextIfExists('bizEmailText', email || document.getElementById('bizEmailText')?.innerText);
+            setTextIfExists('bizPhoneText', phone || document.getElementById('bizPhoneText')?.innerText);
             setTextIfExists('bizAddressText', address || document.getElementById('bizAddressText')?.innerText);
 
             function extractProductItems(source) {

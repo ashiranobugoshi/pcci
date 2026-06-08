@@ -184,11 +184,16 @@
 
         let html = '';
         paginatedData.forEach(biz => {
+            // Safely check if a photo exists, otherwise fallback to the shop icon
+            const imageContent = biz.photo_url && biz.photo_url !== 'N/A' && biz.photo_url !== 'null' ?
+                `<img src="${biz.photo_url}" class="w-100 h-100" style="object-fit: cover;" alt="${biz.registered_business_name || 'Business Logo'}">` :
+                `<i class="bi bi-shop fs-1 text-muted"></i>`;
+
             html += `
                 <div class="col-md-6 col-lg-4">
                     <div class="card h-100 shadow-sm border-0 business-card" style="border-radius: 12px; overflow: hidden; transition: transform 0.2s;">
                         <div style="height: 160px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #eee;">
-                             <i class="bi bi-shop fs-1 text-muted"></i>
+                             ${imageContent}
                         </div>
                         <div class="card-body p-4">
                             <h5 class="fw-bold mb-1 text-truncate">${biz.registered_business_name || 'Unnamed Business'}</h5>

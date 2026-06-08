@@ -20,155 +20,111 @@
 <div id="main-content" style="display: none;">
 
     {{-- HERO SECTION --}}
-    <div class="w-100" style="background:#1f2330; min-height: 420px; transition: all 0.3s ease;">
+    <div class="w-100" style="background:#1f2328; padding-top: 130px; padding-bottom: 60px;">
         <div class="container">
-            <div class="row align-items-center g-4" style="padding-top:120px; padding-bottom:80px;">
-
-                {{-- LOGO / INITIALS --}}
-                <div class="col-auto">
-                    <div class="rounded-4 bg-light d-flex align-items-center justify-content-center overflow-hidden shadow-lg"
-                        style="width:130px; height:130px; border: 4px solid rgba(255,255,255,0.1);" id="biz-avatar-container">
-                        <span class="fw-bold text-danger" style="font-size: 2.5rem;" id="biz-initials">...</span>
+            <div class="d-flex flex-column flex-md-row align-items-center gap-4">
+                <div class="rounded-circle overflow-hidden bg-white d-flex align-items-center justify-content-center shadow" style="width: 150px; height: 150px; border: 5px solid rgba(255,255,255,0.1);">
+                    <div id="biz-avatar-container" class="w-100 h-100 d-flex align-items-center justify-content-center">
+                        <span id="biz-initials" class="fw-bold text-danger" style="font-size: 3.5rem;"></span>
                     </div>
                 </div>
-
-                {{-- HERO CONTENT --}}
-                <div class="col">
-                    <h1 class="fw-bold text-white mb-2" style="font-family: 'DM Sans', sans-serif; font-size: 2.5rem;" id="biz-name-main">
-                        Loading...
-                    </h1>
-
-                    <span class="badge rounded-pill mb-3 px-3 py-2 fw-bold text-uppercase" style="background:#2e5aac; font-size: 0.85rem;" id="biz-industry">
-                        Industry
-                    </span>
-
-                    <p class="text-light mb-4 font-italic" style="max-width:750px; opacity:.9; font-size: 1.1rem; line-height: 1.6;" id="biz-tagline">
-                        Loading tagline...
-                    </p>
-
-                    <div class="d-flex gap-3 flex-wrap">
-                        <a href="#" id="biz-phone-btn" class="btn btn-danger px-4 py-2 fw-bold rounded-pill shadow-sm">
-                            <i class="bi bi-telephone-fill me-2"></i> CONTACT US
-                        </a>
-                        <a href="#" id="biz-email-btn" class="btn btn-outline-light px-4 py-2 fw-bold rounded-pill">
-                            <i class="bi bi-envelope-fill me-2"></i> EMAIL NOW
-                        </a>
+                <div class="text-center text-md-start text-white">
+                    <div class="mb-2">
+                        <span id="biz-industry" class="badge bg-danger rounded-pill px-3 py-2 fw-bold" style="font-size: 0.85rem;">Loading...</span>
                     </div>
+                    <h1 id="biz-name-main" class="fw-bold mb-2" style="font-family: 'DM Sans', sans-serif; font-size: 2.5rem;">Loading...</h1>
+                    <p id="biz-tagline" class="mb-0 text-white-50 fs-5" style="font-family: 'Poppins', sans-serif;"></p>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <div class="container mt-5 mb-5" style="font-family: 'DM Sans', sans-serif;">
-        <div class="row g-5">
+    {{-- MAIN DETAILS SECTION --}}
+    <div class="container py-5" style="margin-top: -30px; position: relative; z-index: 10;">
+        <div class="row g-4">
 
-            {{-- LEFT CONTENT --}}
+            {{-- LEFT COLUMN: About & Products --}}
             <div class="col-lg-8">
 
                 {{-- ABOUT --}}
-                <div class="card border border-danger shadow-sm p-4 p-md-5 rounded-4 mb-4" style="background: var(--bg-card);">
-                    <div class="d-flex align-items-center gap-3 mb-4">
-                        <div class="bg-danger bg-opacity-10 p-3 rounded-circle d-flex align-items-center justify-content-center">
-                            <i class="bi bi-buildings text-danger fs-4"></i>
+                <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
+                    <h4 class="fw-bold mb-4" style="color: var(--text-main); font-family: 'DM Sans', sans-serif;">About the Business</h4>
+                    <p id="biz-about-side" class="text-muted" style="line-height: 1.8; font-family: 'Poppins', sans-serif;">Loading description...</p>
+                </div>
+
+                {{-- PRODUCTS & SERVICES --}}
+                <div class="card border-0 shadow-sm rounded-4 p-4">
+                    <h4 class="fw-bold mb-4" style="color: var(--text-main); font-family: 'DM Sans', sans-serif;">Products & Services</h4>
+                    <div id="biz-services" class="row">
+                        <div class="col-12 text-center py-5 text-muted">
+                            <i class="bi bi-arrow-repeat spin fs-2"></i><br>Loading products...
                         </div>
-                        <h4 class="fw-bold text-danger mb-0" style="font-family: 'Poppins', sans-serif;">About Our Company</h4>
-                    </div>
-                    <p id="biz-about-side" style="line-height: 1.8; color: var(--text-main); font-size: 1.05rem;">Loading...</p>
-                </div>
-
-                {{-- PRODUCTS & SERVICES (TAGS) --}}
-                <div class="card border border-danger shadow-sm p-4 p-md-5 rounded-4 mb-4" style="background: var(--bg-card);">
-                    <h4 class="fw-bold text-danger mb-4 d-flex align-items-center gap-2">
-                        <i class="bi bi-briefcase"></i>
-                        <span>Products & Services</span>
-                    </h4>
-                    <div class="row g-3" id="biz-services">
-                        {{-- Services injected here via JS --}}
                     </div>
                 </div>
 
-                {{-- MAP --}}
-                <div class="card border border-danger shadow-sm p-4 p-md-5 rounded-4 mb-5" style="background: var(--bg-card);">
-                    <h4 class="fw-bold text-danger mb-3 d-flex align-items-center gap-2">
-                        <i class="bi bi-geo-alt-fill"></i>
-                        <span>Our Location</span>
-                    </h4>
-                    <p class="mb-4 fw-bold" style="color: var(--text-main); font-size: 1.1rem;">
-                        <span id="biz-address-map">Loading...</span>
-                    </p>
-                    <div class="rounded-4 overflow-hidden shadow-sm border">
-                        <iframe id="biz-map-frame"
-                            src=""
-                            width="100%" height="350" style="border:0;" loading="lazy">
-                        </iframe>
-                    </div>
-                </div>
             </div>
 
-            {{-- RIGHT SIDEBAR --}}
+            {{-- RIGHT COLUMN: Contact, Hours, Map --}}
             <div class="col-lg-4">
 
                 {{-- CONTACT INFO --}}
-                <div class="card border border-danger shadow-sm p-4 rounded-4 mb-4" style="background: var(--bg-card);">
-                    <h5 class="fw-bold text-danger mb-4" style="font-family: 'Poppins', sans-serif;">Contact Information</h5>
-                    <div class="d-flex flex-column gap-4">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width:45px;height:45px;">
-                                <i class="bi bi-telephone-fill"></i>
-                            </div>
-                            <div>
-                                <small class="fw-bold text-uppercase text-danger" style="letter-spacing: 1px; font-size: 0.75rem;">Phone</small><br>
-                                <span id="biz-phone" class="fw-medium" style="color: var(--text-main); font-size: 1.05rem;">Loading...</span>
-                            </div>
-                        </div>
+                <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
+                    <h5 class="fw-bold mb-4" style="color: var(--text-main); font-family: 'DM Sans', sans-serif;">Contact Information</h5>
 
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width:45px;height:45px;">
-                                <i class="bi bi-envelope-fill"></i>
-                            </div>
-                            <div style="overflow: hidden; text-overflow: ellipsis;">
-                                <small class="fw-bold text-uppercase text-danger" style="letter-spacing: 1px; font-size: 0.75rem;">Email</small><br>
-                                <span id="biz-email" class="fw-medium" style="color: var(--text-main); font-size: 1.05rem;">Loading...</span>
-                            </div>
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="icon-wrapper bg-danger bg-opacity-10 text-danger me-3 d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style="width: 45px; height: 45px;">
+                            <i class="bi bi-geo-alt-fill fs-5"></i>
                         </div>
+                        <div class="pt-1">
+                            <span class="d-block text-muted small text-uppercase fw-bold mb-1">Address</span>
+                            <span style="color: var(--text-main); font-size: 0.95rem; font-weight: 500; line-height: 1.4; display: block;" id="biz-address">Loading...</span>
+                        </div>
+                    </div>
 
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width:45px;height:45px;">
-                                <i class="bi bi-geo-alt-fill"></i>
-                            </div>
-                            <div>
-                                <small class="fw-bold text-uppercase text-danger" style="letter-spacing: 1px; font-size: 0.75rem;">Address</small><br>
-                                <span id="biz-address" class="fw-medium" style="color: var(--text-main); font-size: 1.05rem;">Loading...</span>
-                            </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-wrapper bg-danger bg-opacity-10 text-danger me-3 d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style="width: 45px; height: 45px;">
+                            <i class="bi bi-telephone-fill fs-5"></i>
                         </div>
+                        <div>
+                            <span class="d-block text-muted small text-uppercase fw-bold mb-1">Phone</span>
+                            <span id="biz-phone" class="fw-bold" style="color: var(--text-main);">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="icon-wrapper bg-danger bg-opacity-10 text-danger me-3 d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style="width: 45px; height: 45px;">
+                            <i class="bi bi-envelope-fill fs-5"></i>
+                        </div>
+                        <div>
+                            <span class="d-block text-muted small text-uppercase fw-bold mb-1">Email</span>
+                            <span id="biz-email" class="fw-bold" style="color: var(--text-main); word-break: break-all;">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="#" id="biz-phone-btn" class="btn btn-danger py-2 fw-bold" style="border-radius: 8px;"><i class="bi bi-telephone me-2"></i> Call Now</a>
+                        <a href="#" id="biz-email-btn" class="btn btn-outline-danger py-2 fw-bold" style="border-radius: 8px;"><i class="bi bi-envelope me-2"></i> Send Email</a>
                     </div>
                 </div>
 
                 {{-- BUSINESS HOURS --}}
-                <div class="card border border-danger shadow-sm p-4 rounded-4 mb-4" style="background: var(--bg-card);">
-                    <div class="d-flex align-items-center gap-2 mb-4">
-                        <i class="bi bi-clock-history text-danger fs-4"></i>
-                        <h5 class="fw-bold text-danger mb-0" style="font-family: 'Poppins', sans-serif;">Business Hours</h5>
-                    </div>
-                    <div class="d-flex flex-column gap-2" id="biz-hours-container">
-                        {{-- Hours injected here --}}
+                <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
+                    <h5 class="fw-bold mb-4" style="color: var(--text-main); font-family: 'DM Sans', sans-serif;">Business Hours</h5>
+                    <div id="biz-hours-container" style="font-family: 'Poppins', sans-serif;">
+                        <div class="text-center text-muted py-3">Loading hours...</div>
                     </div>
                 </div>
 
-                {{-- ACTIONS --}}
-                <div class="card border border-danger shadow-sm p-4 rounded-4 position-sticky" style="top: 100px; background: var(--bg-card);">
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <i class="bi bi-gear text-danger fs-4"></i>
-                        <h5 class="fw-bold text-danger mb-0">Quick Actions</h5>
-                    </div>
-                    <div class="d-grid gap-3">
-                        <button class="btn btn-outline-danger fw-bold rounded-pill">Request Quote</button>
-                        <button class="btn btn-outline-danger fw-bold rounded-pill">Schedule Call</button>
-                        <hr class="my-2 text-muted">
-                        <a href="{{ route('membership') }}" class="btn btn-outline-danger fw-bold rounded-pill py-2">
-                            <i class="bi bi-arrow-left me-2"></i> Browse Directory
-                        </a>
+                {{-- MAP --}}
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <iframe id="biz-map-frame" width="100%" height="250" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    <div class="p-3 bg-white d-flex align-items-start gap-3">
+                        <div class="bg-danger bg-opacity-10 text-danger p-2 rounded flex-shrink-0">
+                            <i class="bi bi-geo-alt fs-4"></i>
+                        </div>
+                        <div class="pt-1">
+                            <p class="mb-0" style="font-size: 0.95rem; font-weight: 500; color: var(--text-main); line-height: 1.4;" id="biz-address-map">Loading...</p>
+                        </div>
                     </div>
                 </div>
 
@@ -177,32 +133,75 @@
     </div>
 </div>
 
-<style>
-    @keyframes spin {
-        100% {
-            transform: rotate(360deg);
-        }
-    }
-
-    .service-box:hover {
-        transform: translateY(-3px);
-        transition: all 0.3s ease;
-        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
-    }
-</style>
-
-{{-- ========================================= --}}
-{{-- API FETCH LOGIC MAPS TO YOUR EXACT JSON --}}
-{{-- ========================================= --}}
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
         const targetId = "{{ $id ?? '' }}";
 
+        // ==========================================
+        // 1. STRICTLY FILTERED PRODUCT FETCH
+        // ==========================================
+        async function loadBusinessProducts(memberId) {
+            const productsGrid = document.getElementById('biz-services');
+            if (!productsGrid) return;
+
+            productsGrid.innerHTML = '<div class="col-12 text-center py-5 text-muted"><i class="bi bi-arrow-repeat spin fs-2"></i><br>Loading products...</div>';
+
+            try {
+                const apiBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
+
+                // STRICTLY FILTER BY member_id
+                const response = await fetch(`${apiBase}/v1/public/products?member_id=${memberId}`, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch products');
+
+                const result = await response.json();
+                const products = result.data || result || [];
+
+                if (products.length > 0) {
+                    productsGrid.innerHTML = products.map(prod => {
+                        const prodName = prod.name || 'Unnamed Product';
+                        const prodDesc = prod.description || '';
+                        const prodUrl = prod.url || prod.product_url || '';
+
+                        return `
+                            <div class="col-md-6 col-lg-6 mb-4">
+                                <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; background: #fff; border: 1px solid rgba(0,0,0,0.05) !important;">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <div class="bg-danger bg-opacity-10 text-danger rounded p-3 d-flex align-items-center justify-content-center flex-shrink-0">
+                                                <i class="bi bi-box-seam fs-3"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="card-title fw-bold mb-2" style="color: #111; font-size: 1.1rem;">${prodName}</h5>
+                                                <p class="card-text text-muted small mb-0" style="line-height: 1.5;">${prodDesc}</p>
+                                                ${prodUrl ? `<a href="${prodUrl}" target="_blank" class="small fw-bold text-danger mt-2 d-inline-block">View Details <i class="bi bi-arrow-right"></i></a>` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    productsGrid.innerHTML = '<div class="col-12 text-center text-muted py-4">No products or services listed yet.</div>';
+                }
+            } catch (error) {
+                console.error("Product Fetch Error:", error);
+                productsGrid.innerHTML = '<div class="col-12 text-center text-muted py-4">Products are currently unavailable.</div>';
+            }
+        }
+
+        // ==========================================
+        // 2. MAIN PROFILE FETCH LOGIC
+        // ==========================================
         try {
             const headers = {
                 'Accept': 'application/json'
             };
-
             const response = await fetch(`${window.API_BASE_URL}/v1/business/${encodeURIComponent(targetId)}`, {
                 method: 'GET',
                 headers: headers
@@ -216,29 +215,14 @@
             let biz = {};
 
             function resolveBusinessPayload(payload) {
-                if (!payload || typeof payload !== 'object') {
-                    return {};
-                }
-
-                if (Array.isArray(payload)) {
-                    return payload.find(item => String(item.id) === String(targetId) || String(item._idx) === String(targetId)) || {};
-                }
-
+                if (!payload || typeof payload !== 'object') return {};
+                if (Array.isArray(payload)) return payload.find(item => String(item.id) === String(targetId) || String(item._idx) === String(targetId)) || {};
                 if (payload.data) {
-                    if (Array.isArray(payload.data)) {
-                        return payload.data.find(item => String(item.id) === String(targetId) || String(item._idx) === String(targetId)) || {};
-                    }
+                    if (Array.isArray(payload.data)) return payload.data.find(item => String(item.id) === String(targetId) || String(item._idx) === String(targetId)) || {};
                     return payload.data;
                 }
-
-                if (payload.business_profile && typeof payload.business_profile === 'object') {
-                    return payload.business_profile;
-                }
-
-                if (payload.profile && typeof payload.profile === 'object') {
-                    return payload.profile;
-                }
-
+                if (payload.business_profile && typeof payload.business_profile === 'object') return payload.business_profile;
+                if (payload.profile && typeof payload.profile === 'object') return payload.profile;
                 return payload;
             }
 
@@ -252,28 +236,95 @@
                 return;
             }
 
-            // === MAPPING YOUR API DATA ===
-            const name = biz.registered_business_name || 'Business Name';
-            const email = biz.email || 'N/A';
-            const phone = biz.telephone_no || 'N/A';
-            const industry = biz.industry || 'Business';
-            const tagline = biz.business_tagline || '';
-            const description = biz.description || tagline || 'No detailed description provided.';
+            // === DATA EXTRACTION — matched to the exact BusinessResource JSON shape ===
+            // BusinessResource (public endpoint, no auth) exposes fields at BOTH top-level
+            // AND nested inside biz.applicant.* for backwards-compat with older blade code.
+            // Priority: top-level first (most direct), then nested fallbacks.
 
-            // Handle Nested Location Object
-            // Handle Nested Location Object
+            function safeObj(val) {
+                if (!val) return {};
+                if (typeof val === 'string') {
+                    try {
+                        return JSON.parse(val);
+                    } catch (e) {
+                        return {};
+                    }
+                }
+                return (typeof val === 'object' && !Array.isArray(val)) ? val : {};
+            }
+
+            const basic = safeObj(biz.applicant?.basic_profile ?? biz.basic_profile);
+            const rep = safeObj(biz.applicant?.official_representative ?? biz.official_representative);
+            const org = safeObj(biz.applicant?.organization_membership ?? biz.organization_membership);
+            const bizAdditional = safeObj(biz.applicant?.business_additional_data ?? biz.business_additional_data);
+
+            const name = biz.registered_business_name || basic.registered_business_name || 'Business Name';
+
+            // 1. EMAIL
+            // BusinessResource exposes: biz.email (top-level) + biz.applicant.email + biz.applicant.basic_profile.email
+            const email =
+                biz.email // top-level — primary path from BusinessResource
+                ||
+                biz.applicant?.email // flat on nested applicant object
+                ||
+                basic.email // inside basic_profile
+                ||
+                biz.user?.email ||
+                'N/A';
+
+            // 2. PHONE — two DB columns on Applicant:
+            //    telephone_no   → business landline (Applicant::$fillable)
+            //    rep_contact_no → representative mobile (Applicant::$fillable)
+            // BusinessResource exposes BOTH at top-level AND nested.
+            const phone =
+                biz.telephone_no // top-level — PRIMARY (BusinessResource fix)
+                ||
+                biz.applicant?.telephone_no // flat on nested applicant object
+                ||
+                basic.telephone_no // inside basic_profile
+                ||
+                biz.rep_contact_no // top-level rep phone fallback
+                ||
+                biz.applicant?.rep_contact_no ||
+                rep.contact_no // inside official_representative
+                ||
+                biz.user?.contact_number ||
+                biz.contact_number ||
+                'N/A';
+
+            // 3. INDUSTRY
+            const industry =
+                bizAdditional.industry ||
+                biz.industry ||
+                org.type_of_company ||
+                biz.type_of_company ||
+                'Business';
+
+            // 4. ABOUT / TAGLINE
+            const tagline =
+                bizAdditional.business_tagline ||
+                biz.business_tagline ||
+                '';
+            const description =
+                bizAdditional.about_description ||
+                biz.about_description ||
+                biz.about ||
+                biz.description ||
+                tagline ||
+                'No detailed description provided.';
+
+            // 5. LOCATION
             let address = 'Valenzuela City';
             let mapQuery = name;
 
-            if (biz.business_location) {
-                const loc = biz.business_location;
+            // BusinessResource exposes business_location at top-level AND inside basic_profile
+            const loc = safeObj(biz.business_location ?? basic.business_location);
 
-                // If location_link exists, use it for BOTH the visible text AND the Google Map!
+            if (loc && Object.keys(loc).length > 0) {
                 if (loc.location_link && loc.location_link !== 'N/A') {
                     address = loc.location_link;
-                    mapQuery = loc.location_link; // <-- This tells the map to point exactly here!
+                    mapQuery = loc.location_link;
                 } else {
-                    // Fallback just in case location_link is empty
                     const addressParts = [loc.business_address, loc.city_municipality, loc.province].filter(p => p && p !== 'N/A');
                     if (addressParts.length > 0) {
                         address = addressParts.join(', ');
@@ -281,7 +332,8 @@
                     }
                 }
             }
-            // Update Basic Text Elements
+
+            // Populate UI Elements
             document.getElementById('biz-name-main').innerText = name;
             document.getElementById('biz-industry').innerText = industry;
             document.getElementById('biz-tagline').innerText = tagline ? `"${tagline}"` : '';
@@ -291,11 +343,10 @@
             document.getElementById('biz-address').innerText = address;
             document.getElementById('biz-address-map').innerText = address;
 
-            // Update Contact Buttons
             document.getElementById('biz-phone-btn').href = phone !== 'N/A' ? `tel:${phone}` : '#';
             document.getElementById('biz-email-btn').href = email !== 'N/A' ? `mailto:${email}` : '#';
 
-            // 3. DYNAMIC PHOTO URL
+            // DYNAMIC PHOTO URL
             if (biz.photo_url && biz.photo_url !== 'N/A' && biz.photo_url !== 'null') {
                 const activeOrigin = new URL(window.API_BASE_URL || window.location.origin).origin;
                 let finalPhotoUrl = biz.photo_url
@@ -309,169 +360,40 @@
                 if (words.length > 1 && words[1].length > 0) {
                     initials = (words[0][0] + words[1][0]).toUpperCase();
                 }
-                document.getElementById('biz-initials').innerText = initials;
+                const initialsEl = document.getElementById('biz-initials');
+                if (initialsEl) initialsEl.innerText = initials;
             }
-
-            function extractProductItems(source) {
-                if (!source || typeof source !== 'object') return [];
-
-                const candidates = [
-                    source.products,
-                    source.product_items,
-                    source.product_list,
-                    source.items,
-                    source.business_products,
-                    source.business_services,
-                    source.services,
-                    source.offerings,
-                    source.service_items,
-                    source.services_offered,
-                    source.catalog,
-                    source.items_offered,
-                    source.records,
-                ];
-
-                for (const candidate of candidates) {
-                    if (Array.isArray(candidate) && candidate.length > 0) {
-                        const items = candidate.map(item => {
-                            if (typeof item === 'string') {
-                                const title = item.trim();
-                                return title ? {
-                                    title,
-                                    description: '',
-                                    url: ''
-                                } : null;
-                            }
-                            if (item && typeof item === 'object') {
-                                const title = item.name || item.product_name || item.title || item.service_name || item.label || item.product_title || item.service_title;
-                                if (!title) return null;
-                                return {
-                                    title: String(title).trim(),
-                                    description: String(item.description || item.details || item.summary || item.long_description || item.product_description || item.service_description || '').trim(),
-                                    url: String(item.url || item.service_url || item.website || item.link || item.product_url || item.website_url || '').trim(),
-                                };
-                            }
-                            return null;
-                        }).filter(Boolean);
-
-                        if (items.length > 0) {
-                            return items;
-                        }
-                    }
-
-                    if (typeof candidate === 'string' && candidate.trim() !== '') {
-                        return candidate.split(/[,;|]/).map(s => {
-                            const title = s.trim();
-                            return title ? {
-                                title,
-                                description: '',
-                                url: ''
-                            } : null;
-                        }).filter(Boolean);
-                    }
-                }
-
-                return [];
-            }
-
-            function renderProductCards(items, container) {
-                if (!container) return;
-                container.innerHTML = '';
-                if (!Array.isArray(items) || items.length === 0) {
-                    return;
-                }
-
-                container.innerHTML = items.map(item => `
-                    <div class="col-md-6 col-lg-4">
-                        <div class="service-box bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-4 p-3 h-100">
-                            <div class="d-flex align-items-start gap-2 mb-2">
-                                <i class="bi bi-box-seam text-danger fs-4 mt-1"></i>
-                                <div>
-                                    <h6 class="fw-bold mb-1 text-danger text-capitalize" style="font-family: 'Poppins', sans-serif;">${item.title}</h6>
-                                    <p class="small mb-0 text-muted">${item.description || ''}</p>
-                                </div>
-                            </div>
-                            ${item.url ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="small fw-bold text-danger">View product</a>` : ''}
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            const servicesContainer = document.getElementById('biz-services');
-
-            function resolveProductOwnerId(source) {
-                if (!source || typeof source !== 'object') {
-                    return null;
-                }
-
-                const keys = ['user_id', 'owner_id', 'created_by', 'member_id', 'business_user_id', 'seller_id'];
-                for (const key of keys) {
-                    if (source[key] !== undefined && source[key] !== null && String(source[key]).trim() !== '') {
-                        return String(source[key]);
-                    }
-                }
-
-                if (source.user && typeof source.user === 'object' && source.user.id) {
-                    return String(source.user.id);
-                }
-
-                return null;
-            }
-
-            async function fetchProductsForBusiness(biz, targetId) {
-                const ownerId = resolveProductOwnerId(biz);
-
-                if (!ownerId) {
-                    return [];
-                }
-
-                try {
-                    const res = await fetch(`${window.API_BASE_URL}/v1/products/active?user_id=${encodeURIComponent(ownerId)}`);
-                    if (!res.ok) return [];
-                    const data = await res.json();
-                    const list = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
-
-                    return list.map(item => ({
-                        title: String(item.name || item.title || item.product_name || item.service_name || item.label || item.product_title || item.service_title || item.id || '').trim(),
-                        description: String(item.description || item.details || item.summary || item.product_description || '').trim(),
-                        url: String(item.url || item.service_url || item.product_url || item.website || '').trim(),
-                    })).filter(Boolean);
-                } catch (e) {
-                    return [];
-                }
-            }
-
-            // Prefer dedicated products API; fall back to embedded product lists in business object
-            (async () => {
-                let products = await fetchProductsForBusiness(biz, targetId);
-                if (!products || products.length === 0) {
-                    products = extractProductItems(biz);
-                }
-                renderProductCards(products, servicesContainer);
-            })();
 
             // Map Business Hours
             const hoursContainer = document.getElementById('biz-hours-container');
-            hoursContainer.innerHTML = '';
-            if (biz.business_hours && Object.keys(biz.business_hours).length > 0) {
-                for (const [day, time] of Object.entries(biz.business_hours)) {
-                    hoursContainer.innerHTML += `
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-capitalize" style="color: var(--text-main); font-weight: 500;">${day}</span>
-                            <span class="fw-bold" style="color: var(--text-main);">${time}</span>
-                        </div>
-                    `;
+            if (hoursContainer) {
+                hoursContainer.innerHTML = '';
+                if (biz.business_hours && Object.keys(biz.business_hours).length > 0) {
+                    for (const [day, time] of Object.entries(biz.business_hours)) {
+                        hoursContainer.innerHTML += `
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-capitalize" style="color: var(--text-main); font-weight: 500;">${day}</span>
+                                <span class="fw-bold" style="color: var(--text-main);">${time}</span>
+                            </div>
+                        `;
+                    }
+                } else {
+                    hoursContainer.innerHTML = '<span style="color: var(--text-muted);">Business hours not provided.</span>';
                 }
-            } else {
-                hoursContainer.innerHTML = '<span style="color: var(--text-muted);">Business hours not provided.</span>';
             }
 
-            // 4. FIX GOOGLE MAPS URL (Added the missing $ and fixed the base URL)
+            // FIX GOOGLE MAPS URL
             const encodedMapQuery = encodeURIComponent(mapQuery + ', Philippines');
-            document.getElementById('biz-map-frame').src = `https://maps.google.com/maps?q=${encodedMapQuery}&t=m&z=15&output=embed`;
+            const mapFrame = document.getElementById('biz-map-frame');
+            if (mapFrame) {
+                mapFrame.src = `https://maps.google.com/maps?q=${encodedMapQuery}&t=m&z=15&output=embed`;
+            }
 
             // Reveal the UI
             document.getElementById('main-content').style.display = 'block';
+
+            // TRIGGER THE STRICTLY FILTERED FETCH NOW THAT PROFILE IS LOADED!
+            loadBusinessProducts(targetId);
 
         } catch (error) {
             console.error("Error fetching business details:", error);

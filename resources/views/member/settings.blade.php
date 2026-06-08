@@ -951,35 +951,68 @@
     function populateSettingsAccountForm(profile) {
         if (!profile) return;
 
-        // --- 1. ROBUST TEXT FIELD MAPPING (Remembers the info fields perfectly) ---
+        // ── Resolve the profile shape from /v1/member/profile response ────────
+        // Response: { member: { user: {...}, applicant: { basic_profile:{...}, official_representative:{...} } } }
         const member = profile.member || profile.data?.member || profile || {};
         const user = member.user || profile.user || {};
-        const applicant = member.applicant || member || {};
 
-        // Safely extract the nested objects if they exist in the API response
-        const basic = applicant.basic_profile || applicant || {};
-        const rep = applicant.official_representative || applicant || {};
+        // applicant is nested inside member, NOT the top-level profile
+        const applicant = member.applicant || {};
+
+        // Safe nested object extractor (handles JSON-string values from older endpoints)
+        function safeObj(val) {
+            if (!val) return {};
+            if (typeof val === 'string') {
+                try {
+                    return JSON.parse(val);
+                } catch (e) {
+                    return {};
+                }
+            }
+            return (typeof val === 'object' && !Array.isArray(val)) ? val : {};
+        }
+
+        const basic = safeObj(applicant.basic_profile);
+        const rep = safeObj(applicant.official_representative);
 
         const firstEl = document.getElementById('settingsFirstName');
         const lastEl = document.getElementById('settingsLastName');
         const emailEl = document.getElementById('settingsEmailInput');
         const phoneEl = document.getElementById('settingsPhoneInput');
 
-        // Prioritize User Data -> then Nested Applicant Data -> then Flat Applicant Data
-        const firstName = user.first_name || rep.first_name || rep.rep_first_name || applicant.rep_first_name || '';
-        const lastName = user.last_name || rep.surname || rep.last_name || rep.rep_surname || applicant.rep_surname || '';
+        const firstName = user.first_name || rep.first_name || applicant.rep_first_name || '';
+        const lastName = user.last_name || rep.surname || applicant.rep_surname || '';
         const email = user.email || basic.email || applicant.email || '';
-        const phone = user.contact_number || basic.telephone_no || basic.contact_number || applicant.telephone_no || '';
+
+        // Phone priority:
+        // 1. user.contact_number  — saved via UserController::changeInfo (users table)
+        // 2. basic.telephone_no   — business landline from applicant.basic_profile
+        // 3. rep.contact_no       — rep mobile from applicant.official_representative
+        // 4. applicant.telephone_no — flat fallback on applicant object
+        // NOTE: user.contact_number is now always returned by UserResource (after the fix).
+        //       If it's empty, fall through to the applicant's telephone_no.
+        const phone =
+            user.contact_number // users table — primary (UserResource now returns this)
+            ||
+            basic.telephone_no // applicant basic_profile landline
+            ||
+            rep.contact_no // applicant official_representative mobile
+            ||
+            applicant.telephone_no // flat fallback
+            ||
+            '';
 
         if (firstEl) firstEl.value = firstName;
         if (lastEl) lastEl.value = lastName;
         if (emailEl) emailEl.value = email;
         if (phoneEl) phoneEl.value = phone;
 
-        // --- 2. FLAWLESS AVATAR LOGIC (From your old code that successfully remembers the image) ---
+        // ── Avatar ────────────────────────────────────────────────────────────
         const avatarUrl = user.photo_url || user.profile_photo_url || user.profile_photo_path;
         if (avatarUrl) {
-            const finalUrl = avatarUrl.startsWith('http') ? avatarUrl : `${(window.API_BASE_URL || '').replace('/api', '')}/storage/${avatarUrl}`;
+            const finalUrl = avatarUrl.startsWith('http') ?
+                avatarUrl :
+                `${(window.API_BASE_URL || '').replace('/api', '')}/storage/${avatarUrl}`;
 
             document.querySelectorAll('img[alt="Profile"]').forEach(img => {
                 img.src = finalUrl;
@@ -1056,16 +1089,18 @@
                 alert('Account updated successfully!');
                 window.accountImageFile = null;
 
-                // CRITICAL FIX: Update the local cache so the modal doesn't clear when reopened
+                // Update the local cache so reopening the modal shows the saved values.
+                // responseData.user now includes contact_number (UserResource fix).
                 if (window.currentProfileData) {
-                    let target = window.currentProfileData.member ? window.currentProfileData.member : window.currentProfileData;
-                    target.user = Object.assign(target.user || {}, responseData.user || {});
+                    // Handle both response shapes: { member: { user } } and { user }
+                    const target = window.currentProfileData.member ?
+                        window.currentProfileData.member :
+                        window.currentProfileData;
 
-                    // Immediately refresh the UI with the newly cached data
-                    populateSettingsAccountForm(window.currentProfileData);
+                    target.user = Object.assign(target.user || {}, responseData.user || {});
                 }
 
-                // Force a hard refresh of data immediately!
+                // Force a hard refresh from the server to confirm everything is in sync
                 await fetchMyBillingHistory();
                 closeSettingsModal('account');
 
