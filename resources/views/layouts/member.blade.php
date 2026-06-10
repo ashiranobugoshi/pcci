@@ -921,28 +921,57 @@
             const data = await response.json();
             if (response.ok && data.data) {
                 const profile = Array.isArray(data.data) ? data.data[0] : data.data;
-                window.currentProfileData = profile;
+
+                // Store in a SEPARATE variable — do NOT overwrite window.currentProfileData
+                // which is used by settings.blade and expects the /v1/member/profile shape.
+                window.currentApplicationData = profile;
+
                 if (!profile) return;
-                const basic = profile.basic_profile || {};
-                const org = profile.organization_membership || {};
-                const rep = profile.official_representative || {};
-                const loc = basic.business_location || {};
+
+                // ApplicantResource (member role) returns nested objects:
+                //   basic_profile.*, official_representative.*, organization_membership.*
+                function safeObj(val) {
+                    if (!val) return {};
+                    if (typeof val === 'string') {
+                        try {
+                            return JSON.parse(val);
+                        } catch (e) {
+                            return {};
+                        }
+                    }
+                    return (typeof val === 'object' && !Array.isArray(val)) ? val : {};
+                }
+
+                const basic = safeObj(profile.basic_profile);
+                const rep = safeObj(profile.official_representative);
+                const loc = safeObj(basic.business_location);
+
                 const companyName = basic.registered_business_name || 'Your Company';
                 const repName = `${rep.first_name || ''} ${rep.surname || ''}`.trim();
                 const memberID = `PCCI-${new Date().getFullYear()}-${String(profile.id).padStart(4, '0')}`;
 
+                // Phone: ApplicantResource exposes telephone_no in basic_profile
+                // and contact_no (not contact_number) in official_representative
+                const phone = basic.telephone_no ||
+                    rep.contact_no ||
+                    profile.telephone_no ||
+                    profile.rep_contact_no ||
+                    'N/A';
+
+                const email = basic.email || profile.email || 'N/A';
+
                 document.getElementById('sidebarCompany').innerText = companyName;
                 document.getElementById('sidebarName').innerText = repName || 'No Rep Assigned';
-                document.getElementById('sidebarEmail').innerText = basic.email || 'N/A';
+                document.getElementById('sidebarEmail').innerText = email;
                 document.getElementById('welcomeMessage').innerText = `Welcome, ${companyName}!`;
                 document.getElementById('dashBizName').innerText = companyName;
-                document.getElementById('dashBizEmail').innerText = basic.email || 'N/A';
+                document.getElementById('dashBizEmail').innerText = email;
                 document.getElementById('dashMembershipStatus').innerText = (profile.status || 'Pending').toUpperCase();
                 document.getElementById('dashMembershipID').innerText = memberID;
 
                 document.getElementById('bizNameTitle').innerText = companyName;
-                document.getElementById('bizEmailText').innerText = basic.email || 'N/A';
-                document.getElementById('bizPhoneText').innerText = basic.contact_number || 'N/A';
+                document.getElementById('bizEmailText').innerText = email;
+                document.getElementById('bizPhoneText').innerText = phone;
             }
         } catch (error) {
             console.error("Failed to fetch API Data:", error);

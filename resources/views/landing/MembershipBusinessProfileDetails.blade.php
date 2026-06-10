@@ -141,7 +141,7 @@
         // 1. STRICTLY FILTERED PRODUCT FETCH
         // ==========================================
         async function loadBusinessProducts(memberId) {
-            const productsGrid = document.getElementById('biz-services');
+            const productsGrid = document.getElementById('biz-services') || document.getElementById('products-grid');
             if (!productsGrid) return;
 
             productsGrid.innerHTML = '<div class="col-12 text-center py-5 text-muted"><i class="bi bi-arrow-repeat spin fs-2"></i><br>Loading products...</div>';
@@ -149,7 +149,6 @@
             try {
                 const apiBase = (window.API_BASE_URL || '/api').replace(/\/$/, '');
 
-                // STRICTLY FILTER BY member_id
                 const response = await fetch(`${apiBase}/v1/public/products?member_id=${memberId}`, {
                     headers: {
                         'Accept': 'application/json'
@@ -168,19 +167,12 @@
                         const prodUrl = prod.url || prod.product_url || '';
 
                         return `
-                            <div class="col-md-6 col-lg-6 mb-4">
-                                <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; background: #fff; border: 1px solid rgba(0,0,0,0.05) !important;">
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; background: #fff;">
                                     <div class="card-body p-4">
-                                        <div class="d-flex align-items-start gap-3">
-                                            <div class="bg-danger bg-opacity-10 text-danger rounded p-3 d-flex align-items-center justify-content-center flex-shrink-0">
-                                                <i class="bi bi-box-seam fs-3"></i>
-                                            </div>
-                                            <div>
-                                                <h5 class="card-title fw-bold mb-2" style="color: #111; font-size: 1.1rem;">${prodName}</h5>
-                                                <p class="card-text text-muted small mb-0" style="line-height: 1.5;">${prodDesc}</p>
-                                                ${prodUrl ? `<a href="${prodUrl}" target="_blank" class="small fw-bold text-danger mt-2 d-inline-block">View Details <i class="bi bi-arrow-right"></i></a>` : ''}
-                                            </div>
-                                        </div>
+                                        <h5 class="card-title fw-bold mb-3" style="color: #111;">${prodName}</h5>
+                                        <p class="card-text text-muted small">${prodDesc}</p>
+                                        ${prodUrl ? `<a href="${prodUrl}" target="_blank" class="small fw-bold text-danger mt-3 d-inline-block">View Details <i class="bi bi-arrow-right"></i></a>` : ''}
                                     </div>
                                 </div>
                             </div>
@@ -212,7 +204,6 @@
             }
 
             const result = await response.json();
-            let biz = {};
 
             function resolveBusinessPayload(payload) {
                 if (!payload || typeof payload !== 'object') return {};
@@ -226,7 +217,7 @@
                 return payload;
             }
 
-            biz = resolveBusinessPayload(result);
+            const biz = resolveBusinessPayload(result);
 
             document.getElementById('loading-spinner').style.display = 'none';
 
@@ -236,90 +227,64 @@
                 return;
             }
 
-            // === DATA EXTRACTION — matched to the exact BusinessResource JSON shape ===
-            // BusinessResource (public endpoint, no auth) exposes fields at BOTH top-level
-            // AND nested inside biz.applicant.* for backwards-compat with older blade code.
-            // Priority: top-level first (most direct), then nested fallbacks.
+            // === ROBUST MAPPING FOR API DATA ===
+            let basic = biz.applicant?.basic_profile || biz.basic_profile || {};
+            let rep = biz.applicant?.official_representative || biz.official_representative || {};
+            let org = biz.applicant?.organization_membership || biz.organization_membership || {};
+            let addData = biz.applicant?.business_additional_data || biz.business_additional_data || {};
 
-            function safeObj(val) {
-                if (!val) return {};
-                if (typeof val === 'string') {
-                    try {
-                        return JSON.parse(val);
-                    } catch (e) {
-                        return {};
-                    }
+            if (typeof basic === 'string') {
+                try {
+                    basic = JSON.parse(basic);
+                } catch (e) {
+                    basic = {};
                 }
-                return (typeof val === 'object' && !Array.isArray(val)) ? val : {};
+            }
+            if (typeof rep === 'string') {
+                try {
+                    rep = JSON.parse(rep);
+                } catch (e) {
+                    rep = {};
+                }
+            }
+            if (typeof org === 'string') {
+                try {
+                    org = JSON.parse(org);
+                } catch (e) {
+                    org = {};
+                }
+            }
+            if (typeof addData === 'string') {
+                try {
+                    addData = JSON.parse(addData);
+                } catch (e) {
+                    addData = {};
+                }
             }
 
-            const basic = safeObj(biz.applicant?.basic_profile ?? biz.basic_profile);
-            const rep = safeObj(biz.applicant?.official_representative ?? biz.official_representative);
-            const org = safeObj(biz.applicant?.organization_membership ?? biz.organization_membership);
-            const bizAdditional = safeObj(biz.applicant?.business_additional_data ?? biz.business_additional_data);
+            // 1. Compile Names
+            let name = biz.registered_business_name || biz.applicant?.registered_business_name || 'Business Name';
+            const trade = biz.trade_name || biz.applicant?.trade_name || basic.trade_name || null;
+            if (trade && trade !== 'N/A' && name !== 'Business Name') name += ` (${trade})`;
+            else if (trade && trade !== 'N/A') name = trade;
 
-            const name = biz.registered_business_name || basic.registered_business_name || 'Business Name';
+            // 2. Contact Details
+            const email = basic.email || rep.email || biz.user?.email || biz.applicant?.email || biz.email || 'N/A';
+            const phone = basic.contact_number || basic.telephone_no || rep.contact_no || rep.contact_number || biz.user?.contact_number || biz.applicant?.rep_contact_no || biz.applicant?.telephone_no || biz.applicant?.contact_number || biz.telephone_no || biz.contact_number || 'N/A';
 
-            // 1. EMAIL
-            // BusinessResource exposes: biz.email (top-level) + biz.applicant.email + biz.applicant.basic_profile.email
-            const email =
-                biz.email // top-level — primary path from BusinessResource
-                ||
-                biz.applicant?.email // flat on nested applicant object
-                ||
-                basic.email // inside basic_profile
-                ||
-                biz.user?.email ||
-                'N/A';
+            let website = biz.website_socmed || biz.applicant?.website_socmed || basic.website || basic.website_socmed || null;
+            if (website === 'N/A') website = null;
 
-            // 2. PHONE — two DB columns on Applicant:
-            //    telephone_no   → business landline (Applicant::$fillable)
-            //    rep_contact_no → representative mobile (Applicant::$fillable)
-            // BusinessResource exposes BOTH at top-level AND nested.
-            const phone =
-                biz.telephone_no // top-level — PRIMARY (BusinessResource fix)
-                ||
-                biz.applicant?.telephone_no // flat on nested applicant object
-                ||
-                basic.telephone_no // inside basic_profile
-                ||
-                biz.rep_contact_no // top-level rep phone fallback
-                ||
-                biz.applicant?.rep_contact_no ||
-                rep.contact_no // inside official_representative
-                ||
-                biz.user?.contact_number ||
-                biz.contact_number ||
-                'N/A';
+            // 3. Additional Data
+            const industry = biz.industry || biz.applicant?.industry || addData.industry || org.type_of_company || 'Business';
+            const tagline = biz.business_tagline || biz.applicant?.business_tagline || addData.business_tagline || '';
+            const description = biz.about_description || biz.applicant?.about_description || biz.description || addData.about_description || tagline || 'No detailed description provided.';
 
-            // 3. INDUSTRY
-            const industry =
-                bizAdditional.industry ||
-                biz.industry ||
-                org.type_of_company ||
-                biz.type_of_company ||
-                'Business';
-
-            // 4. ABOUT / TAGLINE
-            const tagline =
-                bizAdditional.business_tagline ||
-                biz.business_tagline ||
-                '';
-            const description =
-                bizAdditional.about_description ||
-                biz.about_description ||
-                biz.about ||
-                biz.description ||
-                tagline ||
-                'No detailed description provided.';
-
-            // 5. LOCATION
+            // 4. Location
             let address = 'Valenzuela City';
             let mapQuery = name;
 
-            // BusinessResource exposes business_location at top-level AND inside basic_profile
-            const loc = safeObj(biz.business_location ?? basic.business_location);
-
+            const loc = biz.business_location || biz.applicant?.business_location || basic.business_location || {};
             if (loc && Object.keys(loc).length > 0) {
                 if (loc.location_link && loc.location_link !== 'N/A') {
                     address = loc.location_link;
@@ -333,43 +298,105 @@
                 }
             }
 
-            // Populate UI Elements
+            // Populate Text Elements
             document.getElementById('biz-name-main').innerText = name;
-            document.getElementById('biz-industry').innerText = industry;
-            document.getElementById('biz-tagline').innerText = tagline ? `"${tagline}"` : '';
-            document.getElementById('biz-about-side').innerText = description;
+
+            const indEl = document.getElementById('biz-industry');
+            if (indEl) indEl.innerText = industry;
+
+            const tagEl = document.getElementById('biz-tagline');
+            if (tagEl) tagEl.innerText = tagline ? `"${tagline}"` : '';
+
+            const abtEl = document.getElementById('biz-about-side');
+            if (abtEl) abtEl.innerText = description;
+
             document.getElementById('biz-phone').innerText = phone;
             document.getElementById('biz-email').innerText = email;
-            document.getElementById('biz-address').innerText = address;
-            document.getElementById('biz-address-map').innerText = address;
 
-            document.getElementById('biz-phone-btn').href = phone !== 'N/A' ? `tel:${phone}` : '#';
-            document.getElementById('biz-email-btn').href = email !== 'N/A' ? `mailto:${email}` : '#';
+            // Format URL Button & Display
+            const webContainer = document.getElementById('biz-website-container');
+            const webText = document.getElementById('biz-website');
+            const webBtn = document.getElementById('biz-website-btn');
+
+            if (website) {
+                const safeUrl = website.startsWith('http') ? website : `https://${website}`;
+
+                // Show the website row if it exists in HTML
+                if (webContainer) webContainer.style.setProperty('display', 'flex', 'important');
+                if (webText) {
+                    webText.innerText = website;
+                    webText.href = safeUrl;
+                }
+
+                // Show the specific website button if it exists in HTML
+                if (webBtn) {
+                    webBtn.style.display = 'block';
+                    webBtn.href = safeUrl;
+                }
+            }
+
+            // Fix Address Overflow Styling
+            const addressEl = document.getElementById('biz-address');
+            if (addressEl) {
+                addressEl.innerText = address;
+                addressEl.style.wordBreak = 'break-word';
+                addressEl.style.whiteSpace = 'normal';
+                addressEl.style.fontSize = '0.95rem';
+                addressEl.style.lineHeight = '1.4';
+            }
+
+            const mapAddressEl = document.getElementById('biz-address-map');
+            if (mapAddressEl) {
+                mapAddressEl.innerText = address;
+                mapAddressEl.style.wordBreak = 'break-word';
+                mapAddressEl.style.whiteSpace = 'normal';
+                mapAddressEl.style.fontSize = '0.95rem';
+                mapAddressEl.classList.remove('text-truncate');
+            }
+
+            const phoneBtn = document.getElementById('biz-phone-btn');
+            if (phoneBtn) phoneBtn.href = phone !== 'N/A' ? `tel:${phone}` : '#';
+
+            const emailBtn = document.getElementById('biz-email-btn');
+            if (emailBtn) emailBtn.href = email !== 'N/A' ? `mailto:${email}` : '#';
 
             // DYNAMIC PHOTO URL
-            if (biz.photo_url && biz.photo_url !== 'N/A' && biz.photo_url !== 'null') {
-                const activeOrigin = new URL(window.API_BASE_URL || window.location.origin).origin;
-                let finalPhotoUrl = biz.photo_url
-                    .replace('http://127.0.0.1:8000', activeOrigin)
-                    .replace('http://localhost:8000', activeOrigin);
+            const avatarContainer = document.getElementById('biz-avatar-container');
+            if (avatarContainer) {
+                if (biz.photo_url && biz.photo_url !== 'N/A' && biz.photo_url !== 'null') {
+                    const activeOrigin = new URL(window.API_BASE_URL || window.location.origin).origin;
+                    let finalPhotoUrl = biz.photo_url
+                        .replace('http://127.0.0.1:8000', activeOrigin)
+                        .replace('http://localhost:8000', activeOrigin);
 
-                document.getElementById('biz-avatar-container').innerHTML = `<img src="${finalPhotoUrl}" alt="${name}" class="w-100 h-100" style="object-fit: cover;">`;
-            } else {
-                let initials = name.substring(0, 2).toUpperCase();
-                const words = name.split(' ');
-                if (words.length > 1 && words[1].length > 0) {
-                    initials = (words[0][0] + words[1][0]).toUpperCase();
+                    avatarContainer.innerHTML = `<img src="${finalPhotoUrl}" alt="${name}" class="w-100 h-100" style="object-fit: cover;">`;
+                } else {
+                    let initials = name.substring(0, 2).toUpperCase();
+                    const words = name.split(' ');
+                    if (words.length > 1 && words[1].length > 0) {
+                        initials = (words[0][0] + words[1][0]).toUpperCase();
+                    }
+                    const initialsEl = document.getElementById('biz-initials');
+                    if (initialsEl) initialsEl.innerText = initials;
                 }
-                const initialsEl = document.getElementById('biz-initials');
-                if (initialsEl) initialsEl.innerText = initials;
             }
 
             // Map Business Hours
             const hoursContainer = document.getElementById('biz-hours-container');
             if (hoursContainer) {
                 hoursContainer.innerHTML = '';
-                if (biz.business_hours && Object.keys(biz.business_hours).length > 0) {
-                    for (const [day, time] of Object.entries(biz.business_hours)) {
+                let hoursData = biz.business_hours || biz.applicant?.business_hours || addData.business_hours || {};
+
+                if (typeof hoursData === 'string') {
+                    try {
+                        hoursData = JSON.parse(hoursData);
+                    } catch (e) {
+                        hoursData = {};
+                    }
+                }
+
+                if (hoursData && Object.keys(hoursData).length > 0) {
+                    for (const [day, time] of Object.entries(hoursData)) {
                         hoursContainer.innerHTML += `
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-capitalize" style="color: var(--text-main); font-weight: 500;">${day}</span>

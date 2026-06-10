@@ -951,15 +951,25 @@
     function populateSettingsAccountForm(profile) {
         if (!profile) return;
 
-        // ── Resolve the profile shape from /v1/member/profile response ────────
-        // Response: { member: { user: {...}, applicant: { basic_profile:{...}, official_representative:{...} } } }
-        const member = profile.member || profile.data?.member || profile || {};
-        const user = member.user || profile.user || {};
+        // ── Detect which data shape we have ───────────────────────────────────
+        // Shape A (correct): /v1/member/profile  → { member: { user: {...}, applicant: {...} } }
+        // Shape B (wrong):   /v1/application     → { basic_profile: {...}, official_representative: {...} }
+        //
+        // If we receive Shape B (ApplicantResource from fetchRealDashboardData),
+        // bail out — the settings form will be populated once the correct
+        // member profile fetch completes via fetchMyBillingHistory.
+        const hasCorrectShape = !!(profile.member || profile.data?.member);
+        if (!hasCorrectShape) {
+            // Wrong shape — do not clear the form fields
+            return;
+        }
 
-        // applicant is nested inside member, NOT the top-level profile
+        // ── Resolve the profile shape from /v1/member/profile response ────────
+        const member = profile.member || profile.data?.member || {};
+        const user = member.user || {};
         const applicant = member.applicant || {};
 
-        // Safe nested object extractor (handles JSON-string values from older endpoints)
+        // Safe nested object extractor (handles JSON-string values)
         function safeObj(val) {
             if (!val) return {};
             if (typeof val === 'string') {
@@ -986,26 +996,22 @@
 
         // Phone priority:
         // 1. user.contact_number  — saved via UserController::changeInfo (users table)
-        // 2. basic.telephone_no   — business landline from applicant.basic_profile
-        // 3. rep.contact_no       — rep mobile from applicant.official_representative
-        // 4. applicant.telephone_no — flat fallback on applicant object
-        // NOTE: user.contact_number is now always returned by UserResource (after the fix).
-        //       If it's empty, fall through to the applicant's telephone_no.
+        //    UserResource now always returns this field.
+        // 2. basic.telephone_no   — applicant's business landline
+        // 3. rep.contact_no       — representative mobile
+        // 4. applicant flat fallback
         const phone =
-            user.contact_number // users table — primary (UserResource now returns this)
-            ||
-            basic.telephone_no // applicant basic_profile landline
-            ||
-            rep.contact_no // applicant official_representative mobile
-            ||
-            applicant.telephone_no // flat fallback
-            ||
+            user.contact_number ||
+            basic.telephone_no ||
+            rep.contact_no ||
+            applicant.telephone_no ||
             '';
 
-        if (firstEl) firstEl.value = firstName;
-        if (lastEl) lastEl.value = lastName;
-        if (emailEl) emailEl.value = email;
-        if (phoneEl) phoneEl.value = phone;
+        // Only write non-empty values — never clear a field that already has content
+        if (firstEl && firstName) firstEl.value = firstName;
+        if (lastEl && lastName) lastEl.value = lastName;
+        if (emailEl && email) emailEl.value = email;
+        if (phoneEl && phone) phoneEl.value = phone;
 
         // ── Avatar ────────────────────────────────────────────────────────────
         const avatarUrl = user.photo_url || user.profile_photo_url || user.profile_photo_path;
@@ -1013,11 +1019,9 @@
             const finalUrl = avatarUrl.startsWith('http') ?
                 avatarUrl :
                 `${(window.API_BASE_URL || '').replace('/api', '')}/storage/${avatarUrl}`;
-
             document.querySelectorAll('img[alt="Profile"]').forEach(img => {
                 img.src = finalUrl;
             });
-
             const sidebarAvatar = document.querySelector('.sidebar .avatar');
             if (sidebarAvatar) sidebarAvatar.src = finalUrl;
         }
@@ -1036,7 +1040,16 @@
         modal.style.display = 'flex';
 
         if (sector === 'account') {
-            populateSettingsAccountForm(window.currentProfileData || {});
+            // Only populate if we actually have profile data — never pass an empty object
+            // which would clear the fields. If data isn't ready yet, fetchMyBillingHistory
+            // will call populateSettingsAccountForm once it completes.
+            if (window.currentProfileData && Object.keys(window.currentProfileData).length > 0) {
+                populateSettingsAccountForm(window.currentProfileData);
+            } else {
+                // Data not yet loaded — fetch it now; populateSettingsAccountForm
+                // is called inside fetchMyBillingHistory → syncSettingsFromProfile
+                fetchMyBillingHistory();
+            }
         } else if (sector === 'billing') {
             fetchMyBillingHistory();
         } else if (sector === 'preferences') {
