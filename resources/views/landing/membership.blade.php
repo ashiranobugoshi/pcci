@@ -184,19 +184,49 @@
 
         let html = '';
         paginatedData.forEach(biz => {
-            // Safely check if a photo exists, otherwise fallback to the shop icon
-            const imageContent = biz.photo_url && biz.photo_url !== 'N/A' && biz.photo_url !== 'null' ?
-                `<img src="${biz.photo_url}" class="w-100 h-100" style="object-fit: cover;" alt="${biz.registered_business_name || 'Business Logo'}">` :
-                `<i class="bi bi-shop fs-1 text-muted"></i>`;
+            const name = biz.registered_business_name || biz.applicant?.registered_business_name || 'Unnamed Business';
+
+            // SMART PHOTO FINDER: Now specifically checks inside basic_profile!
+            let rawPhoto = biz.photo_url ||
+                biz.applicant?.basic_profile?.photo_url ||
+                biz.applicant?.photo_url ||
+                biz.user?.photo_url ||
+                biz.applicant?.user?.photo_url ||
+                biz.member?.user?.photo_url ||
+                biz.profile_photo_url ||
+                null;
+
+            let finalPhotoUrl = null;
+            if (rawPhoto && rawPhoto !== 'N/A' && String(rawPhoto).trim() !== 'null' && String(rawPhoto).trim() !== '') {
+                if (rawPhoto.startsWith('http')) {
+                    finalPhotoUrl = rawPhoto;
+                } else {
+                    const baseUrl = (window.API_BASE_URL || '').replace('/api', '');
+                    finalPhotoUrl = rawPhoto.startsWith('/storage') ? `${baseUrl}${rawPhoto}` : `${baseUrl}/storage/${rawPhoto}`;
+                }
+            }
+
+            // Fallback to Initials
+            let imageContent = '';
+            if (finalPhotoUrl) {
+                imageContent = `<img src="${finalPhotoUrl}" class="w-100 h-100" style="object-fit: cover;" alt="${name}">`;
+            } else {
+                let initials = name.substring(0, 2).toUpperCase();
+                const words = name.split(' ');
+                if (words.length > 1 && words[1].length > 0) {
+                    initials = (words[0][0] + words[1][0]).toUpperCase();
+                }
+                imageContent = `<div class="w-100 h-100 d-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger fw-bold" style="font-size: 4.5rem; font-family: 'DM Sans', sans-serif;">${initials}</div>`;
+            }
 
             html += `
                 <div class="col-md-6 col-lg-4">
                     <div class="card h-100 shadow-sm border-0 business-card" style="border-radius: 12px; overflow: hidden; transition: transform 0.2s;">
-                        <div style="height: 160px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #eee;">
+                        <div style="height: 180px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #eee;">
                              ${imageContent}
                         </div>
                         <div class="card-body p-4">
-                            <h5 class="fw-bold mb-1 text-truncate">${biz.registered_business_name || 'Unnamed Business'}</h5>
+                            <h5 class="fw-bold mb-1 text-truncate">${name}</h5>
                             <p class="small mb-3 text-uppercase fw-bold" style="color: #be1e38;">${biz.industry || 'General Industry'}</p>
                             <p class="text-muted small text-truncate" style="font-family: 'Poppins', sans-serif;">${biz.business_tagline || biz.email || 'No additional details available.'}</p>
                             <a href="/business/${biz.id}" class="btn btn-sm btn-outline-danger w-100 fw-bold mt-2" style="border-radius: 6px;">View Profile</a>

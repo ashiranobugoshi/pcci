@@ -1619,131 +1619,126 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="editProfileModal" onclick="handleEditProfileOverlay(event)">
-    <div class="modal-content-box" style="max-width: 900px; max-height: 90vh; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; padding: 0;">
-        <div style="padding: 20px 25px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; background: #f9fafb;">
-            <h5 class="fw-bold mb-0 text-dark">Edit Business Profile</h5>
-            <button class="btn-close" onclick="closeEditProfileModal()"></button>
+<div id="editProfileModal" class="custom-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1050; align-items: center; justify-content: center; padding: 20px;" onclick="handleModalBackdropClick(event)">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="width: 100%; max-width: 850px; background: var(--member-surface, #fff); display: flex; flex-direction: column; max-height: 90vh;" onclick="event.stopPropagation()">
+
+        <div class="d-flex align-items-center justify-content-between p-3 border-bottom border-light">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa fa-pencil-square text-danger fs-5"></i>
+                <h5 class="fw-bold text-dark mb-0" style="font-size: 16px;">Edit Business & Representative Profile</h5>
+            </div>
+            <button type="button" class="btn-close shadow-none border-0" onclick="interceptModalClose()" style="font-size: 14px;"></button>
         </div>
 
-        <div style="padding: 25px;">
-            <div id="profileAlert" class="alert alert-danger" style="display: none; font-size: 13px;"></div>
-
-            <div style="display: flex; gap: 20px; margin-bottom: 30px; padding-bottom: 25px; border-bottom: 1px solid #e5e7eb; align-items: flex-start;">
-                <img id="ep_companyImage" src="{{ asset('images/PCCI-Logo.svg') }}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #e5e7eb; flex-shrink: 0;">
-
-                <div style="flex-grow: 1;">
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                        <h4 class="fw-bold mb-0 text-dark" id="ep_companyNameDisplay">Loading...</h4>
-                        <span class="badge rounded-pill" style="background: #dcfce7; color: #15803d; font-size: 11px; font-weight: bold;"><i class="fa fa-check-circle me-1"></i>Active</span>
-                    </div>
-                    <p class="mb-0 text-muted" style="font-size: 13px;" id="ep_companyTypeDisplay">Loading...</p>
-                </div>
-            </div>
+        <div class="card-body p-4 overflow-y-auto" style="flex: 1;">
+            <div id="profileAlert" class="alert alert-danger small mb-3" style="display: none;"></div>
 
             <div class="row g-4">
                 <div class="col-md-6">
-                    <h6 class="fw-bold mb-3 text-dark" style="font-size: 14px;">Business information</h6>
+                    <h6 class="fw-bold mb-3 text-secondary text-uppercase tracking-wider" style="font-size: 11px;">Business details</h6>
 
-                    <div class="mb-3" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                        <div style="flex-grow: 1;">
-                            <small class="text-muted fw-bold d-block mb-1" style="font-size: 12px;">REGISTERED NAME</small>
-                            <input id="ep_companyName" type="text" class="form-control form-control-sm" style="padding: 8px 12px; font-size: 14px; background-color: #ffffff; color: #333; border: 1px solid #e5e7eb;" placeholder="Enter registered business name">
-                        </div>
-                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="focusEditField('companyName')"><i class="fa fa-pen"></i> Edit</button>
-                    </div>
-
-                    <div class="mb-3" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                        <div style="flex-grow: 1;">
-                            <small class="text-muted fw-bold d-block mb-1" style="font-size: 12px;">BUSINESS TYPE</small>
-                            <select id="ep_businessType" class="form-control form-control-sm" style="padding: 8px 12px; font-size: 14px; background-color: #ffffff; color: #333; border: 1px solid #e5e7eb;">
-                                <option value="">Select Business Type</option>
-                                <option value="Manufacturing">Manufacturing</option>
-                                <option value="Retail">Retail</option>
-                                <option value="Services">Services</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer; margin-top: 18px;" onclick="focusEditField('businessType')"><i class="fa fa-pen"></i> Edit</button>
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold d-block mb-1" style="font-size: 11px;">REGISTERED NAME</small>
+                        <input id="ep_companyName" type="text" class="form-control form-control-sm border-light-subtle rounded-2 shadow-none" placeholder="Enter registered business name">
                     </div>
 
                     <div class="mb-3">
-                        <small class="text-muted fw-bold d-block mb-1" style="font-size: 12px;">BUSINESS DESCRIPTION</small>
-                        <textarea id="ep_description" class="form-control form-control-sm" style="padding: 8px 12px; font-size: 14px; resize: vertical; height: 100px; font-family: inherit; background-color: #ffffff; color: #333; border: 1px solid #e5e7eb;" placeholder="Enter business description"></textarea>
-                        <small class="text-muted d-block text-end mt-1">0/200</small>
+                        <small class="text-muted fw-bold d-block mb-1" style="font-size: 11px;">BUSINESS TYPE / INDUSTRY</small>
+                        <input id="ep_businessType" type="text" list="businessTypeOptions" class="form-control form-control-sm border-light-subtle rounded-2 shadow-none" placeholder="Select or type custom type...">
+                        <datalist id="businessTypeOptions">
+                            <option value="Manufacturing">
+                            <option value="Retail">
+                            <option value="Services">
+                            <option value="Food & Beverage">
+                            <option value="Information Technology">
+                            <option value="Wholesale">
+                            <option value="Logistics">
+                        </datalist>
                     </div>
 
-                    <div class="mb-3" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                        <div style="flex-grow: 1;">
-                            <small class="text-muted fw-bold d-block mb-1" style="font-size: 12px;">REPRESENTATIVE NAME</small>
-                            <input id="ep_repName" type="text" class="form-control form-control-sm" style="padding: 8px 12px; font-size: 14px; background-color: #ffffff; color: #333; border: 1px solid #e5e7eb;" placeholder="Enter representative name">
-                        </div>
-                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="focusEditField('repName')"><i class="fa fa-pen"></i> Edit</button>
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold d-block mb-1" style="font-size: 11px;">MAYOR'S PERMIT (Optional Update)</small>
+                        <input id="ep_mayors_permit" type="file" accept=".pdf,.jpg,.jpeg,.png" class="form-control form-control-sm border-light-subtle rounded-2 shadow-none">
                     </div>
 
-                    <div class="mb-3" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                        <div style="flex-grow: 1;">
-                            <small class="text-muted fw-bold d-block mb-1" style="font-size: 12px;">REPRESENTATIVE POSITION</small>
-                            <input id="ep_repPosition" type="text" class="form-control form-control-sm" style="padding: 8px 12px; font-size: 14px; background-color: #ffffff; color: #333; border: 1px solid #e5e7eb;" placeholder="Enter representative position">
-                        </div>
-                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="focusEditField('repPosition')"><i class="fa fa-pen"></i> Edit</button>
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold d-block mb-1" style="font-size: 11px;">DTI / SEC REGISTRATION (Optional Update)</small>
+                        <input id="ep_dti_sec" type="file" accept=".pdf,.jpg,.jpeg,.png" class="form-control form-control-sm border-light-subtle rounded-2 shadow-none">
                     </div>
 
-                    <div class="mb-3" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                        <div style="flex-grow: 1;">
-                            <small class="text-muted fw-bold d-block mb-1" style="font-size: 12px;">CONTACT NUMBER</small>
-                            <input id="ep_contact" type="text" class="form-control form-control-sm" style="padding: 8px 12px; font-size: 14px; background-color: #ffffff; color: #333; border: 1px solid #e5e7eb;" placeholder="Enter contact number">
-                        </div>
-                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="focusEditField('contact')"><i class="fa fa-pen"></i> Edit</button>
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold d-block mb-1" style="font-size: 11px;">BUSINESS DESCRIPTION</small>
+                        <textarea id="ep_description" class="form-control form-control-sm border-light-subtle rounded-2 shadow-none" style="height: 105px; resize: none;" placeholder="Enter business description"></textarea>
                     </div>
                 </div>
 
                 <div class="col-md-6">
-                    <h6 class="fw-bold mb-3 text-dark" style="font-size: 14px;">Address</h6>
+                    <h6 class="fw-bold mb-3 text-secondary text-uppercase tracking-wider" style="font-size: 11px;">Contact & Operating Schedule</h6>
 
-                    <div class="mb-3" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                        <div style="flex-grow: 1;">
-                            <small class="text-muted fw-bold d-block mb-1" style="font-size: 12px;">ADDRESS</small>
-                            <textarea id="ep_address" class="form-control form-control-sm" style="padding: 8px 12px; font-size: 14px; resize: vertical; height: 90px; font-family: inherit; background-color: #ffffff; color: #333; border: 1px solid #e5e7eb;" placeholder="Enter business address, city, province, zip"></textarea>
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold d-block mb-1" style="font-size: 11px;">CONTACT NUMBER</small>
+                        <input id="ep_contact" type="text" class="form-control form-control-sm border-light-subtle rounded-2 shadow-none" placeholder="Enter contact number">
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold d-block mb-1" style="font-size: 11px;">REPRESENTATIVE POSITION / DESIGNATION</small>
+                        <input id="ep_repPosition" type="text" class="form-control form-control-sm border-light-subtle rounded-2 shadow-none" placeholder="Enter representative position">
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold d-block mb-1" style="font-size: 11px;">WEBSITE URL</small>
+                        <input id="ep_url" type="text" class="form-control form-control-sm border-light-subtle rounded-2 shadow-none" placeholder="Enter website URL">
+                    </div>
+
+                    <div class="card p-3 border-0 rounded-3 shadow-none" style="background: var(--member-surface-soft, #f9fafb);">
+                        <h6 class="fw-bold text-dark mb-2" style="font-size: 12px;"><i class="fa fa-clock text-muted me-1"></i> Operating Hours</h6>
+
+                        <div class="mb-2">
+                            <label class="small text-muted fw-semibold mb-1" style="font-size: 11px;">MONDAY - FRIDAY</label>
+                            <input id="ep_hours_mf" type="text" class="form-control form-control-sm border-light-subtle rounded-2" placeholder="e.g. 8:00 AM - 5:00 PM">
                         </div>
-                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="focusEditField('address')"><i class="fa fa-pen"></i> Edit</button>
-                    </div>
-
-                    <div class="mb-4" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                        <div style="flex-grow: 1;">
-                            <small class="text-muted fw-bold d-block mb-1" style="font-size: 12px;">URL</small>
-                            <input id="ep_url" type="text" class="form-control form-control-sm" style="padding: 8px 12px; font-size: 14px; background-color: #ffffff; color: #333; border: 1px solid #e5e7eb;" placeholder="Enter website URL">
+                        <div class="mb-2">
+                            <label class="small text-muted fw-semibold mb-1" style="font-size: 11px;">SATURDAY</label>
+                            <input id="ep_hours_sat" type="text" class="form-control form-control-sm border-light-subtle rounded-2" placeholder="e.g. 9:00 AM - 1:00 PM or Closed">
                         </div>
-                        <button class="btn btn-sm" style="border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; background: white; cursor: pointer;" onclick="focusEditField('url')"><i class="fa fa-pen"></i> Edit</button>
-                    </div>
-
-                    <div id="ep_changeSummary" class="small text-muted mb-3">No changes yet. Make your edits and click Save Changes.</div>
-
-                    <h6 class="fw-bold mb-3 text-dark" style="font-size: 14px;">Business Documentation</h6>
-
-                    <div class="mb-2" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
-                        <span style="font-size: 14px;">Mayor Permit</span>
-                        <button class="btn btn-sm" style="border: 1px solid #ccc; padding: 5px 12px; border-radius: 6px; font-size: 12px; background: white; color: #666; cursor: pointer;">Update</button>
-                    </div>
-
-                    <div class="mb-2" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
-                        <span style="font-size: 14px;">DTI Registration</span>
-                        <button class="btn btn-sm" style="border: 1px solid #ccc; padding: 5px 12px; border-radius: 6px; font-size: 12px; background: white; color: #666; cursor: pointer;">Update</button>
-                    </div>
-
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
-                        <span style="font-size: 14px;">Secretary Certification</span>
-                        <button class="btn btn-sm" style="border: 1px solid #ccc; padding: 5px 12px; border-radius: 6px; font-size: 12px; background: white; color: #666; cursor: pointer;">Update</button>
+                        <div>
+                            <label class="small text-muted fw-semibold mb-1" style="font-size: 11px;">SUNDAY</label>
+                            <input id="ep_hours_sun" type="text" class="form-control form-control-sm border-light-subtle rounded-2" placeholder="e.g. Closed">
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-                <button class="btn btn-light fw-bold px-4" style="border: 1px solid #e5e7eb;" onclick="closeEditProfileModal()">Cancel</button>
-                <button class="btn btn-danger fw-bold px-4" id="btnSaveProfile" onclick="saveProfile()">Save Changes</button>
+        <div class="p-3 border-top border-light bg-light bg-opacity-50 d-flex justify-content-end gap-2 flex-shrink-0">
+            <button type="button" class="btn btn-sm btn-light px-3 fw-bold border-light-subtle" onclick="interceptModalClose()" style="border-radius: 6px; font-size: 13px;">Cancel</button>
+            <button type="button" id="btnSaveProfile" class="btn btn-sm btn-danger px-4 fw-bold" onclick="saveProfile()" style="border-radius: 6px; font-size: 13px; background-color: #be1e38; border-color: #be1e38;">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<div id="discardChangesModal" class="custom-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1100; align-items: center; justify-content: center; padding: 20px;">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="width: 100%; max-width: 480px; background: #fff;" onclick="event.stopPropagation()">
+        <div class="p-4 text-center">
+            <div class="text-warning mb-3">
+                <i class="fa fa-exclamation-triangle fs-1"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-2" style="font-size: 18px;">Discard Unsaved Changes?</h5>
+            <p class="text-muted small px-2 mb-3">You modified item variables within this form session. Closing now will reverse updates applied to the following fields:</p>
+
+            <div class="p-3 bg-light rounded-3 text-start mb-4 border border-light-subtle overflow-y-auto" style="max-height: 120px;">
+                <ul id="discardedFieldsList" class="mb-0 ps-3 small text-danger fw-semibold" style="line-height: 1.6;">
+                </ul>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-light w-50 fw-bold border-light-subtle py-2" onclick="closeDiscardPromptOnly()" style="border-radius: 6px; font-size: 13px;">Keep Editing</button>
+                <button type="button" class="btn btn-danger w-50 fw-bold py-2" onclick="confirmDiscardAndForceClose()" style="border-radius: 6px; font-size: 13px; background-color: #be1e38; border-color: #be1e38;">Yes, Discard Changes</button>
             </div>
         </div>
     </div>
 </div>
+
 
 <div class="modal fade" id="firstTimePasswordModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -1811,9 +1806,7 @@
         }
 
         if (type) {
-            setTextIfExists('ep_companyTypeDisplay', type);
             setTextIfExists('bizIndustryTitle', type);
-            setTextIfExists('bizMembershipTypeText', type);
         }
 
         if (description) setTextIfExists('bizDescriptionText', description);
@@ -2586,6 +2579,7 @@
         const memberObj = profile.member || profile.data?.member || profile;
         const basic = memberObj.applicant?.basic_profile || profile.basic_profile || {};
         const org = memberObj.applicant?.organization_membership || profile.organization_membership || {};
+        const addData = memberObj.applicant?.business_additional_data || profile.business_additional_data || {};
         const rep = memberObj.applicant?.official_representative || profile.official_representative || {};
         const loc = basic.business_location || {};
 
@@ -2593,34 +2587,17 @@
         const repName = `${rep.first_name || ''} ${rep.surname || ''}`.trim();
         const memStatus = memberObj.status || profile.status || 'Pending';
 
-        // SMART FIX: Aggressively hunt down the true ladderized tier (Micro, Small, etc.)
+        // SMART FIX: Directly pull the membership type name from the API payload
         let memType = 'N/A';
-        const typeCandidates = [
-            memberObj.membershipType?.name,
-            memberObj.membership_type?.name,
-            profile.membershipType?.name,
-            profile.membership_type?.name,
-            memberObj.applicant?.membershipType?.name,
-            memberObj.applicant?.membership_type?.name,
-            profile.member?.membershipType?.name,
-            profile.member?.membership_type?.name,
-            profile.data?.member?.membershipType?.name,
-            profile.data?.member?.membership_type?.name,
-            typeof profile.membership_type === 'string' ? profile.membership_type : null,
-            typeof memberObj.membership_type === 'string' ? memberObj.membership_type : null,
-            typeof profile.member?.membership_type === 'string' ? profile.member.membership_type : null
-        ];
 
-        for (let candidate of typeCandidates) {
-            if (candidate && typeof candidate === 'string') {
-                const clean = candidate.trim();
-                const lower = clean.toLowerCase();
-                // Accept valid tiers, reject generic transaction names and N/A
-                if (clean !== '' && lower !== 'n/a' && lower !== 'initial_registration' && lower !== 'renewal') {
-                    memType = clean;
-                    break;
-                }
-            }
+        if (profile.membershipType && profile.membershipType.name) {
+            memType = profile.membershipType.name;
+        } else if (profile.membership_type && profile.membership_type.name) {
+            memType = profile.membership_type.name;
+        } else if (memberObj.membershipType && memberObj.membershipType.name) {
+            memType = memberObj.membershipType.name;
+        } else if (memberObj.membership_type && memberObj.membership_type.name) {
+            memType = memberObj.membership_type.name;
         }
 
         // Shorten full tier names to their short label (e.g. "Micro Enterprise" → "Micro")
@@ -2640,8 +2617,6 @@
         const baseDate = memberObj.induction_date || memberObj.applicant?.induction_date || memberObj.created_at || profile.date_approved;
         const memberID = memberObj.membership_id || memberObj.member_id || `PCCI-${new Date(baseDate || Date.now()).getFullYear()}-${String(memberObj.id || profile.id || 0).padStart(4, '0')}`;
 
-        // Use membership_end_date from API directly — it already accounts for the
-        // correct duration per membership type (Micro, Small, Regular, Lifetime, etc.)
         const rawEndDate = memberObj.membership_end_date ||
             profile.membership_end_date ||
             profile.member?.membership_end_date ||
@@ -2659,7 +2634,6 @@
                 });
             }
         } else if (baseDate) {
-            // Fallback: calculate from induction_date only if end date is missing
             let d = new Date(baseDate);
             if (!Number.isNaN(d.getTime())) {
                 d.setFullYear(d.getFullYear() + 1);
@@ -2671,35 +2645,58 @@
             }
         }
 
-        const contactNo = basic.contact_number || basic.telephone_no || 'N/A';
+        // YOUR EXACT WORKING RECEIPT CODE
         const officialReceiptNo = memberObj.official_receipt_no || profile.official_receipt_no || profile.or_number || profile.receipt_no || 'N/A';
         const membershipReceiptNo = memberObj.membership_receipt_no || profile.membership_receipt_no || profile.receipt_no || 'N/A';
+
+        const contactNo = basic.contact_number || basic.telephone_no || 'N/A';
+        const industry = addData.industry || memberObj.applicant?.industry || profile.industry || 'Industry not specified';
         const ownershipType = org.ownership_type || org.type_of_company || org.organization_type || 'Not specified';
 
         const addressParts = [loc.business_address, loc.city_municipality, loc.province, loc.zip_code].filter(Boolean);
         const addressString = addressParts.join(', ');
 
-        // Sidebar
         setTextIfExists('sidebarCompany', companyName);
         setTextIfExists('sidebarName', repName || 'No Rep Assigned');
         setTextIfExists('sidebarEmail', basic.email || 'N/A');
 
-        if (profile.photo_url) {
+        let rawPhoto = profile.photo_url ||
+            profile.applicant?.basic_profile?.photo_url ||
+            profile.applicant?.photo_url ||
+            profile.user?.photo_url ||
+            profile.applicant?.user?.photo_url ||
+            profile.member?.user?.photo_url ||
+            profile.profile_photo_url ||
+            memberObj.photo_url ||
+            null;
+
+        let finalPhotoUrl = null;
+        if (rawPhoto && rawPhoto !== 'N/A' && String(rawPhoto).trim() !== 'null' && String(rawPhoto).trim() !== '') {
+            if (rawPhoto.startsWith('http')) {
+                finalPhotoUrl = rawPhoto;
+            } else {
+                const baseUrl = (window.API_BASE_URL || '').replace('/api', '');
+                finalPhotoUrl = rawPhoto.startsWith('/storage') ? `${baseUrl}${rawPhoto}` : `${baseUrl}/storage/${rawPhoto}`;
+            }
+            const activeOrigin = new URL(window.API_BASE_URL || window.location.origin).origin;
+            finalPhotoUrl = finalPhotoUrl.replace('http://127.0.0.1:8000', activeOrigin).replace('http://localhost:8000', activeOrigin);
+        }
+
+        if (finalPhotoUrl) {
             const sidebarImage = document.getElementById('sidebarImage');
             const topbarAvatar = document.getElementById('topbarAvatar');
             const dashBizImage = document.getElementById('dashBizImage');
             const bizMainImage = document.getElementById('bizMainImage');
-            if (sidebarImage) sidebarImage.src = profile.photo_url;
-            if (topbarAvatar) topbarAvatar.src = profile.photo_url;
-            if (dashBizImage) dashBizImage.src = profile.photo_url;
-            if (bizMainImage) bizMainImage.src = profile.photo_url;
+            if (sidebarImage) sidebarImage.src = finalPhotoUrl;
+            if (topbarAvatar) topbarAvatar.src = finalPhotoUrl;
+            if (dashBizImage) dashBizImage.src = finalPhotoUrl;
+            if (bizMainImage) bizMainImage.src = finalPhotoUrl;
         }
 
-        // Dashboard Tab
         setTextIfExists('welcomeMessage', `Welcome, ${companyName}!`);
         setTextIfExists('dashBizName', companyName);
         setTextIfExists('dashBizEmail', basic.email || 'N/A');
-        setTextIfExists('dashBizType', org.type_of_company || 'Industry not specified');
+        setTextIfExists('dashBizType', industry);
         setTextIfExists('dashMembershipStatus', memStatus.toUpperCase());
         setTextIfExists('dashMembershipID', memberID);
         setTextIfExists('dashMembershipType', memType);
@@ -2708,9 +2705,9 @@
         setTextIfExists('dashReceiptNo', membershipReceiptNo);
         setTextIfExists('dashOwnershipType', ownershipType);
 
-        // My Business Tab
         setTextIfExists('bizNameTitle', companyName);
-        setTextIfExists('bizIndustryTitle', org.type_of_company || 'Industry not specified');
+        setTextIfExists('bizIndustryTitle', industry);
+        setTextIfExists('bizDescriptionText', addData.about_description || profile.about_description || '');
         setTextIfExists('bizEmailText', basic.email || 'N/A');
         setTextIfExists('bizPhoneText', contactNo);
         setTextIfExists('bizAddressText', addressString || 'Address not provided');
@@ -2867,7 +2864,16 @@
                 continue;
             }
             if (typeof item === 'object') {
-                if (item.basic_profile || item.organization_membership || item.official_representative) {
+                // FIXED: Looks deeply inside the nested member object
+                if (item.basic_profile || item.organization_membership || item.official_representative || item.applicant?.basic_profile) {
+
+                    // Crucial: Manually attach root-level properties to the item so they aren't lost!
+                    if (data.membership_type) item.membership_type = data.membership_type;
+                    if (data.membershipType) item.membershipType = data.membershipType;
+                    if (data.official_receipt_no) item.official_receipt_no = data.official_receipt_no;
+                    if (data.receipt_no) item.receipt_no = data.receipt_no;
+                    if (data.or_number) item.or_number = data.or_number;
+
                     return item;
                 }
             }
@@ -2878,10 +2884,6 @@
 
     function normalizeProfileShape(rawProfile) {
         if (!rawProfile || typeof rawProfile !== 'object') return null;
-
-        if (rawProfile.basic_profile || rawProfile.organization_membership || rawProfile.official_representative || rawProfile.membershipType || rawProfile.membership_type || rawProfile.user) {
-            return rawProfile;
-        }
 
         if (rawProfile.applicant && typeof rawProfile.applicant === 'object') {
             const applicant = rawProfile.applicant;
@@ -2894,7 +2896,12 @@
                     membership_type: rawProfile.membership_type || applicant.membership_type,
                     membership_end_date: rawProfile.membership_end_date || applicant.membership_end_date || null,
                     induction_date: rawProfile.induction_date || applicant.induction_date || null,
-                    user: rawProfile.user || applicant.user || undefined
+                    user: rawProfile.user || applicant.user || undefined,
+                    // Preserve OR numbers safely
+                    official_receipt_no: rawProfile.official_receipt_no || applicant.official_receipt_no || null,
+                    membership_receipt_no: rawProfile.membership_receipt_no || applicant.membership_receipt_no || null,
+                    receipt_no: rawProfile.receipt_no || applicant.receipt_no || null,
+                    or_number: rawProfile.or_number || applicant.or_number || null,
                 };
             }
         }
@@ -2910,6 +2917,10 @@
             membership_type: source.membership_type || rawProfile.membership_type || 'N/A',
             membership_end_date: rawProfile.membership_end_date || source.membership_end_date || null,
             induction_date: rawProfile.induction_date || source.induction_date || null,
+            official_receipt_no: rawProfile.official_receipt_no || source.official_receipt_no || null,
+            membership_receipt_no: rawProfile.membership_receipt_no || source.membership_receipt_no || null,
+            receipt_no: rawProfile.receipt_no || source.receipt_no || null,
+            or_number: rawProfile.or_number || source.or_number || null,
             basic_profile: {
                 registered_business_name: source.registered_business_name || source.company_name || source.business_name || name || 'Your Company',
                 email: source.email || rawProfile.email || 'N/A',
@@ -2921,8 +2932,13 @@
                 }
             },
             organization_membership: {
-                type_of_company: source.type_of_company || source.industry || 'N/A',
+                type_of_company: source.type_of_company || 'N/A',
                 ownership_type: source.ownership_type || source.type_of_company || source.organization_type || 'Not specified'
+            },
+            business_additional_data: {
+                industry: source.industry || source.business_additional_data?.industry || '',
+                about_description: source.about_description || source.business_additional_data?.about_description || '',
+                business_tagline: source.business_tagline || source.business_additional_data?.business_tagline || '',
             },
             official_representative: {
                 first_name: source.first_name || nameParts.slice(0, -1).join(' ') || nameParts[0] || '',
@@ -3212,46 +3228,47 @@
     // ==========================================
     // 2. OPEN EDIT MODAL (Populates Full Address)
     // ==========================================
+    // Global tracking allocation object instance states
+    window.modalBaselineStateSnapshot = {};
+
     function openEditProfileModal() {
         const profile = window.currentProfileData || {};
         const basic = profile.basic_profile || {};
-        const org = profile.organization_membership || {};
+        const addData = profile.business_additional_data || {};
         const rep = profile.official_representative || {};
-        const loc = basic.business_location || {};
 
-        const companyNameInput = document.getElementById('ep_companyName');
-        const businessTypeSelect = document.getElementById('ep_businessType');
-        const descriptionInput = document.getElementById('ep_description');
-        const repNameInput = document.getElementById('ep_repName');
-        const repPositionInput = document.getElementById('ep_repPosition');
-        const contactInput = document.getElementById('ep_contact');
-        const addressInput = document.getElementById('ep_address');
-        const urlInput = document.getElementById('ep_url');
+        const businessHours = profile.business_hours || addData.business_hours || {};
+        const parsedHours = typeof businessHours === 'string' ? JSON.parse(businessHours) : businessHours;
 
-        if (companyNameInput) companyNameInput.value = basic.registered_business_name || '';
-        if (businessTypeSelect) businessTypeSelect.value = org.type_of_company || '';
-        if (descriptionInput) descriptionInput.value = basic.business_description || '';
-        if (repNameInput) repNameInput.value = `${rep.first_name || ''} ${rep.surname || ''}`.trim();
-        if (repPositionInput) repPositionInput.value = rep.designation || '';
-        if (contactInput) contactInput.value = basic.contact_number || basic.telephone_no || '';
-        if (addressInput) {
-            addressInput.value = [loc.business_address, loc.city_municipality, loc.province, loc.zip_code].filter(Boolean).join(', ');
-        }
-        if (urlInput) urlInput.value = basic.website_url || '';
+        // Hydrating the interface fields safely
+        document.getElementById('ep_companyName').value = basic.registered_business_name || profile.registered_business_name || '';
+        document.getElementById('ep_businessType').value = addData.industry || profile.industry || '';
+        document.getElementById('ep_description').value = addData.about_description || profile.about_description || '';
+        document.getElementById('ep_repPosition').value = rep.designation || '';
+        document.getElementById('ep_contact').value = basic.contact_number || basic.telephone_no || '';
+        document.getElementById('ep_url').value = basic.website || basic.website_socmed || profile.website_socmed || '';
 
-        document.getElementById('ep_companyNameDisplay').innerText = basic.registered_business_name || 'Not provided';
-        document.getElementById('ep_companyTypeDisplay').innerText = org.type_of_company || 'Not provided';
+        // Formulate time tracking states
+        document.getElementById('ep_hours_mf').value = parsedHours['Monday - Friday'] || '';
+        document.getElementById('ep_hours_sat').value = parsedHours['Saturday'] || '';
+        document.getElementById('ep_hours_sun').value = parsedHours['Sunday'] || '';
 
-        document.getElementById('ep_changeSummary').innerText = 'No changes yet. Make your edits and click Save Changes.';
+        // Reset file inputs explicitly so old files don't linger
+        document.getElementById('ep_mayors_permit').value = '';
+        document.getElementById('ep_dti_sec').value = '';
 
-        const inputFields = [companyNameInput, businessTypeSelect, descriptionInput, repNameInput, repPositionInput, contactInput, addressInput, urlInput];
-        inputFields.forEach(field => {
-            if (!field || field.dataset.changeListener) return;
-            field.addEventListener('input', updateProfileChangeSummary);
-            field.dataset.changeListener = '1';
-        });
-
-        updateProfileChangeSummary();
+        // CAPTURE BASELINE SNAPSHOT: Saves initial text states to evaluate cancel conditions later
+        window.modalBaselineStateSnapshot = {
+            'Registered Business Name': document.getElementById('ep_companyName').value.trim(),
+            'Business Type / Industry': document.getElementById('ep_businessType').value.trim(),
+            'Business Description': document.getElementById('ep_description').value.trim(),
+            'Contact Number': document.getElementById('ep_contact').value.trim(),
+            'Representative Designation': document.getElementById('ep_repPosition').value.trim(),
+            'Website URL': document.getElementById('ep_url').value.trim(),
+            'Hours (Mon-Fri)': document.getElementById('ep_hours_mf').value.trim(),
+            'Hours (Sat)': document.getElementById('ep_hours_sat').value.trim(),
+            'Hours (Sun)': document.getElementById('ep_hours_sun').value.trim()
+        };
 
         document.getElementById('profileAlert').style.display = 'none';
         document.getElementById('editProfileModal').style.display = 'flex';
@@ -3259,6 +3276,88 @@
 
     function closeEditProfileModal() {
         document.getElementById('editProfileModal').style.display = 'none';
+        interceptModalClose();
+    }
+
+    function closeDiscardPromptOnly() {
+        document.getElementById('discardChangesModal').style.display = 'none';
+    }
+
+    function confirmDiscardAndForceClose() {
+        document.getElementById('discardChangesModal').style.display = 'none';
+        forceCloseMainProfileModal();
+    }
+
+    function forceCloseMainProfileModal() {
+        document.getElementById('editProfileModal').style.display = 'none';
+        window.modalBaselineStateSnapshot = {};
+    }
+
+    // STSTATIC BACKDROP IMPLEMENTATION: Block outside click events from closing the edit profile view
+    function handleModalBackdropClick(event) {
+        // Intercept container click bounds but match explicit overlay identity targets
+        if (event.target.id === 'editProfileModal') {
+            // Flash a visual notification animation effect instead of firing terminal structural closures
+            const modalBox = event.target.firstElementChild;
+            if (modalBox) {
+                modalBox.style.transform = 'scale(1.01)';
+                setTimeout(() => {
+                    modalBox.style.transform = 'scale(1)';
+                }, 100);
+            }
+        }
+    }
+
+    // CLOSE INTERCEPTION HANDLER: Runs data comparison checks to identify updates
+    function interceptModalClose() {
+        if (!window.modalBaselineStateSnapshot) {
+            forceCloseMainProfileModal();
+            return;
+        }
+
+        // Object reference delta map properties
+        const currentFormStates = {
+            'Registered Business Name': document.getElementById('ep_companyName').value.trim(),
+            'Business Type / Industry': document.getElementById('ep_businessType').value.trim(),
+            'Business Description': document.getElementById('ep_description').value.trim(),
+            'Contact Number': document.getElementById('ep_contact').value.trim(),
+            'Representative Designation': document.getElementById('ep_repPosition').value.trim(),
+            'Website URL': document.getElementById('ep_url').value.trim(),
+            'Hours (Mon-Fri)': document.getElementById('ep_hours_mf').value.trim(),
+            'Hours (Sat)': document.getElementById('ep_hours_sat').value.trim(),
+            'Hours (Sun)': document.getElementById('ep_hours_sun').value.trim()
+        };
+
+        let alteredFields = [];
+        for (const [fieldName, initialValue] of Object.entries(window.modalBaselineStateSnapshot)) {
+            if (currentFormStates[fieldName] !== initialValue) {
+                alteredFields.push(fieldName);
+            }
+        }
+
+        // Check if any files were attached! If yes, trigger the unsaved changes warning.
+        if (document.getElementById('ep_mayors_permit').files.length > 0) {
+            alteredFields.push("Mayor's Permit (File Upload)");
+        }
+        if (document.getElementById('ep_dti_sec').files.length > 0) {
+            alteredFields.push("DTI / SEC (File Upload)");
+        }
+
+        // Evaluation tree checks
+        if (alteredFields.length > 0) {
+            // Unsaved fields detected: Build and reveal the separate secondary verification layout prompt modal
+            const listContainer = document.getElementById('discardedFieldsList');
+            if (listContainer) {
+                listContainer.innerHTML = '';
+                alteredFields.forEach(field => {
+                    listContainer.innerHTML += `<li><i class="fa fa-caret-right me-1"></i> ${field}</li>`;
+                });
+            }
+            document.getElementById('discardChangesModal').style.display = 'flex';
+        } else {
+            // Zero variance mutations confirmed: Exit safely
+            forceCloseMainProfileModal();
+        }
     }
 
     function focusEditField(field) {
@@ -3287,18 +3386,19 @@
         const profile = window.currentProfileData || {};
         const basic = profile.basic_profile || {};
         const org = profile.organization_membership || {};
+        const addData = profile.business_additional_data || {};
         const rep = profile.official_representative || {};
         const loc = basic.business_location || {};
 
         const original = {
             companyName: basic.registered_business_name || '',
-            businessType: org.type_of_company || '',
-            description: basic.business_description || '',
+            businessType: addData.industry || profile.industry || '',
+            description: addData.about_description || profile.about_description || '',
             repName: `${rep.first_name || ''} ${rep.surname || ''}`.trim(),
             repPosition: rep.designation || '',
             contact: basic.contact_number || basic.telephone_no || '',
             address: [loc.business_address, loc.city_municipality, loc.province, loc.zip_code].filter(Boolean).join(', '),
-            url: basic.website_url || ''
+            url: basic.website || basic.website_socmed || basic.website_url || ''
         };
 
         const current = {
@@ -3346,79 +3446,63 @@
         }
 
         btn.disabled = true;
-        btn.innerText = 'Saving...';
+        btn.innerText = 'Uploading Files & Saving...';
         alertBox.style.display = 'none';
 
-        let payload = JSON.parse(JSON.stringify(window.currentProfileData));
+        // WE MUST USE FormData TO SEND FILES TO LARAVEL
+        const formData = new FormData();
 
-        payload.basic_profile = payload.basic_profile || {};
-        payload.basic_profile.business_location = payload.basic_profile.business_location || {};
-        payload.organization_membership = payload.organization_membership || {};
-        payload.official_representative = payload.official_representative || {};
+        // Laravel requires this hack to accept File Uploads on a PUT route
+        formData.append('_method', 'PUT');
 
-        const companyName = (document.getElementById('ep_companyName')?.value || '').trim();
-        const businessType = (document.getElementById('ep_businessType')?.value || '').trim();
-        const businessDescription = (document.getElementById('ep_description')?.value || '').trim();
-        const contactNumber = (document.getElementById('ep_contact')?.value || '').trim();
-        const addressDisplay = (document.getElementById('ep_address')?.value || '').trim();
-        const repNameDisplay = (document.getElementById('ep_repName')?.value || '').trim();
-        const repDesignation = (document.getElementById('ep_repPosition')?.value || '').trim();
-        const websiteUrl = (document.getElementById('ep_url')?.value || '').trim();
+        formData.append('basic_profile[registered_business_name]', document.getElementById('ep_companyName').value.trim());
+        formData.append('basic_profile[contact_number]', document.getElementById('ep_contact').value.trim());
+        formData.append('basic_profile[website_socmed]', document.getElementById('ep_url').value.trim());
 
-        if (companyName) payload.basic_profile.registered_business_name = companyName;
-        if (businessDescription !== '') payload.basic_profile.business_description = businessDescription;
-        if (contactNumber) {
-            payload.basic_profile.telephone_no = contactNumber;
-            payload.basic_profile.contact_number = contactNumber;
-        }
-        if (businessType) payload.organization_membership.type_of_company = businessType;
-        if (websiteUrl) payload.basic_profile.website_url = websiteUrl;
+        formData.append('business_additional_data[industry]', document.getElementById('ep_businessType').value.trim());
+        formData.append('business_additional_data[about_description]', document.getElementById('ep_description').value.trim());
 
-        // SMART FIX: Split the string back into Address, City, Province, and Zip Code
-        if (addressDisplay) {
-            const parts = addressDisplay.split(',').map(p => p.trim()).filter(Boolean);
-            payload.basic_profile.business_location.business_address = parts[0] || payload.basic_profile.business_location.business_address || '';
-            if (parts.length > 1) payload.basic_profile.business_location.city_municipality = parts[1];
-            if (parts.length > 2) payload.basic_profile.business_location.province = parts[2];
-            if (parts.length > 3) payload.basic_profile.business_location.zip_code = parts[3];
-        }
+        formData.append('business_additional_data[business_hours][Monday - Friday]', document.getElementById('ep_hours_mf').value.trim() || "Closed");
+        formData.append('business_additional_data[business_hours][Saturday]', document.getElementById('ep_hours_sat').value.trim() || "Closed");
+        formData.append('business_additional_data[business_hours][Sunday]', document.getElementById('ep_hours_sun').value.trim() || "Closed");
 
-        if (repNameDisplay) {
-            const nameParts = repNameDisplay.split(/\s+/).filter(Boolean);
-            payload.official_representative.first_name = nameParts.slice(0, -1).join(' ') || nameParts[0] || payload.official_representative.first_name || '';
-            payload.official_representative.surname = nameParts.length > 1 ? nameParts[nameParts.length - 1] : (payload.official_representative.surname || '');
-        }
-        if (repDesignation) payload.official_representative.designation = repDesignation;
+        formData.append('official_representative[designation]', document.getElementById('ep_repPosition').value.trim());
+
+        // Attach files if the user selected them!
+        const fileMayors = document.getElementById('ep_mayors_permit').files[0];
+        if (fileMayors) formData.append('mayors_permit', fileMayors);
+
+        const fileDti = document.getElementById('ep_dti_sec').files[0];
+        if (fileDti) formData.append('dti_sec', fileDti);
 
         try {
+            const token = localStorage.getItem('token');
             const response = await fetch(`${window.API_BASE_URL}/v1/application`, {
-                method: 'PUT',
+                method: 'POST', // Sent as POST but _method=PUT handles the update
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json'
+                    // IMPORTANT: Do NOT set Content-Type. The browser generates it automatically for FormData.
                 },
-                body: JSON.stringify(payload)
+                body: formData
             });
 
             const data = await response.json();
 
             if (response.ok || response.status === 200 || response.status === 201) {
-                window.currentProfileData = payload;
-                localStorage.setItem('member_profile_cache', JSON.stringify(payload));
-                applyProfileDataToUI(payload);
-                closeEditProfileModal();
-                alert('Profile updated successfully!');
+                alert('Profile updated and files uploaded successfully! Reloading...');
+                localStorage.removeItem('member_profile_cache');
+                setTimeout(() => {
+                    location.reload();
+                }, 1200);
             } else {
                 alertBox.innerText = data.message || 'Failed to update profile.';
-                if (data.errors) {
-                    alertBox.innerText += ' ' + Object.values(data.errors).flat().join(' ');
-                }
+                if (data.errors) alertBox.innerText += ' ' + Object.values(data.errors).flat().join(' ');
                 alertBox.style.display = 'block';
             }
         } catch (error) {
             console.error("Error saving profile:", error);
-            alertBox.innerText = 'Network error occurred while saving.';
+            alertBox.innerText = 'Network error occurred while saving files.';
             alertBox.style.display = 'block';
         } finally {
             btn.disabled = false;

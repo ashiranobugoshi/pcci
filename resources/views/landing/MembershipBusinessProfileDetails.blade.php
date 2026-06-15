@@ -101,6 +101,17 @@
                         </div>
                     </div>
 
+                    {{-- NEW: Website Display --}}
+                    <div class="d-flex align-items-center mb-4" id="biz-website-container" style="display: none !important;">
+                        <div class="icon-wrapper bg-danger bg-opacity-10 text-danger me-3 d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style="width: 45px; height: 45px;">
+                            <i class="bi bi-globe fs-5"></i>
+                        </div>
+                        <div>
+                            <span class="d-block text-muted small text-uppercase fw-bold mb-1">Website/Social</span>
+                            <a href="#" target="_blank" id="biz-website" class="fw-bold text-decoration-none" style="color: var(--text-main); word-break: break-all;">Loading...</a>
+                        </div>
+                    </div>
+
                     <div class="d-grid gap-2">
                         <a href="#" id="biz-phone-btn" class="btn btn-danger py-2 fw-bold" style="border-radius: 8px;"><i class="bi bi-telephone me-2"></i> Call Now</a>
                         <a href="#" id="biz-email-btn" class="btn btn-outline-danger py-2 fw-bold" style="border-radius: 8px;"><i class="bi bi-envelope me-2"></i> Send Email</a>
@@ -276,7 +287,7 @@
             if (website === 'N/A') website = null;
 
             // 3. Additional Data
-            const industry = biz.industry || biz.applicant?.industry || addData.industry || org.type_of_company || 'Business';
+            const industry = biz.industry || biz.applicant?.industry || addData.industry || 'Business';
             const tagline = biz.business_tagline || biz.applicant?.business_tagline || addData.business_tagline || '';
             const description = biz.about_description || biz.applicant?.about_description || biz.description || addData.about_description || tagline || 'No detailed description provided.';
 
@@ -290,7 +301,7 @@
                     address = loc.location_link;
                     mapQuery = loc.location_link;
                 } else {
-                    const addressParts = [loc.business_address, loc.city_municipality, loc.province].filter(p => p && p !== 'N/A');
+                    const addressParts = [mapQuery, loc.business_address, loc.city_municipality, loc.province].filter(p => p && p !== 'N/A');
                     if (addressParts.length > 0) {
                         address = addressParts.join(', ');
                         mapQuery = address;
@@ -302,7 +313,33 @@
             document.getElementById('biz-name-main').innerText = name;
 
             const indEl = document.getElementById('biz-industry');
-            if (indEl) indEl.innerText = industry;
+            if (indEl) {
+                indEl.innerText = industry;
+
+                // Injecting Dynamic System Search Optimization Badges (Tags Section)
+                let tagsData = biz.tags || biz.applicant?.tags || addData.tags || [];
+                if (typeof tagsData === 'string') {
+                    try {
+                        tagsData = JSON.parse(tagsData);
+                    } catch (e) {
+                        tagsData = [];
+                    }
+                }
+
+                // Clear any old dynamically rendered item rows[cite: 17]
+                const oldTags = document.querySelectorAll('.compiled-biz-tag');
+                oldTags.forEach(el => el.remove());
+
+                if (Array.isArray(tagsData) && tagsData.length > 0) {
+                    tagsData.forEach(tag => {
+                        const tagBadge = document.createElement('span');
+                        tagBadge.className = 'badge compiled-biz-tag bg-secondary border border-light border-opacity-20 rounded-pill ms-2 px-2 py-1 fw-normal';
+                        tagBadge.style.fontSize = '0.75rem';
+                        tagBadge.innerText = tag;
+                        indEl.parentNode.appendChild(tagBadge);
+                    });
+                }
+            }
 
             const tagEl = document.getElementById('biz-tagline');
             if (tagEl) tagEl.innerText = tagline ? `"${tagline}"` : '';
@@ -320,15 +357,11 @@
 
             if (website) {
                 const safeUrl = website.startsWith('http') ? website : `https://${website}`;
-
-                // Show the website row if it exists in HTML
                 if (webContainer) webContainer.style.setProperty('display', 'flex', 'important');
                 if (webText) {
                     webText.innerText = website;
                     webText.href = safeUrl;
                 }
-
-                // Show the specific website button if it exists in HTML
                 if (webBtn) {
                     webBtn.style.display = 'block';
                     webBtn.href = safeUrl;
@@ -360,15 +393,31 @@
             const emailBtn = document.getElementById('biz-email-btn');
             if (emailBtn) emailBtn.href = email !== 'N/A' ? `mailto:${email}` : '#';
 
-            // DYNAMIC PHOTO URL
+            // DYNAMIC PHOTO URL & INITIALS FALLBACK
             const avatarContainer = document.getElementById('biz-avatar-container');
             if (avatarContainer) {
-                if (biz.photo_url && biz.photo_url !== 'N/A' && biz.photo_url !== 'null') {
-                    const activeOrigin = new URL(window.API_BASE_URL || window.location.origin).origin;
-                    let finalPhotoUrl = biz.photo_url
-                        .replace('http://127.0.0.1:8000', activeOrigin)
-                        .replace('http://localhost:8000', activeOrigin);
+                // SMART PHOTO FINDER: Now specifically checks inside basic_profile!
+                let rawPhoto = biz.photo_url ||
+                    biz.applicant?.basic_profile?.photo_url ||
+                    biz.applicant?.photo_url ||
+                    biz.user?.photo_url ||
+                    biz.applicant?.user?.photo_url ||
+                    biz.member?.user?.photo_url ||
+                    biz.profile_photo_url ||
+                    null;
 
+                let finalPhotoUrl = null;
+
+                if (rawPhoto && rawPhoto !== 'N/A' && String(rawPhoto).trim() !== 'null' && String(rawPhoto).trim() !== '') {
+                    if (rawPhoto.startsWith('http')) {
+                        finalPhotoUrl = rawPhoto;
+                    } else {
+                        const baseUrl = (window.API_BASE_URL || '').replace('/api', '');
+                        finalPhotoUrl = rawPhoto.startsWith('/storage') ? `${baseUrl}${rawPhoto}` : `${baseUrl}/storage/${rawPhoto}`;
+                    }
+                }
+
+                if (finalPhotoUrl) {
                     avatarContainer.innerHTML = `<img src="${finalPhotoUrl}" alt="${name}" class="w-100 h-100" style="object-fit: cover;">`;
                 } else {
                     let initials = name.substring(0, 2).toUpperCase();
@@ -376,8 +425,13 @@
                     if (words.length > 1 && words[1].length > 0) {
                         initials = (words[0][0] + words[1][0]).toUpperCase();
                     }
-                    const initialsEl = document.getElementById('biz-initials');
-                    if (initialsEl) initialsEl.innerText = initials;
+                    avatarContainer.innerHTML = `<span class="fw-bold text-danger" style="font-size: 3.5rem;">${initials}</span>`;
+
+                    const circleWrapper = avatarContainer.parentElement;
+                    if (circleWrapper) {
+                        circleWrapper.classList.remove('bg-white');
+                        circleWrapper.classList.add('bg-light');
+                    }
                 }
             }
 

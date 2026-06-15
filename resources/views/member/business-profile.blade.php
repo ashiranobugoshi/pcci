@@ -40,8 +40,11 @@ $business = $business ?? [
                 <h1 class="fw-bold text-white mb-2 fs-2 fs-md-1" id="bizDisplayName">
                     {{ $business['name'] }}
                 </h1>
+                {{-- NEW: Tagline Display --}}
+                <p id="bizTaglineText" class="text-white-50 fst-italic mb-2" style="font-size: 1.1rem;"></p>
+                
                 <span class="badge rounded-pill mb-3" id="bizIndustryText" style="background:#2e5aac;">
-                    Manufacturing
+                    Loading...
                 </span>
 
                 <div class="mt-2 d-flex align-items-center gap-2" style="justify-content:center; justify-content-md:start;">
@@ -109,7 +112,7 @@ $business = $business ?? [
                 </div>
             </div>
 
-            {{-- MAP --}}
+            {{-- MAP (Updated with ID) --}}
             <div class="card border border-danger shadow-sm p-3 p-md-4 rounded-4 mb-4">
                 <h4 class="fw-bold text-danger mb-3">Our Location</h4>
                 <p class="mb-3">
@@ -117,13 +120,7 @@ $business = $business ?? [
                     <span id="bizAddressText">{{ $business['address'] }}</span>
                 </p>
                 <div class="rounded-3 overflow-hidden">
-                    <iframe
-                        src="https://maps.google.com/maps?q={{ $business['map'] }}&t=m&z=15&output=embed"
-                        width="100%"
-                        height="300"
-                        style="border:0;"
-                        loading="lazy">
-                    </iframe>
+                    <iframe id="bizMapFrame" width="100%" height="300" style="border:0;" loading="lazy"></iframe>
                 </div>
             </div>
         </div>
@@ -168,18 +165,15 @@ $business = $business ?? [
                 </div>
             </div>
 
-            {{-- HOURS --}}
+            {{-- HOURS (Updated to dynamic container) --}}
             <div class="card border border-danger shadow-sm p-4 rounded-4 mb-4">
                 <div class="d-flex align-items-center gap-2 mb-3">
                     <i class="bi bi-clock text-danger fs-4"></i>
                     <h5 class="fw-bold text-danger mb-0">Business Hours</h5>
                 </div>
-                @foreach ($business['hours'] as $day => $time)
-                <div class="d-flex justify-content-between py-1 border-bottom border-light">
-                    <span>{{ $day }}</span>
-                    <span class="fw-bold">{{ $time }}</span>
+                <div id="bizHoursContainer">
+                    <span class="text-muted">Loading hours...</span>
                 </div>
-                @endforeach
             </div>
 
             {{-- DOCUMENTS --}}
@@ -356,6 +350,42 @@ $business = $business ?? [
         if (el && value && String(value).trim() !== '' && value !== 'N/A') el.innerText = String(value).trim();
     }
 
+    function safeProfileObj(val) {
+        if (!val) return {};
+        if (typeof val === 'string') {
+            try { return JSON.parse(val); } catch (e) { return {}; }
+        }
+        return (typeof val === 'object' && !Array.isArray(val)) ? val : {};
+    }
+
+    function resolveApplicantFields(raw) {
+        const root = raw?.applicant || raw || {};
+        const basic = safeProfileObj(root.basic_profile);
+        const addData = safeProfileObj(root.business_additional_data);
+        const org = safeProfileObj(root.organization_membership);
+        const rep = safeProfileObj(root.official_representative);
+        const loc = safeProfileObj(basic.business_location);
+
+        return {
+            registered_business_name: root.registered_business_name || basic.registered_business_name || '',
+            trade_name: root.trade_name || basic.trade_name || '',
+            industry: root.industry || addData.industry || '',
+            about_description: root.about_description || addData.about_description || '',
+            business_tagline: root.business_tagline || addData.business_tagline || '',
+            website_socmed: root.website_socmed || basic.website || basic.website_socmed || '',
+            type_of_company: root.type_of_company || org.type_of_company || '',
+            rep_designation: root.rep_designation || rep.designation || '',
+            telephone_no: root.telephone_no || basic.telephone_no || '',
+            rep_contact_no: root.rep_contact_no || rep.contact_no || '',
+            email: root.email || basic.email || '',
+            business_address: root.business_address || loc.business_address || '',
+            city_municipality: root.city_municipality || loc.city_municipality || '',
+            province: root.province || loc.province || '',
+            zip_code: root.zip_code || loc.zip_code || '',
+            business_hours: root.business_hours || addData.business_hours || {},
+        };
+    }
+
     async function loadBusinessProfile() {
         const businessId = "{{ $id ?? '' }}";
         const token = localStorage.getItem('token');
@@ -367,7 +397,6 @@ $business = $business ?? [
             }
         };
 
-        // THE FIX: If viewing own profile without ID, use the member endpoint!
         if (!businessId) {
             if (!token) return;
             fetchUrl = `${window.API_BASE_URL}/v1/application`;
@@ -411,6 +440,42 @@ $business = $business ?? [
                     webText.innerText = website;
                 }
             }
+
+            // 1. Tagline Update
+            setTextIfExists('bizTaglineText', biz.business_tagline ? `"${biz.business_tagline}"` : '');
+
+            // 2. Map Update
+            const mapQuery = biz.location_link && biz.location_link !== 'N/A' ? biz.location_link : address;
+            const encodedMapQuery = encodeURIComponent(mapQuery + ', Philippines');
+            const mapFrame = document.getElementById('bizMapFrame');
+            if (mapFrame) {
+                mapFrame.src = `http://googleusercontent.com/maps.google.com/maps?q=${encodedMapQuery}&t=m&z=15&output=embed`;
+            }
+
+            // 3. Dynamic Hours Loop
+            const hoursContainer = document.getElementById('bizHoursContainer');
+            if (hoursContainer) {
+                hoursContainer.innerHTML = '';
+                let hoursData = biz.business_hours || {};
+                
+                if (typeof hoursData === 'string') {
+                    try { hoursData = JSON.parse(hoursData); } catch (e) { hoursData = {}; }
+                }
+
+                if (hoursData && Object.keys(hoursData).length > 0) {
+                    for (const [day, time] of Object.entries(hoursData)) {
+                        hoursContainer.innerHTML += `
+                            <div class="d-flex justify-content-between py-1 border-bottom border-light">
+                                <span>${day}</span>
+                                <span class="fw-bold">${time}</span>
+                            </div>
+                        `;
+                    }
+                } else {
+                    hoursContainer.innerHTML = '<span class="text-muted">Business hours not provided.</span>';
+                }
+            }
+
         } catch (e) {
             console.error("Could not fetch business profile:", e);
         }
@@ -519,4 +584,4 @@ $business = $business ?? [
 
     document.addEventListener('DOMContentLoaded', loadBusinessProfile);
 </script>
-@endsection
+@endsection 
