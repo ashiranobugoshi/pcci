@@ -627,12 +627,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        const pageCache = new Map();
-        const pageDomCache = new Map();
-        const pageTitleCache = new Map();
-        const cacheStorageKey = 'adminPageCache';
-        const cacheVersionKey = 'adminPageCacheVersion';
-        const pageCacheVersion = 2;
         const adminMainContent = document.getElementById('mainContent');
         const adminBackToTop = document.getElementById('adminBackToTop');
         const sidebar = document.getElementById('adminSidebar');
@@ -641,151 +635,6 @@
         const hamburgerIcon = document.getElementById('hamburgerIcon');
         const contentDropdownToggle = document.getElementById('contentDropdownToggle');
         const contentDropdownMenu = document.getElementById('contentDropdownMenu');
-        const toggle = contentDropdownToggle;
-        const menu = contentDropdownMenu;
-
-        function parsePageResponse(html) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const titleTag = doc.querySelector('title');
-            const contentShell = doc.querySelector('.admin-content-shell');
-            return {
-                content: contentShell ? contentShell.innerHTML : doc.body.innerHTML,
-                title: titleTag ? titleTag.textContent : document.title
-            };
-        }
-
-        function loadCacheFromStorage() {
-            try {
-                const storedVersion = Number(sessionStorage.getItem(cacheVersionKey));
-                if (storedVersion !== pageCacheVersion) {
-                    sessionStorage.removeItem(cacheStorageKey);
-                    sessionStorage.setItem(cacheVersionKey, String(pageCacheVersion));
-                    return;
-                }
-
-                const cached = sessionStorage.getItem(cacheStorageKey);
-                if (cached) {
-                    const parsed = JSON.parse(cached);
-                    Object.entries(parsed).forEach(([key, html]) => pageCache.set(key, html));
-                }
-            } catch (error) {
-                console.warn('Unable to restore admin page cache:', error);
-            }
-        }
-
-        function preserveCurrentPageDom(pageKey) {
-            if (!pageKey || !adminMainContent || pageDomCache.has(pageKey)) return;
-
-            const pageSnapshot = document.createElement('div');
-            while (adminMainContent.firstChild) {
-                pageSnapshot.appendChild(adminMainContent.firstChild);
-            }
-
-            if (pageSnapshot.childNodes.length > 0) {
-                pageDomCache.set(pageKey, pageSnapshot);
-                pageTitleCache.set(pageKey, document.title);
-            }
-        }
-
-        function restoreCachedPage(pageKey) {
-            if (!pageKey || !adminMainContent || !pageDomCache.has(pageKey)) return false;
-            const cachedPage = pageDomCache.get(pageKey);
-            if (!cachedPage) return false;
-
-            adminMainContent.innerHTML = '';
-            adminMainContent.appendChild(cachedPage);
-            document.title = pageTitleCache.get(pageKey) || document.title;
-            currentPageKey = pageKey;
-            return true;
-        }
-
-        let executedScriptKeys = new Set();
-        let currentPageKey = null;
-
-        function saveCacheToStorage() {
-            try {
-                sessionStorage.setItem(cacheVersionKey, String(pageCacheVersion));
-                sessionStorage.setItem(cacheStorageKey, JSON.stringify(Object.fromEntries(pageCache)));
-            } catch (error) {
-                console.warn('Unable to persist admin page cache:', error);
-            }
-        }
-
-        function runScripts(scriptNodes, pageKey) {
-            if (pageKey !== currentPageKey) {
-                executedScriptKeys.clear();
-                currentPageKey = pageKey;
-            }
-
-            scriptNodes.forEach((oldScript) => {
-                try {
-                    const scriptKey = oldScript.src || `inline:${oldScript.textContent}`;
-                    if (executedScriptKeys.has(scriptKey)) {
-                        return;
-                    }
-
-                    if (oldScript.src) {
-                        // Avoid loading the same external script twice
-                        if (document.querySelector(`script[src="${oldScript.src}"]`)) {
-                            return;
-                        }
-                    }
-
-                    const newScript = document.createElement('script');
-                    if (oldScript.src) {
-                        newScript.src = oldScript.src;
-                        newScript.async = false;
-                    } else {
-                        let scriptContent = oldScript.textContent;
-
-                        // Replace const and let declarations with var to allow redeclaration
-                        // This prevents "already declared" errors on page reloads
-                        scriptContent = scriptContent.replace(/\b(const|let)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=/g, (match, keyword, varName) => {
-                            return `var ${varName} =`;
-                        });
-                        newScript.textContent = scriptContent;
-                    }
-
-                    executedScriptKeys.add(scriptKey);
-                    adminMainContent.appendChild(newScript);
-                } catch (err) {
-                    console.error('Error processing script:', err);
-                }
-            });
-        }
-
-        function setPageContent(contentHTML, pageTitle, pageKey) {
-            if (typeof window.cleanupCurrentAdminPage === 'function') {
-                try {
-                    window.cleanupCurrentAdminPage();
-                } catch (err) {
-                    console.error('Error cleaning up admin page:', err);
-                }
-                delete window.cleanupCurrentAdminPage;
-            }
-
-            if (!adminMainContent) return;
-            const temp = document.createElement('div');
-            temp.innerHTML = '<div class="admin-content-shell">' + contentHTML + '</div>';
-
-            const scripts = Array.from(temp.querySelectorAll('script'));
-            scripts.forEach(script => script.remove());
-
-            adminMainContent.innerHTML = temp.innerHTML;
-            document.title = pageTitle;
-            runScripts(scripts, pageKey);
-
-            adminMainContent.scrollTo({
-                top: 0,
-                behavior: 'auto'
-            });
-            toggleAdminBackToTop();
-        }
-
-        function getCacheKey(url) {
-            return new URL(url, window.location.origin).href;
-        }
 
         function updateActiveLinkStates(url) {
             if (!sidebar) return;
@@ -815,60 +664,73 @@
         async function loadPage(url, pushState = true) {
             if (!url || url.startsWith('mailto:') || url.startsWith('tel:')) return;
             const absoluteUrl = new URL(url, window.location.origin).href;
-            if (absoluteUrl === window.location.href) return;
 
-            const cacheKey = getCacheKey(absoluteUrl);
-            const currentUrl = getCacheKey(window.location.href);
+            try {
+                const response = await fetch(absoluteUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    }
+                });
 
-            if (currentUrl !== cacheKey) {
-                preserveCurrentPageDom(currentUrl);
-            }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const pageHTML = await response.text();
 
-            if (pageDomCache.has(cacheKey)) {
-                restoreCachedPage(cacheKey);
-                updateActiveLinkStates(absoluteUrl);
-                if (pushState) {
-                    history.pushState({
-                        url: absoluteUrl
-                    }, document.title, absoluteUrl);
-                }
-                return;
-            }
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(pageHTML, 'text/html');
+                const contentShell = doc.querySelector('.admin-content-shell');
+                const titleTag = doc.querySelector('title');
 
-            let pageHTML = pageCache.get(cacheKey);
+                if (contentShell && adminMainContent) {
+                    if (typeof window.cleanupCurrentAdminPage === 'function') {
+                        try {
+                            window.cleanupCurrentAdminPage();
+                        } catch (err) {
+                            console.error('Error cleaning up admin page:', err);
+                        }
+                        delete window.cleanupCurrentAdminPage;
+                    }
 
-            if (!pageHTML) {
-                try {
-                    const response = await fetch(absoluteUrl, {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'text/html'
-                        },
-                        cache: 'no-store'
+                    const shellTarget = adminMainContent.querySelector('.admin-content-shell') || adminMainContent;
+                    shellTarget.innerHTML = contentShell.innerHTML;
+
+                    if (titleTag) {
+                        document.title = titleTag.textContent;
+                    }
+
+                    const scripts = Array.from(shellTarget.querySelectorAll('script'));
+                    scripts.forEach((oldScript) => {
+                        oldScript.remove();
+                        const newScript = document.createElement('script');
+                        if (oldScript.src) {
+                            newScript.src = oldScript.src;
+                            newScript.async = false;
+                        } else {
+                            newScript.textContent = `(function(){ ${oldScript.textContent} })();`;
+                        }
+                        document.body.appendChild(newScript);
+                        setTimeout(() => newScript.remove(), 50);
                     });
 
-                    if (!response.ok) throw new Error(`Failed to fetch ${absoluteUrl}: ${response.status}`);
-                    pageHTML = await response.text();
-                    pageCache.set(cacheKey, pageHTML);
-                    saveCacheToStorage();
-                } catch (error) {
-                    console.error('Seamless page load failed, falling back to full navigation:', error);
+                    updateActiveLinkStates(absoluteUrl);
+
+                    if (pushState) {
+                        history.pushState({
+                            url: absoluteUrl
+                        }, document.title, absoluteUrl);
+                    }
+
+                    adminMainContent.scrollTo({
+                        top: 0,
+                        behavior: 'auto'
+                    });
+                    toggleAdminBackToTop();
+                } else {
                     window.location.href = absoluteUrl;
-                    return;
                 }
-            }
-
-            const {
-                content,
-                title
-            } = parsePageResponse(pageHTML);
-            setPageContent(content, title, cacheKey);
-            updateActiveLinkStates(absoluteUrl);
-
-            if (pushState) {
-                history.pushState({
-                    url: absoluteUrl
-                }, title, absoluteUrl);
+            } catch (error) {
+                console.error('Seamless page load failed, falling back to full navigation:', error);
+                window.location.href = absoluteUrl;
             }
         }
 
@@ -894,8 +756,10 @@
             if (link.target && link.target !== '_self') return;
             if (link.closest('.logout-box')) return;
             if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) return;
+
             const href = link.href;
             if (!href || link.origin !== window.location.origin) return;
+
             event.preventDefault();
             loadPage(href);
             if (window.innerWidth <= 991.98 && sidebar && sidebar.classList.contains('open')) {
@@ -910,41 +774,30 @@
 
         function handleLogout(event) {
             if (event) event.preventDefault();
-
             try {
                 const token = localStorage.getItem('token');
-
-                let secureApiUrl = window.API_BASE_URL;
-                if (secureApiUrl.includes('onrender.com') && secureApiUrl.startsWith('http://')) {
-                    secureApiUrl = secureApiUrl.replace('http://', 'https://');
-                }
-
                 if (token) {
-                    fetch(`${secureApiUrl}/v1/logout`, {
+                    fetch(`${window.API_BASE_URL}/v1/logout`, {
                         method: 'POST',
                         headers: {
                             'Accept': 'application/json',
                             'Authorization': `Bearer ${token}`
                         }
-                    }).catch(error => console.error('Error during API logout:', error));
+                    }).catch(err => console.error(err));
                 }
             } catch (error) {
-                console.error('Error during API logout:', error);
+                console.error(error);
             } finally {
-                localStorage.removeItem('token');
-                localStorage.removeItem('role');
-                localStorage.removeItem('userName');
-                localStorage.removeItem('userEmail');
-                localStorage.removeItem('activeTab');
-
+                localStorage.clear();
                 window.location.href = '/login';
             }
         }
 
-        if (toggle && menu) {
-            toggle.addEventListener('click', function() {
+        if (contentDropdownToggle && contentDropdownMenu) {
+            contentDropdownToggle.addEventListener('click', function(e) {
+                e.preventDefault();
                 this.classList.toggle('open');
-                menu.classList.toggle('open');
+                contentDropdownMenu.classList.toggle('open');
             });
         }
 
@@ -976,13 +829,6 @@
                 });
             });
             toggleAdminBackToTop();
-        }
-
-        loadCacheFromStorage();
-        if (adminMainContent) {
-            const currentUrl = getCacheKey(window.location.href);
-            pageCache.set(currentUrl, '<div class="admin-content-shell">' + adminMainContent.innerHTML + '</div>');
-            saveCacheToStorage();
         }
 
         updateActiveLinkStates(window.location.href);

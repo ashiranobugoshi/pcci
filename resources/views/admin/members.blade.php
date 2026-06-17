@@ -397,7 +397,7 @@
 
     <div class="d-flex align-items-center">
         <span class="fw-bold text-muted small me-2 text-uppercase">Status:</span>
-        <select id="memberStatusFilter" class="form-select form-select-sm text-muted fw-bold" style="height: 44px; border-radius: 8px; border-color: #ddd; font-size: 14px; box-shadow: none; cursor:pointer; width: 140px; background-color: #fff;" onchange="filterMembers()">
+        <select id="memberStatusFilter" class="form-select form-select-sm text-muted fw-bold" style="height: 44px; border-radius: 8px; border-color: #ddd; font-size: 14px; box-shadow: none; cursor:pointer; width: 140px; background-color: #fff;">
             <option value="all" selected>All</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
@@ -546,8 +546,6 @@
                     <select class="form-select form-control-lg border-2 shadow-none" id="editStatus">
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
-                        <option value="expired">Expired</option>
-                        <option value="pending">Pending</option>
                     </select>
                 </div>
             </div>
@@ -564,8 +562,13 @@
 </div>
 
 <script>
-    // --- EDIT MEMBER LOGIC ---
-    function openEditMemberModal(id) {
+    var token = localStorage.getItem('token');
+
+    // ==============================================
+    // WINDOW-BOUND MODAL FUNCTIONS (To bypass IIFE isolation)
+    // ==============================================
+
+    window.openEditMemberModal = function(id) {
         const member = allMembersData.find(m => m.id === id);
         if (!member) return;
 
@@ -577,19 +580,18 @@
 
         document.getElementById('editMemberError').classList.add('d-none');
         document.getElementById('editMemberModal').classList.add('active');
-    }
+    };
 
-    function closeEditMemberModal() {
+    window.closeEditMemberModal = function() {
         document.getElementById('editMemberModal').classList.remove('active');
-    }
+    };
 
-    async function submitEditMember() {
+    window.submitEditMember = async function() {
         const id = document.getElementById('editMemberId').value;
         const companyName = document.getElementById('editCompanyName').value;
         const email = document.getElementById('editEmail').value;
         const inductionDate = document.getElementById('editInductionDate').value;
         const status = document.getElementById('editStatus').value;
-        const token = localStorage.getItem('token');
 
         const btn = document.getElementById('updateMemberBtn');
         const errorBox = document.getElementById('editMemberError');
@@ -605,15 +607,6 @@
         errorBox.classList.add('d-none');
 
         try {
-            console.log('Member edit submit:', {
-                id,
-                companyName,
-                email,
-                inductionDate,
-                status,
-                url: `${window.API_BASE_URL}/v1/members/${id}`
-            });
-
             const response = await fetch(`${window.API_BASE_URL}/v1/members/${id}`, {
                 method: 'PUT',
                 cache: 'no-store',
@@ -631,20 +624,17 @@
             });
 
             const payload = await response.text();
-            console.log('Member edit response:', response.status, payload);
 
             if (response.ok) {
                 alert('Member profile updated successfully!');
-                closeEditMemberModal();
-                await fetchMembers(); // Refresh the grid with fresh data
+                window.closeEditMemberModal();
+                await fetchMembers();
             } else {
                 let errorMsg = `Failed to update member. (${response.status})`;
                 try {
                     const data = JSON.parse(payload || '{}');
                     errorMsg = data.message || errorMsg;
-                } catch (parseError) {
-                    // ignore parse errors, payload may be empty or HTML
-                }
+                } catch (e) {}
                 errorBox.innerText = errorMsg;
                 errorBox.classList.remove('d-none');
             }
@@ -655,13 +645,68 @@
             btn.disabled = false;
             btn.innerHTML = '<i class="bi bi-save me-2"></i> Save Changes';
         }
-    }
+    };
+
+    window.saveMemberFromModal = async function() {
+        const companySelect = document.getElementById('addMemberCompanySelect');
+        const inductionDateInput = document.getElementById('addMemberInductionDate');
+        const saveBtn = document.getElementById('saveMemberBtn');
+
+        const selectedApplicant = approvedApplicantsForModal.find((item) => String(item.id) === String(companySelect?.value));
+
+        if (!selectedApplicant) return alert('Please select an eligible company first.');
+        if (!inductionDateInput.value) return alert('Please select an induction date.');
+
+        let bp = {};
+        try {
+            bp = typeof selectedApplicant.basic_profile === 'string' ? JSON.parse(selectedApplicant.basic_profile) : (selectedApplicant.basic_profile || {});
+        } catch (e) {}
+
+        const companyName = selectedApplicant.registered_business_name || bp.registered_business_name || '';
+        const email = selectedApplicant.email || bp.email || '';
+
+        try {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = 'Adding ...';
+
+            const response = await fetch(`${window.API_BASE_URL}/v1/members`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    applicant_id: selectedApplicant.id,
+                    company_name: companyName,
+                    email: email,
+                    induction_date: inductionDateInput.value,
+                }),
+            });
+
+            if (!response.ok) throw new Error('Failed to create member.');
+
+            alert('Member created successfully.');
+            document.getElementById('addMemberModal').classList.remove('active');
+            inductionDateInput.value = '';
+            companySelect.value = '';
+            fetchMembers();
+
+        } catch (error) {
+            console.error(error);
+            alert('Failed to create member.');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="bi bi-check-lg"></i> Add Member';
+        }
+    };
 
     // ==============================================
-    // MODAL UI LOGIC 
+    // MODAL UI LOGIC WITH AUTO-POPULATION FIX
     // ==============================================
     document.querySelector('.btn-add-new').addEventListener('click', function() {
         document.getElementById('addMemberModal').classList.add('active');
+        fetchTreasurerApprovedApplicantsForModal();
     });
 
     document.getElementById('closeModal').addEventListener('click', function() {
@@ -717,7 +762,6 @@
                 }, ADMIN_MEMBERS_AUTO_REFRESH_MS);
             }
 
-            // --- Event Listeners for Filters & Pagination ---
             document.getElementById('rowsPerPageSelect').addEventListener('change', function() {
                 rowsPerPage = Number(this.value) || 10;
                 currentPage = 1;
@@ -760,14 +804,19 @@
                 renderMembers(currentSearchTerm);
             });
 
-            // Modal Dropdown listener
             const companySelect = document.getElementById('addMemberCompanySelect');
             if (companySelect) {
                 companySelect.addEventListener('change', function() {
                     const selectedApplicant = approvedApplicantsForModal.find((item) => String(item.id) === String(this.value));
                     if (selectedApplicant) {
-                        document.getElementById('addMemberCompanyNameReadOnly').value = selectedApplicant.basic_profile?.registered_business_name || '';
-                        document.getElementById('addMemberEmail').value = selectedApplicant.basic_profile?.email || '';
+                        let bp = {};
+                        try {
+                            bp = typeof selectedApplicant.basic_profile === 'string' ?
+                                JSON.parse(selectedApplicant.basic_profile) :
+                                (selectedApplicant.basic_profile || {});
+                        } catch (e) {}
+                        document.getElementById('addMemberCompanyNameReadOnly').value = selectedApplicant.registered_business_name || bp.registered_business_name || '';
+                        document.getElementById('addMemberEmail').value = selectedApplicant.email || bp.email || '';
                     }
                 });
             }
@@ -775,13 +824,13 @@
 
         fetchMembers();
     }
+
     if (document.readyState !== 'loading') {
         initMembersPage();
     } else {
         document.addEventListener('DOMContentLoaded', initMembersPage);
     }
 
-    // --- FETCH MEMBERS CORE LOGIC ---
     async function fetchMembers() {
         let tbody = document.getElementById('membersTableBody');
         if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 30px;"><i class="bi bi-arrow-repeat spin"></i> Loading members...</td></tr>';
@@ -795,7 +844,6 @@
             });
             const result = await response.json();
 
-            // Re-fetch the element! If the user clicked a different tab, this becomes null, and we abort.
             tbody = document.getElementById('membersTableBody');
             if (!tbody) return;
 
@@ -809,9 +857,9 @@
         }
     }
 
-    // --- RENDER TABLE & INJECT NEW UI ---
     function renderMembers(searchTerm) {
         const tbody = document.getElementById('membersTableBody');
+        if (!tbody) return;
         tbody.innerHTML = '';
 
         const filtered = getFilteredMembers(searchTerm);
@@ -833,42 +881,43 @@
 
         pageItems.forEach(member => {
             const applicant = member.applicant || {};
-            const profile = applicant.basic_profile || {};
+            let profile = {};
+            try {
+                profile = typeof applicant.basic_profile === 'string' ?
+                    JSON.parse(applicant.basic_profile) :
+                    (applicant.basic_profile || {});
+            } catch (e) {}
+
             const loc = profile.business_location || {};
             const rep = applicant.official_representative || {};
 
-            const companyName = profile.registered_business_name || 'N/A';
-            const email = profile.email || 'N/A';
+            const companyName = member.company_name || profile.registered_business_name || applicant.registered_business_name || 'N/A';
+            const email = member.email || profile.email || applicant.email || 'N/A';
 
-            // Grab raw status and uppercase it for display
             const rawStatus = String(member.status || 'Active').toLowerCase();
             const statusDisplay = rawStatus.toUpperCase();
-
             const memberType = member.membership_type_id === 1 ? 'Directory Member' : 'Regular Member';
 
-            // Missing Data Checks for Plus Icons
             const addressRaw = [loc.business_address, loc.city_municipality, loc.province].filter(Boolean).join(', ');
             const addressContent = addressRaw ? addressRaw : '<i class="fa fa-plus icon-add" title="Add Address"></i>';
 
-            const contactRaw = profile.telephone_no || rep.contact_no;
+            const contactRaw = profile.telephone_no || rep.contact_no || applicant.telephone_no;
             const contactContent = contactRaw ? contactRaw : '<i class="fa fa-plus icon-add" title="Add Contact"></i>';
 
             const repRaw = [rep.first_name, rep.mid_name, rep.surname].filter(Boolean).join(' ');
             const registeredMemberContent = repRaw ? repRaw : '<i class="fa fa-plus icon-add" title="Add Member"></i>';
-
             const regDateContent = member.created_at ? new Date(member.created_at).toLocaleDateString('en-US') : '<i class="fa fa-plus icon-add" title="Add Date"></i>';
 
-            // FIX: Check against the raw lowercase status for the color coding
             let statusBadge = `<span class="badge bg-success text-uppercase rounded-pill shadow-sm py-1 px-3">${statusDisplay}</span>`;
-
             if (rawStatus === 'inactive' || rawStatus === 'expired') {
                 statusBadge = `<span class="badge text-uppercase rounded-pill shadow-sm py-1 px-3 status-inactive">${statusDisplay}</span>`;
             } else if (rawStatus === 'pending') {
                 statusBadge = `<span class="badge bg-warning text-dark text-uppercase rounded-pill shadow-sm py-1 px-3">${statusDisplay}</span>`;
             }
 
+            // Using window.openEditMemberModal
             tbody.innerHTML += `
-                <tr class="align-middle" onclick="openEditMemberModal(${member.id})" style="cursor: pointer;">
+                <tr class="align-middle" onclick="window.openEditMemberModal(${member.id})" style="cursor: pointer;">
                     <td class="fw-bold text-start text-dark">${companyName}</td>
                     <td class="text-secondary text-capitalize">${memberType}</td>
                     <td>${statusBadge}</td>
@@ -878,7 +927,7 @@
                     <td class="text-secondary text-capitalize">${registeredMemberContent}</td>
                     <td class="text-secondary">${regDateContent}</td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-outline-primary fw-bold me-1" onclick="event.stopPropagation(); openEditMemberModal(${member.id})">
+                        <button class="btn btn-sm btn-outline-primary fw-bold me-1" onclick="event.stopPropagation(); window.openEditMemberModal(${member.id})">
                             <i class="bi bi-pencil-square"></i> Edit
                         </button>
                     </td>
@@ -887,36 +936,36 @@
         });
     }
 
-    // --- FILTER LOGIC ---
     function getFilteredMembers(searchTerm) {
         const statusFilter = document.getElementById('memberStatusFilter').value.toLowerCase();
 
         return allMembersData.filter(member => {
             const status = (member.status || '').toLowerCase();
-
-            if (!['paid', 'approved', 'active', 'inactive'].includes(status)) {
+            if (!['paid', 'approved', 'active', 'inactive', 'expired'].includes(status)) {
                 return false;
             }
-
             if (statusFilter !== 'all' && status !== statusFilter) {
                 return false;
             }
-
             if (!searchTerm) return true;
 
             const applicant = member.applicant || {};
-            const profile = applicant.basic_profile || {};
+            let profile = {};
+            try {
+                profile = typeof applicant.basic_profile === 'string' ?
+                    JSON.parse(applicant.basic_profile) :
+                    (applicant.basic_profile || {});
+            } catch (e) {}
             const rep = applicant.official_representative || {};
 
-            const companyName = (profile.registered_business_name || '').toLowerCase();
-            const email = (profile.email || '').toLowerCase();
+            const companyName = (member.company_name || profile.registered_business_name || '').toLowerCase();
+            const email = (member.email || profile.email || '').toLowerCase();
             const repName = [rep.first_name, rep.surname].filter(Boolean).join(' ').toLowerCase();
 
             return companyName.includes(searchTerm) || email.includes(searchTerm) || repName.includes(searchTerm);
         });
     }
 
-    // --- PAGINATION UI CONTROLLER ---
     function updatePaginationUI(totalItems, totalPages) {
         const firstBtn = document.getElementById('firstPageBtn');
         const prevBtn = document.getElementById('prevPageBtn');
@@ -925,11 +974,7 @@
         const center = document.querySelector('.pagination-center');
 
         if (center) {
-            if (totalItems === 0) {
-                center.textContent = 'Page 0 of 0';
-            } else {
-                center.textContent = `Page ${currentPage} of ${totalPages}`;
-            }
+            center.textContent = totalItems === 0 ? 'Page 0 of 0' : `Page ${currentPage} of ${totalPages}`;
         }
 
         const isFirst = currentPage <= 1 || totalItems === 0;
@@ -939,11 +984,12 @@
         [nextBtn, lastBtn].forEach(btn => btn?.classList.toggle('disabled', isLast));
     }
 
-    // --- FETCH MODAL DROPDOWN ---
+    // --- STRIP STRINGS AND MAP REAL OBJECT VALUES SAFELY ---
     async function fetchTreasurerApprovedApplicantsForModal() {
         const companySelect = document.getElementById('addMemberCompanySelect');
-        var token = localStorage.getItem('token');
         if (!companySelect) return;
+
+        companySelect.innerHTML = '<option value="">Loading eligible applicants . . .</option>';
 
         try {
             const [membersRes, paidRes, approvedRes] = await Promise.all([
@@ -974,16 +1020,33 @@
             const freshMembers = Array.isArray(membersData.data) ? membersData.data : [];
             const combinedApplicants = [...(paidData.data || []), ...(approvedData.data || [])];
 
-            const existingMemberEmails = new Set(freshMembers.map((m) => String(m?.applicant?.basic_profile?.email || '').trim().toLowerCase()).filter(Boolean));
+            const existingMemberEmails = new Set();
+            freshMembers.forEach(m => {
+                let app = m?.applicant || {};
+                let bp = {};
+                try {
+                    bp = typeof app.basic_profile === 'string' ? JSON.parse(app.basic_profile) : (app.basic_profile || {});
+                } catch (e) {}
+                const email = String(bp.email || app.email || m.email || '').trim().toLowerCase();
+                if (email) existingMemberEmails.add(email);
+            });
 
             approvedApplicantsForModal = combinedApplicants.filter((app) => {
-                const email = String(app?.basic_profile?.email || '').trim().toLowerCase();
+                let bp = {};
+                try {
+                    bp = typeof app.basic_profile === 'string' ? JSON.parse(app.basic_profile) : (app.basic_profile || {});
+                } catch (e) {}
+                const email = String(bp.email || app.email || '').trim().toLowerCase();
                 return !(email && existingMemberEmails.has(email));
             });
 
             companySelect.innerHTML = '<option value="">Select eligible company . . .</option>';
             approvedApplicantsForModal.forEach((app) => {
-                const name = app?.basic_profile?.registered_business_name || `Applicant #${app.id}`;
+                let bp = {};
+                try {
+                    bp = typeof app.basic_profile === 'string' ? JSON.parse(app.basic_profile) : (app.basic_profile || {});
+                } catch (e) {}
+                const name = app.registered_business_name || bp.registered_business_name || `Applicant #${app.id}`;
                 companySelect.insertAdjacentHTML('beforeend', `<option value="${app.id}">${name}</option>`);
             });
 
@@ -992,57 +1055,7 @@
             }
         } catch (error) {
             console.error('Modal fetch error:', error);
-        }
-    }
-
-    // --- SAVE NEW MEMBER API CALL ---
-    async function saveMemberFromModal() {
-        const companySelect = document.getElementById('addMemberCompanySelect');
-        const inductionDateInput = document.getElementById('addMemberInductionDate');
-        const saveBtn = document.getElementById('saveMemberBtn');
-        var token = localStorage.getItem('token');
-
-        const selectedApplicant = approvedApplicantsForModal.find((item) => String(item.id) === String(companySelect?.value));
-
-        if (!selectedApplicant) return alert('Please select an eligible company first.');
-        if (!inductionDateInput.value) return alert('Please select an induction date.');
-
-        const companyName = selectedApplicant?.basic_profile?.registered_business_name || '';
-        const email = selectedApplicant?.basic_profile?.email || '';
-
-        try {
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = 'Adding ...';
-
-            const response = await fetch(`${window.API_BASE_URL}/v1/members`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    applicant_id: selectedApplicant.id,
-                    company_name: companyName,
-                    email: email,
-                    induction_date: inductionDateInput.value,
-                }),
-            });
-
-            if (!response.ok) throw new Error('Failed to create member.');
-
-            alert('Member created successfully.');
-            document.getElementById('addMemberModal').classList.remove('active');
-            inductionDateInput.value = '';
-            companySelect.value = '';
-            fetchMembers();
-
-        } catch (error) {
-            console.error(error);
-            alert('Failed to create member.');
-        } finally {
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = '<i class="bi bi-check-lg"></i> Add Member';
+            companySelect.innerHTML = '<option value="">Error loading eligible items.</option>';
         }
     }
 </script>

@@ -53,8 +53,6 @@
                         <th>Reg Date</th>
                         <th>Exp Date</th>
                         <th>Status</th>
-                        <th>Proof</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="members-table-body">

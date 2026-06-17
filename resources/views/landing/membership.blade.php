@@ -3,6 +3,7 @@
 
 @section('content')
 
+
 {{-- HERO SECTION --}}
 <div class="w-100 mb-0 d-flex flex-column align-items-center" style="height: 623px; margin-top: -1px; background-color: var(--bg-hero, #1a1a2e); padding-top: 130px; transition: background-color 0.3s ease;">
     <div class="container d-flex flex-column align-items-center text-center">
@@ -10,7 +11,7 @@
         <h1 class="headline-text fw-bold mb-4 text-uppercase" style="color: #ffffff !important; font-family: 'DM Sans', sans-serif; font-size: 63px;">
             Discover Local <span style="color: #EB3223;">Businesses</span>
         </h1>
-        <p style="color: #ffffff !important; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 24px; max-width: 1262px; margin-bottom: 40px;">
+        <p style="color: #574949 !important; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 24px; max-width: 1262px; margin-bottom: 40px;">
             Explore our network of trusted local enterprises and connect with the best in Valenzuela City.
         </p>
 
@@ -186,7 +187,7 @@
         paginatedData.forEach(biz => {
             const name = biz.registered_business_name || biz.applicant?.registered_business_name || 'Unnamed Business';
 
-            // SMART PHOTO FINDER: Now specifically checks inside basic_profile!
+            // SMART PHOTO FINDER
             let rawPhoto = biz.photo_url ||
                 biz.applicant?.basic_profile?.photo_url ||
                 biz.applicant?.photo_url ||
@@ -219,9 +220,10 @@
                 imageContent = `<div class="w-100 h-100 d-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger fw-bold" style="font-size: 4.5rem; font-family: 'DM Sans', sans-serif;">${initials}</div>`;
             }
 
+            // UPDATED: Outer div changed to <a> tag
             html += `
                 <div class="col-md-6 col-lg-4">
-                    <div class="card h-100 shadow-sm border-0 business-card" style="border-radius: 12px; overflow: hidden; transition: transform 0.2s;">
+                    <a href="/business/${biz.id}" class="card h-100 shadow-sm border-0 business-card text-decoration-none text-dark" style="border-radius: 12px; overflow: hidden; transition: transform 0.2s; display: block;">
                         <div style="height: 180px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #eee;">
                              ${imageContent}
                         </div>
@@ -229,9 +231,9 @@
                             <h5 class="fw-bold mb-1 text-truncate">${name}</h5>
                             <p class="small mb-3 text-uppercase fw-bold" style="color: #be1e38;">${biz.industry || 'General Industry'}</p>
                             <p class="text-muted small text-truncate" style="font-family: 'Poppins', sans-serif;">${biz.business_tagline || biz.email || 'No additional details available.'}</p>
-                            <a href="/business/${biz.id}" class="btn btn-sm btn-outline-danger w-100 fw-bold mt-2" style="border-radius: 6px;">View Profile</a>
+                            <div class="btn btn-sm btn-outline-danger w-100 fw-bold mt-2" style="border-radius: 6px; pointer-events: none;">View Profile</div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             `;
         });

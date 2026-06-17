@@ -583,31 +583,42 @@
         loadProfile();
     });
 
-    // --- SAVING LOGIC (BACKBLAZE READY) ---
+    // --- SAVING LOGIC (BACKBLAZE & CORS READY) ---
     async function saveProfile() {
         const btn = document.getElementById('btnSaveProfile');
         const alertBox = document.getElementById('profileAlert');
         const formData = new FormData();
 
-        const newName = document.getElementById('profileName').value;
+        const newName = document.getElementById('profileName').value.trim();
+        const newEmail = document.getElementById('profileEmail').value.trim();
 
+        // CRITICAL FOR LARAVEL: Tells Laravel to treat this POST as a PUT route
         formData.append('_method', 'PUT');
         formData.append('name', newName);
-        formData.append('email', document.getElementById('profileEmail').value);
+        formData.append('email', newEmail);
+
+        // Also append first/last name as the backend changeInfo might expect them
+        const nameParts = newName.split(' ');
+        formData.append('first_name', nameParts[0] || '');
+        formData.append('last_name', nameParts.slice(1).join(' ') || '');
 
         // Only append image if one exists from the cropper
         if (window.accountImageFile) {
-            formData.append('image', window.accountImageFile);
+            formData.append('image', window.accountImageFile, 'avatar.jpg');
         }
 
         try {
             btn.disabled = true;
             btn.textContent = 'Saving...';
+            alertBox.style.display = 'none';
 
+            // Ensure we hit the correct endpoint using POST to avoid CORS/Redirect issues with files
             const response = await fetch(`${window.API_BASE_URL}/v1/user/change-info`, {
-                method: 'POST', // FormData requires POST
+                method: 'POST', // Strictly POST for FormData
                 headers: {
+                    'Accept': 'application/json',
                     'Authorization': `Bearer ${token}`
+                    // Do NOT set Content-Type here
                 },
                 body: formData
             });
@@ -617,35 +628,32 @@
             if (response.ok) {
                 showAlert(alertBox, 'Profile updated successfully!', 'success');
 
-                // 1. Clear the pending file so we don't accidentally re-upload it next time
                 window.accountImageFile = null;
-
-                // 2. Update local storage with the new name
                 localStorage.setItem('userName', newName);
 
-                // 3. Swap the temporary 'blob' URL with the REAL Backblaze URL from the backend!
+                // Update UI instantly
                 if (data.user) {
-                    const realAvatarUrl = data.user.photo_url || data.user.image_url || data.user.avatar;
+                    const realAvatarUrl = data.user.photo_url || data.user.image_url || data.user.avatar || data.user.profile_photo_path;
 
                     if (realAvatarUrl) {
-                        // Update Profile Page Preview
-                        document.getElementById('avatarPreview').innerHTML = `<img src="${realAvatarUrl}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                        const finalUrl = realAvatarUrl.startsWith('http') ? realAvatarUrl : `${window.location.origin}/storage/${realAvatarUrl}`;
+                        document.getElementById('avatarPreview').innerHTML = `<img src="${finalUrl}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
 
-                        // Update Sidebar/Navbar
                         const sidebarAvatar = document.querySelector('.sidebar .avatar');
-                        if (sidebarAvatar) sidebarAvatar.src = realAvatarUrl;
-
-                        const navbarAvatar = document.getElementById('navbarAvatar');
-                        if (navbarAvatar) navbarAvatar.src = realAvatarUrl;
+                        if (sidebarAvatar) sidebarAvatar.src = finalUrl;
                     }
                 }
+
+                // Force a hard reload to ensure all cached data is cleared
+                setTimeout(() => location.reload(), 1000);
+
             } else {
                 console.error("Backend returned error:", data);
-                showAlert(alertBox, 'Error ' + response.status + ': ' + (data.message || 'Check console'), 'error');
+                showAlert(alertBox, 'Error: ' + (data.message || 'Validation failed'), 'error');
             }
         } catch (err) {
             console.error("Fetch failed:", err);
-            showAlert(alertBox, 'Connection Error: Check if your API is running and URL is correct.', 'error');
+            showAlert(alertBox, 'Network Error while saving.', 'error');
         } finally {
             btn.disabled = false;
             btn.textContent = 'Save Changes';

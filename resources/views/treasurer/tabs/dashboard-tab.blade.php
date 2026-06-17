@@ -94,13 +94,12 @@
                         <th>Amount</th>
                         <th>OR Number</th>
                         <th>Date</th>
-                        <th>Proof of Payment</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="recent-payments-table-body">
                     <tr>
-                        <td colspan="7" class="text-center py-4">Loading records...</td>
+                        <td colspan="6" class="text-center py-4">Loading records...</td>
                     </tr>
                 </tbody>
             </table>

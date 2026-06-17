@@ -305,9 +305,7 @@
         height: 70px;
         border-radius: 50%;
         object-fit: cover;
-        background: #000;
-        padding: 3px;
-        border: 1px solid #e5e7eb;
+        border: 0.5px solid #e5e7eb;
         margin-bottom: 10px;
     }
 
@@ -2819,24 +2817,27 @@
     }
 
     function updateMembershipPlanDetails(profile) {
-        const plans = profile?.available_plans || profile?.membership_plans || [];
+        const plans = profile?.available_plans || [];
+
         if (Array.isArray(plans) && plans.length >= 2) {
             const [primary, secondary] = plans;
-            setTextIfExists('membershipPlanPrimaryName', primary?.name || 'Plan A');
-            setTextIfExists('membershipPlanPrimaryPrice', primary?.price || primary?.amount || 'N/A');
-            setTextIfExists('membershipPlanSecondaryName', secondary?.name || 'Plan B');
-            setTextIfExists('membershipPlanSecondaryPrice', secondary?.price || secondary?.amount || 'N/A');
+            setTextIfExists('membershipPlanPrimaryName', primary?.name || 'Annual Renewal');
+            setTextIfExists('membershipPlanPrimaryPrice', primary?.price || 'N/A');
+            setTextIfExists('membershipPlanSecondaryName', secondary?.name || 'Lifetime Upgrade');
+            setTextIfExists('membershipPlanSecondaryPrice', secondary?.price || 'N/A');
+            setTextIfExists('billingPlanLabel', primary?.name || 'Membership');
             return;
         }
 
         const membershipType = (profile?.membership_type || '').toString().toLowerCase();
-        const annualAmount = profile?.annual_membership_fee || profile?.membership_fee || 'Php 500.00 / year';
-        const lifetimeAmount = profile?.lifetime_membership_fee || 'Php 10,000.00';
+        const dynamicPrice = profile?.calculated_renewal_price ?
+            `₱${Number(profile.calculated_renewal_price).toLocaleString('en-US', {minimumFractionDigits: 2})}` :
+            '₱500.00';
 
-        setTextIfExists('membershipPlanPrimaryName', 'Lifetime Sponsorship');
-        setTextIfExists('membershipPlanPrimaryPrice', lifetimeAmount);
-        setTextIfExists('membershipPlanSecondaryName', 'Yearly Subscription');
-        setTextIfExists('membershipPlanSecondaryPrice', annualAmount);
+        setTextIfExists('membershipPlanPrimaryName', 'Annual Renewal');
+        setTextIfExists('membershipPlanPrimaryPrice', dynamicPrice);
+        setTextIfExists('membershipPlanSecondaryName', 'Lifetime Sponsorship');
+        setTextIfExists('membershipPlanSecondaryPrice', '₱10,000.00');
 
         if (membershipType.includes('lifetime')) {
             setTextIfExists('billingPlanLabel', 'Lifetime Sponsorship');
@@ -2864,15 +2865,16 @@
                 continue;
             }
             if (typeof item === 'object') {
-                // FIXED: Looks deeply inside the nested member object
                 if (item.basic_profile || item.organization_membership || item.official_representative || item.applicant?.basic_profile) {
 
-                    // Crucial: Manually attach root-level properties to the item so they aren't lost!
                     if (data.membership_type) item.membership_type = data.membership_type;
                     if (data.membershipType) item.membershipType = data.membershipType;
                     if (data.official_receipt_no) item.official_receipt_no = data.official_receipt_no;
                     if (data.receipt_no) item.receipt_no = data.receipt_no;
                     if (data.or_number) item.or_number = data.or_number;
+
+                    if (data.calculated_renewal_price !== undefined) item.calculated_renewal_price = data.calculated_renewal_price;
+                    if (data.available_plans !== undefined) item.available_plans = data.available_plans;
 
                     return item;
                 }
@@ -2897,11 +2899,12 @@
                     membership_end_date: rawProfile.membership_end_date || applicant.membership_end_date || null,
                     induction_date: rawProfile.induction_date || applicant.induction_date || null,
                     user: rawProfile.user || applicant.user || undefined,
-                    // Preserve OR numbers safely
                     official_receipt_no: rawProfile.official_receipt_no || applicant.official_receipt_no || null,
                     membership_receipt_no: rawProfile.membership_receipt_no || applicant.membership_receipt_no || null,
                     receipt_no: rawProfile.receipt_no || applicant.receipt_no || null,
                     or_number: rawProfile.or_number || applicant.or_number || null,
+                    calculated_renewal_price: rawProfile.calculated_renewal_price || applicant.calculated_renewal_price || null,
+                    available_plans: rawProfile.available_plans || applicant.available_plans || null,
                 };
             }
         }
@@ -2921,6 +2924,9 @@
             membership_receipt_no: rawProfile.membership_receipt_no || source.membership_receipt_no || null,
             receipt_no: rawProfile.receipt_no || source.receipt_no || null,
             or_number: rawProfile.or_number || source.or_number || null,
+            calculated_renewal_price: rawProfile.calculated_renewal_price || source.calculated_renewal_price || null,
+            available_plans: rawProfile.available_plans || source.available_plans || null,
+
             basic_profile: {
                 registered_business_name: source.registered_business_name || source.company_name || source.business_name || name || 'Your Company',
                 email: source.email || rawProfile.email || 'N/A',

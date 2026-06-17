@@ -538,6 +538,10 @@
         amountInput.value = '';
         amountInput.placeholder = 'Calculating...';
 
+        // NEW: Load the dynamically computed price directly from profile!
+        const profile = window.currentProfileData || {};
+        const dynamicPrice = profile.calculated_renewal_price || 500;
+
         try {
             const response = await fetch(`${window.API_BASE_URL}/v1/member/renewal-status`, {
                 headers: {
@@ -550,12 +554,12 @@
             if (data.amount_due) {
                 amountInput.value = data.amount_due;
             } else {
-                const profile = window.currentProfileData || {};
-                const typeId = String(profile.membership_type_id || profile.applicant?.membership_type_id || profile.member?.membership_type_id || '');
-                amountInput.value = (typeId === '2' || profile.membershipType?.name === 'Small Enterprise') ? 3000 : 500;
+                // Instantly apply the calculated price
+                amountInput.value = dynamicPrice;
             }
         } catch (error) {
-            amountInput.value = 500;
+            // Apply it safely as a fallback if the network fails
+            amountInput.value = dynamicPrice;
         }
     }
 
@@ -951,79 +955,34 @@
     function populateSettingsAccountForm(profile) {
         if (!profile) return;
 
-        // ── Detect which data shape we have ───────────────────────────────────
-        // Shape A (correct): /v1/member/profile  → { member: { user: {...}, applicant: {...} } }
-        // Shape B (wrong):   /v1/application     → { basic_profile: {...}, official_representative: {...} }
-        //
-        // If we receive Shape B (ApplicantResource from fetchRealDashboardData),
-        // bail out — the settings form will be populated once the correct
-        // member profile fetch completes via fetchMyBillingHistory.
-        const hasCorrectShape = !!(profile.member || profile.data?.member);
-        if (!hasCorrectShape) {
-            // Wrong shape — do not clear the form fields
-            return;
-        }
-
-        // ── Resolve the profile shape from /v1/member/profile response ────────
-        const member = profile.member || profile.data?.member || {};
-        const user = member.user || {};
+        const member = profile.member || profile.data?.member || profile;
+        const user = member.user || profile.user || {};
         const applicant = member.applicant || {};
 
-        // Safe nested object extractor (handles JSON-string values)
-        function safeObj(val) {
-            if (!val) return {};
-            if (typeof val === 'string') {
-                try {
-                    return JSON.parse(val);
-                } catch (e) {
-                    return {};
-                }
-            }
-            return (typeof val === 'object' && !Array.isArray(val)) ? val : {};
-        }
+        // Directly target the 4 User Info fields
+        const firstName = user.first_name || applicant.rep_first_name || '';
+        const lastName = user.last_name || applicant.rep_surname || '';
+        const email = user.email || applicant.email || '';
+        const phone = user.contact_number || applicant.telephone_no || '';
 
-        const basic = safeObj(applicant.basic_profile);
-        const rep = safeObj(applicant.official_representative);
-
+        // Inject live database info
         const firstEl = document.getElementById('settingsFirstName');
+        if (firstEl) firstEl.value = firstName;
+
         const lastEl = document.getElementById('settingsLastName');
+        if (lastEl) lastEl.value = lastName;
+
         const emailEl = document.getElementById('settingsEmailInput');
+        if (emailEl) emailEl.value = email;
+
         const phoneEl = document.getElementById('settingsPhoneInput');
+        if (phoneEl) phoneEl.value = phone;
 
-        const firstName = user.first_name || rep.first_name || applicant.rep_first_name || '';
-        const lastName = user.last_name || rep.surname || applicant.rep_surname || '';
-        const email = user.email || basic.email || applicant.email || '';
-
-        // Phone priority:
-        // 1. user.contact_number  — saved via UserController::changeInfo (users table)
-        //    UserResource now always returns this field.
-        // 2. basic.telephone_no   — applicant's business landline
-        // 3. rep.contact_no       — representative mobile
-        // 4. applicant flat fallback
-        const phone =
-            user.contact_number ||
-            basic.telephone_no ||
-            rep.contact_no ||
-            applicant.telephone_no ||
-            '';
-
-        // Only write non-empty values — never clear a field that already has content
-        if (firstEl && firstName) firstEl.value = firstName;
-        if (lastEl && lastName) lastEl.value = lastName;
-        if (emailEl && email) emailEl.value = email;
-        if (phoneEl && phone) phoneEl.value = phone;
-
-        // ── Avatar ────────────────────────────────────────────────────────────
+        // Populate Avatar
         const avatarUrl = user.photo_url || user.profile_photo_url || user.profile_photo_path;
         if (avatarUrl) {
-            const finalUrl = avatarUrl.startsWith('http') ?
-                avatarUrl :
-                `${(window.API_BASE_URL || '').replace('/api', '')}/storage/${avatarUrl}`;
-            document.querySelectorAll('img[alt="Profile"]').forEach(img => {
-                img.src = finalUrl;
-            });
-            const sidebarAvatar = document.querySelector('.sidebar .avatar');
-            if (sidebarAvatar) sidebarAvatar.src = finalUrl;
+            const finalUrl = avatarUrl.startsWith('http') ? avatarUrl : `${(window.API_BASE_URL || '').replace('/api', '')}/storage/${avatarUrl}`;
+            document.querySelectorAll('img[alt="Profile"]').forEach(img => img.src = finalUrl);
         }
     }
 
@@ -1073,11 +1032,12 @@
         const phone = document.getElementById('settingsPhoneInput')?.value?.trim() || '';
 
         const formData = new FormData();
+        // Use POST method with _method=PUT for Laravel compatibility
         formData.append('_method', 'PUT');
-        if (firstName) formData.append('first_name', firstName);
-        if (lastName) formData.append('last_name', lastName);
-        if (email) formData.append('email', email);
-        if (phone) formData.append('contact_number', phone);
+        formData.append('first_name', firstName);
+        formData.append('last_name', lastName);
+        formData.append('email', email);
+        formData.append('contact_number', phone);
 
         if (window.accountImageFile) {
             formData.append('image', window.accountImageFile);
@@ -1098,25 +1058,11 @@
             });
 
             if (response.ok) {
-                const responseData = await response.json();
-                alert('Account updated successfully!');
+                alert('Account updated successfully in the database!');
                 window.accountImageFile = null;
 
-                // Update the local cache so reopening the modal shows the saved values.
-                // responseData.user now includes contact_number (UserResource fix).
-                if (window.currentProfileData) {
-                    // Handle both response shapes: { member: { user } } and { user }
-                    const target = window.currentProfileData.member ?
-                        window.currentProfileData.member :
-                        window.currentProfileData;
-
-                    target.user = Object.assign(target.user || {}, responseData.user || {});
-                }
-
-                // Force a hard refresh from the server to confirm everything is in sync
-                await fetchMyBillingHistory();
-                closeSettingsModal('account');
-
+                // FORCE RELOAD to prove it was inserted in the database, not cached!
+                location.reload();
             } else {
                 const data = await response.json();
                 alert('Failed to update account: ' + (data.message || 'Validation error'));
